@@ -50,10 +50,10 @@
 #define ZELJEZARA_ITEM_SCRAP           "Metalni Otpad"
 #define ZELJEZARA_ITEM_RAW_METAL       "Sirovi Metal"
 
-// Item modeli za inventory prikaz
-#define ZELJEZARA_MODEL_METAL          19631   // Metal box model
-#define ZELJEZARA_MODEL_SCRAP          19941   // Scrap model
-#define ZELJEZARA_MODEL_RAW_METAL      19942   // Raw ore model (zuta ikona)
+// Item modeli za inventory prikaz (SA-MP object model IDs za DIALOG_STYLE_PREVIEW)
+#define ZELJEZARA_MODEL_METAL          19631   // Metal box / ingot
+#define ZELJEZARA_MODEL_SCRAP          19942   // Scrap / ore chunks
+#define ZELJEZARA_MODEL_RAW_METAL      19941   // Raw ore (zuta ikonica)
 #define ZELJEZARA_MODEL_METAL_BELT     19846   // Metal na traci model
 
 // Zvukovi

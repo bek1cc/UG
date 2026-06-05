@@ -157,12 +157,12 @@
 #define PLAS_ISTOVAR_TIME   5
 
 // Minigame - Kliziste-style (0-100 scale)
-#define PLAS_MINI_SPEED1    7.0
-#define PLAS_MINI_SPEED2    9.0
-#define PLAS_MINI_SPEED3    12.0
-#define PLAS_MINI_ZONE1     14
-#define PLAS_MINI_ZONE2     10
-#define PLAS_MINI_ZONE3     7
+#define PLAS_MINI_SPEED1    12.0
+#define PLAS_MINI_SPEED2    17.0
+#define PLAS_MINI_SPEED3    22.0
+#define PLAS_MINI_ZONE1     12
+#define PLAS_MINI_ZONE2     8
+#define PLAS_MINI_ZONE3     5
 #define PLAS_MARKER_WIDTH   4.0
 
 // Forklift job pay (tiered by minigame hits)
@@ -311,6 +311,7 @@ forward PlasTimer_Machine(playerid);
 forward PlasMini_NextPhase(playerid);
 forward PlasTimer_Utovar(playerid);
 forward PlasTimer_Istovar(playerid);
+forward PlasMini_FailFirst(playerid);
 
 // ===========================================================================
 //  HELPERS
@@ -384,6 +385,12 @@ stock bool:PlasNearVilicar(playerid) {
 stock bool:PlasNearKamion(playerid) {
     new Float:x, Float:y, Float:z; GetPlayerPos(playerid, x, y, z);
     if(PlasDist(x,y,z, PLAS_KAMION_X,PLAS_KAMION_Y,PLAS_KAMION_Z) <= PLAS_KAMION_DIST) return true;
+    return false;
+}
+
+stock bool:PlasNearOprema(playerid) {
+    new Float:x, Float:y, Float:z; GetPlayerPos(playerid, x, y, z);
+    if(PlasDist(x,y,z, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z) <= PLAS_OPREMA_DIST) return true;
     return false;
 }
 
@@ -752,13 +759,21 @@ stock PlasMini_StopPhase(playerid, bool:hit) {
         PlastikaPlayerData[playerid][plasMiniHits]++;
         PlayerTextDrawSetString(playerid, PlastikaPlayerData[playerid][plasMiniStatus], "~g~~h~POGODAK!");
         PlayerPlaySound(playerid, PLAS_SND_USPJEH, 0.0, 0.0, 0.0);
+        PlastikaPlayerData[playerid][plasMiniPhase]++;
+        PlasMini_UpdateStars(playerid);
+        SetTimerEx("PlasMini_NextPhase", 1500, false, "i", playerid);
     } else {
         PlayerTextDrawSetString(playerid, PlastikaPlayerData[playerid][plasMiniStatus], "~r~PROMASAJ!");
         PlayerPlaySound(playerid, PLAS_SND_FAIL, 0.0, 0.0, 0.0);
+        PlastikaPlayerData[playerid][plasMiniPhase]++;
+        PlasMini_UpdateStars(playerid);
+        // If missed the first phase, end immediately - must take new crate
+        if(PlastikaPlayerData[playerid][plasMiniPhase] == 1 && PlastikaPlayerData[playerid][plasMiniHits] == 0) {
+            SetTimerEx("PlasMini_FailFirst", 1500, false, "i", playerid);
+        } else {
+            SetTimerEx("PlasMini_NextPhase", 1500, false, "i", playerid);
+        }
     }
-    PlasMini_UpdateStars(playerid);
-    PlastikaPlayerData[playerid][plasMiniPhase]++;
-    SetTimerEx("PlasMini_NextPhase", 1500, false, "i", playerid);
 }
 
 public PlasMini_NextPhase(playerid) {
@@ -769,6 +784,19 @@ public PlasMini_NextPhase(playerid) {
         return 1;
     }
     PlasMini_StartPhase(playerid);
+    return 1;
+}
+
+public PlasMini_FailFirst(playerid) {
+    if(!PlasValid(playerid)) return 0;
+    if(PlastikaPlayerData[playerid][plasState] != PLAS_MINIGAME) return 0;
+    PlasMini_Hide(playerid);
+    ClearAnimations(playerid);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
+    PlastikaPlayerData[playerid][plasState] = PLAS_EQUIPPED;
+    PlasGRESKA(playerid, "{FF6347}[FABRIKA PLASTIKE]{FFFFFF} Promasili ste prvu fazu! Gajba unistena, uzmite novu.");
+    Plas_Status(playerid, "FABRIKA PLASTIKE~n~~w~Status: Uzmi novu gajbu ili idi do kamiona");
+    PlayerPlaySound(playerid, PLAS_SND_FAIL, 0.0, 0.0, 0.0);
     return 1;
 }
 
@@ -1051,7 +1079,7 @@ stock Plas_UzmiGajbu(playerid) {
     if(!PlasNearGajba(playerid)) return PlasGRESKA(playerid, "Niste blizu palete sa gajbama.");
     if(IsPlayerInAnyVehicle(playerid)) return PlasGRESKA(playerid, "Ne mozete uzeti gajbu dok ste u vozilu.");
 
-    SetPlayerAttachedObject(playerid, 3, PLAS_GAJBA_MODEL, 6, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 0.85, 0.85, 0.85, 0x1D75C4FF, 0x1D75C4FF);
+    SetPlayerAttachedObject(playerid, 3, PLAS_BOX_MODEL, 6, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 0.85, 0.85, 0.85, 0x1D75C4FF, 0x1D75C4FF);
     PlastikaPlayerData[playerid][plasState] = PLAS_CARRYING_GAJBA;
     DisablePlayerCheckpoint(playerid);
 
@@ -1130,9 +1158,8 @@ stock Plas_SpawnVilicar(playerid) {
     if(vid == INVALID_VEHICLE_ID) return PlasGRESKA(playerid, "Greska pri kreiranju vilicara.");
 
     PlastikaPlayerData[playerid][plasVehicleID] = vid;
-    PutPlayerInVehicle(playerid, vid, 0);
 
-    // Blue color, full health, full fuel, repair, engine on
+    // Set vehicle properties BEFORE putting player in (prevents "unisteno" and "nema goriva")
     ChangeVehicleColor(vid, 79, 79);
     SetVehicleHealth(vid, 1000.0);
     RepairVehicle(vid);
@@ -1145,6 +1172,8 @@ stock Plas_SpawnVilicar(playerid) {
     new engine, lights, alarm, doors, bonnet, boot, objective;
     GetVehicleParamsEx(vid, engine, lights, alarm, doors, bonnet, boot, objective);
     SetVehicleParamsEx(vid, VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective);
+
+    PutPlayerInVehicle(playerid, vid, 0);
 
     new boxObj = CreateDynamicObject(PLAS_BIGBOX_MODEL, 0.0,0.0,-1000.0, 0.0,0.0,0.0);
     SetDynamicObjectMaterial(boxObj, 0, 1631, "landjump", "plasticdrum1_128", 0);
@@ -1232,9 +1261,8 @@ stock Plas_SpawnKamion(playerid) {
     if(vid == INVALID_VEHICLE_ID) return PlasGRESKA(playerid, "Greska pri kreiranju kamiona.");
 
     PlastikaPlayerData[playerid][plasVehicleID] = vid;
-    PutPlayerInVehicle(playerid, vid, 0);
 
-    // Blue color, full health, full fuel, repair, engine on
+    // Set vehicle properties BEFORE putting player in (prevents "unisteno" and "nema goriva")
     ChangeVehicleColor(vid, 79, 79);
     SetVehicleHealth(vid, 1000.0);
     RepairVehicle(vid);
@@ -1244,11 +1272,11 @@ stock Plas_SpawnKamion(playerid) {
     #if defined vCanDrive
         vCanDrive[vid] = 1;
     #endif
-
-    // Set engine on
     new engine, lights, alarm, doors, bonnet, boot, objective;
     GetVehicleParamsEx(vid, engine, lights, alarm, doors, bonnet, boot, objective);
     SetVehicleParamsEx(vid, VEHICLE_PARAMS_ON, lights, alarm, doors, bonnet, boot, objective);
+
+    PutPlayerInVehicle(playerid, vid, 0);
 
     PlastikaPlayerData[playerid][plasState] = PLAS_TRUCK_DRIVING;
     SetPlayerCheckpoint(playerid, PLAS_UTOVAR_X, PLAS_UTOVAR_Y, PLAS_UTOVAR_Z, 6.0);
@@ -1389,7 +1417,7 @@ stock Plastika_SkinOpremu(playerid) {
 stock Plastika_Init() {
     // Oprema - info pickup (1239 = info ikona)
     PlasPickup_Oprema = CreateDynamicPickup(1239, 1, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z);
-    Plas3D_Oprema = CreateDynamic3DTextLabel("{1D75C4}[FABRIKA PLASTIKE - OPREMA]{FFFFFF}\nKucaj /uzmiopremup", 0xFFFFFFFF, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z+0.3, 10.0);
+    Plas3D_Oprema = CreateDynamic3DTextLabel("{1D75C4}[FABRIKA PLASTIKE - OPREMA]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za opremu", 0xFFFFFFFF, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z+0.3, 10.0);
 
     // Gajbe - info pickup
     PlasPickup_Gajba1 = CreateDynamicPickup(1239, 1, PLAS_GAJBA1_X,PLAS_GAJBA1_Y,PLAS_GAJBA1_Z);
@@ -1582,7 +1610,17 @@ stock Plastika_OnKeyStateChange(playerid, newkeys, oldkeys) {
         if(IsPlayerInAnyVehicle(playerid)) return 0;
 
         switch(PlastikaPlayerData[playerid][plasState]) {
+            case PLAS_NONE: {
+                // ALT kod opreme za uzimanje opreme
+                if(PlasNearOprema(playerid)) { Plastika_UzmiOpremu(playerid); return 1; }
+            }
             case PLAS_EQUIPPED: {
+                // ALT kod opreme za skidanje opreme
+                if(PlasNearOprema(playerid)) {
+                    Plastika_StopJob(playerid);
+                    PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} Skinuli ste opremu.");
+                    return 1;
+                }
                 if(PlasNearGajba(playerid)) { Plas_UzmiGajbu(playerid); return 1; }
                 if(PlasNearKamion(playerid)) { Plas_SpawnKamion(playerid); return 1; }
             }
