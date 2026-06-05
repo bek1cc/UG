@@ -69,7 +69,7 @@
 
 // Item za inventory
 #define KLIZISTE_ITEM_STONE      "Kamen"
-#define KLIZISTE_MODEL_STONE     3932    // Rock/stone ikona u inventory (pravi kamen)
+#define KLIZISTE_MODEL_STONE     909     // Rock/stone ikona u inventory (pravi kamen)
 
 // Zvukovi
 #define KLIZISTE_SOUND_START     34000   // Zemljotres/explozija zvuk
