@@ -159,13 +159,13 @@
 // Minigame - Kliziste-style (0-100 scale)
 // Brze brzine + nakon 1/3 pogotka se jos vise ubrzava (progressive)
 #define PLAS_MINI_SPEED1    18.0
-#define PLAS_MINI_SPEED2    25.0
-#define PLAS_MINI_SPEED3    32.0
+#define PLAS_MINI_SPEED2    16.0  // sporije faza 2
+#define PLAS_MINI_SPEED3    35.0  // brze faza 3
 // Bonus speed multiplier after 1+ hits (makes it progressively harder)
-#define PLAS_MINI_BOOST     1.35
+#define PLAS_MINI_BOOST     1.25  // smanjen boost
 #define PLAS_MINI_ZONE1     12
-#define PLAS_MINI_ZONE2     8
-#define PLAS_MINI_ZONE3     5
+#define PLAS_MINI_ZONE2     14  // veca zelena zona faza 2
+#define PLAS_MINI_ZONE3     10  // veca zelena zona faza 3
 #define PLAS_MARKER_WIDTH   4.0
 
 // Forklift job pay (tiered by minigame hits)
@@ -305,6 +305,8 @@ static Text3D:Plas3D_Utovar = Text3D:-1;
 static Text3D:Plas3D_Dostava = Text3D:-1;
 
 static PlasMapIcon = -1;
+static PlasDostavaMapIcon = -1;  // Map icon za istovar cijevi
+static PlasBazaMapIcon = -1;      // Map icon za povratak u bazu
 
 #pragma unused PlasPickup_Oprema, PlasPickup_Gajba1, PlasPickup_Gajba2
 #pragma unused Plas3D_Oprema, Plas3D_Gajba1, Plas3D_Gajba2, PlasMapIcon
@@ -813,9 +815,9 @@ stock PlasMini_Finish(playerid) {
     if(hits >= 1) {
         format(str, sizeof(str), "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} Presovanje zavrseno! (%d/3) Dobili ste plasticni box.", hits);
         PlasMSG(playerid, str);
-        // Box u ruci - plave boje, sa carry animacijom
-        SetPlayerAttachedObject(playerid, 4, PLAS_BOX_MODEL, 5, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 0.85, 0.85, 0.85, 0x1D75C4FF, 0x1D75C4FF);
-        ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.1, 1, 0, 0, 0, 0, 1);
+        // Box u ruci - plave boje, sa carry animacijom (bez freeze)
+        SetPlayerAttachedObject(playerid, 4, PLAS_BOX_MODEL, 5, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 1.0, 1.0, 1.0, 0x1D75C4FF, 0x1D75C4FF);
+        ApplyAnimation(playerid, "CARRY", "crry_prtial", 1.0, 1, 1, 1, 0, 0, 1);  // FIX: bez freeze parametara
         if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
 
         PlastikaPlayerData[playerid][plasState] = PLAS_CARRYING_BOX;
@@ -947,6 +949,10 @@ public PlasTimer_Utovar(playerid) {
         PlastikaPlayerData[playerid][plasState] = PLAS_TRUCK_DELIVERING;
         SetPlayerCheckpoint(playerid, PLAS_DOSTAVA_X, PLAS_DOSTAVA_Y, PLAS_DOSTAVA_Z, 8.0);
 
+        // Map icon za dostavu (crveni marker)
+        RemovePlayerMapIcon(playerid, 1);
+        SetPlayerMapIcon(playerid, 1, PLAS_DOSTAVA_X, PLAS_DOSTAVA_Y, PLAS_DOSTAVA_Z, 0, 0xFF0000FF, MAPICON_LOCAL);
+
         PlayerPlaySound(playerid, PLAS_SND_USPJEH, 0.0, 0.0, 0.0);
         PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} Cijev utovarena na kamion! Vozite do dostave.");
         Plas_Status(playerid, "FABRIKA PLASTIKE~n~~w~Status: Vozi do dostave");
@@ -983,6 +989,10 @@ public PlasTimer_Istovar(playerid) {
 
         PlastikaPlayerData[playerid][plasState] = PLAS_TRUCK_RETURNING;
         SetPlayerCheckpoint(playerid, PLAS_BAZA_X, PLAS_BAZA_Y, PLAS_BAZA_Z, 6.0);
+
+        // Map icon za bazu (plavi marker)
+        RemovePlayerMapIcon(playerid, 1);
+        SetPlayerMapIcon(playerid, 1, PLAS_BAZA_X, PLAS_BAZA_Y, PLAS_BAZA_Z, 0, 0x1D75C4FF, MAPICON_LOCAL);
 
         PlayerPlaySound(playerid, PLAS_SND_USPJEH, 0.0, 0.0, 0.0);
         PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} Cijev istovarena! Vozite kamion nazad u bazu.");
@@ -1021,6 +1031,7 @@ stock Plastika_StopJob(playerid) {
     Plas_HideProgress(playerid);
     PlasMini_Hide(playerid);
     DisablePlayerCheckpoint(playerid);
+    RemovePlayerMapIcon(playerid, 1);  // Ukloni map ikone za dostavu/bazu
 
     if(PlastikaPlayerData[playerid][plasEquipped] && PlastikaPlayerData[playerid][plasOldSkin] != -1)
         SetPlayerSkin(playerid, PlastikaPlayerData[playerid][plasOldSkin]);
@@ -1094,9 +1105,9 @@ stock Plas_UzmiGajbu(playerid) {
     if(!PlasNearGajba(playerid)) return PlasGRESKA(playerid, "Niste blizu palete sa gajbama.");
     if(IsPlayerInAnyVehicle(playerid)) return PlasGRESKA(playerid, "Ne mozete uzeti gajbu dok ste u vozilu.");
 
-    // Kad uzme gajbu, nosi KUTIJU u ruci (ne gajbu) - plave boje
-    SetPlayerAttachedObject(playerid, 3, PLAS_BOX_MODEL, 5, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 0.85, 0.85, 0.85, 0x1D75C4FF, 0x1D75C4FF);
-    ApplyAnimation(playerid, "CARRY", "crry_prtial", 4.1, 1, 0, 0, 0, 0, 1);
+    // Kad uzme gajbu - koristi PLAS_GAJBA_MODEL (19587) za vidljiviji objekat
+    SetPlayerAttachedObject(playerid, 3, PLAS_GAJBA_MODEL, 5, 0.07, 0.02, 0.0, 0.0, 80.0, 0.0, 1.0, 1.0, 1.0, 0x1D75C4FF, 0x1D75C4FF);
+    ApplyAnimation(playerid, "CARRY", "crry_prtial", 1.0, 1, 1, 1, 0, 0, 1);  // FIX: bez freeze parametara
     PlastikaPlayerData[playerid][plasState] = PLAS_CARRYING_GAJBA;
     DisablePlayerCheckpoint(playerid);
 
@@ -1300,6 +1311,10 @@ stock Plas_SpawnKamion(playerid) {
     PlastikaPlayerData[playerid][plasState] = PLAS_TRUCK_DRIVING;
     SetPlayerCheckpoint(playerid, PLAS_UTOVAR_X, PLAS_UTOVAR_Y, PLAS_UTOVAR_Z, 6.0);
 
+    // Map icon za utovar lokaciju
+    RemovePlayerMapIcon(playerid, 1);  // ocisti ako postoji
+    SetPlayerMapIcon(playerid, 1, PLAS_UTOVAR_X, PLAS_UTOVAR_Y, PLAS_UTOVAR_Z, 0, 0xFF6347FF, MAPICON_LOCAL);
+
     PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE - BONUS]{FFFFFF} Kamion spreman! Vozite do utovara i stisnite CTRL.");
     Plas_Status(playerid, "FABRIKA PLASTIKE~n~~w~Status: Vozi kamion do utovara (CTRL)");
     PlayerPlaySound(playerid, PLAS_SND_OPREMA, 0.0, 0.0, 0.0);
@@ -1385,6 +1400,9 @@ stock Plastika_PovratakBaza(playerid) {
 
     DisablePlayerCheckpoint(playerid);
     Plas_HideProgress(playerid);
+
+    // Ukloni map icon
+    RemovePlayerMapIcon(playerid, 1);
 
     // Reward (random between min and max)
     new bonusPay = PlasRand(PLAS_BONUS_PAY_MIN, PLAS_BONUS_PAY_MAX);
@@ -1556,6 +1574,7 @@ stock Plastika_OnDisconnect(playerid) {
     Plas_HideProgress(playerid);
     PlasMini_Hide(playerid);
     DisablePlayerCheckpoint(playerid);
+    RemovePlayerMapIcon(playerid, 1);  // Ukloni map ikone za dostavu/bazu
 
     if(PlastikaPlayerData[playerid][plasEquipped] && PlastikaPlayerData[playerid][plasOldSkin] != -1)
         SetPlayerSkin(playerid, PlastikaPlayerData[playerid][plasOldSkin]);
@@ -1570,6 +1589,7 @@ stock Plastika_OnDeath(playerid) {
     if(PlastikaPlayerData[playerid][plasState] != PLAS_NONE) {
         TogglePlayerControllable(playerid, 1);
         Plastika_StopJob(playerid);
+        RemovePlayerMapIcon(playerid, 1);  // Ukloni map ikone
         PlasGRESKA(playerid, "Prekinuli ste rad u fabrici plastike jer ste umrli.");
     }
     return 1;
@@ -1610,7 +1630,7 @@ stock Plastika_OnCP(playerid) {
 // ===========================================================================
 
 stock Plastika_OnKeyStateChange(playerid, newkeys, oldkeys) {
-    if(PlastikaPlayerData[playerid][plasState] == PLAS_NONE) return 0;
+    // NOTE: Do NOT return 0 for PLAS_NONE here - ALT za uzimanje opreme mora raditi i u PLAS_NONE stanju!
 
     // SPACE (KEY_SPRINT) za minigame
     if((newkeys & KEY_SPRINT) && !(oldkeys & KEY_SPRINT)) {
