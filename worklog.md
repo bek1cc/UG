@@ -193,3 +193,33 @@ Stage Summary:
   - 10000 total stones (all players) to clear landslide
   - Requires "Kramp" item in inventory to dig
   - Admin level 7 commands for manual control
+---
+Task ID: plastika-v3.1
+Agent: Main Agent
+Task: Plastika system v3.1 - multiple bugfixes and improvements
+
+Work Log:
+- Read and analyzed current plastika.inc (1706 lines) and 3 screenshots
+- Used VLM to analyze screenshots for bugged UI elements
+- Fixed gajba attachment: changed bone from 1 (thigh) to 6 (right hand), added blue material colors (0x1D75C4FF)
+- Fixed box attachment: added blue material colors (0x1D75C4FF)
+- Fixed TextDraw color bug: removed {1D75C4} hex color codes from Plas_Status textdraw strings (these were showing as "?1D75C4" literal text in SA-MP font 2 textdraws)
+- Increased minigame speed: SPEED1 3.5->5.0, SPEED2 4.5->6.5, SPEED3 5.5->8.5
+- Reduced green zone size: ZONE1 18->14, ZONE2 14->10, ZONE3 10->7
+- Implemented tiered reward system based on minigame hits:
+  - 1/3 hit: $30-50 + 1 plastic
+  - 2/3 hit: $150-230 + 2-3 plastics
+  - 3/3 hit: $230-470 + 3-6 plastics (30% chance for 6)
+- Changed PlasMini_Finish to allow 1/3 hit to continue (was requiring 2+)
+- Changed Plas_OstaviUSkladiste to use tiered rewards based on plasMiniHits
+- Fixed floating red markers: replaced 1318 (tall pole) with 1237 (small blue marker), removed utovar pickup (no longer needed)
+- Fixed vehicle spawn: blue color (79,79), SetVehicleHealth(1000), RepairVehicle, engine on for both truck and forklift
+- Simplified /plastikainfo: removed reward details and "1/3 box" text, kept only command explanations
+- Removed old flat pay defines (PLAS_PAY_MIN/MAX, PLAS_PLAS_MIN/MAX)
+- Added new tiered pay defines (PLAS_PAY_1/2/3_MIN/MAX, PLAS_PLAS_1/2/3_MIN/MAX)
+- Pushed all changes to GitHub repo (2 commits)
+
+Stage Summary:
+- All 8 requested changes implemented and pushed
+- plastika.inc updated from v3.0 to v3.1
+- Key files: pawno/include/plastika.inc
