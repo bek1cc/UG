@@ -363,41 +363,27 @@ stock Zelj_GetActiveCP(playerid, index) {
 
 // Dodaj Metal u inventory
 stock ZeljInv_AddMetal(playerid, kolicina) {
-    #if defined Inventory_Add
-        return Inventory_Add(playerid, ZELJEZARA_ITEM_METAL, ZELJEZARA_MODEL_METAL, kolicina);
-    #else
-        return GivePlayerWeapon(playerid, 0, 0); // fallback - ne bi trebalo doci do ovog
-    #endif
+    return CallLocalFunction("Inventory_Add", "dsdd", playerid, ZELJEZARA_ITEM_METAL, ZELJEZARA_MODEL_METAL, kolicina);
 }
 
 // Dodaj Scrap Metal u inventory
 stock ZeljInv_AddScrap(playerid, kolicina) {
-    #if defined Inventory_Add
-        return Inventory_Add(playerid, ZELJEZARA_ITEM_SCRAP, ZELJEZARA_MODEL_SCRAP, kolicina);
-    #endif
+    return CallLocalFunction("Inventory_Add", "dsdd", playerid, ZELJEZARA_ITEM_SCRAP, ZELJEZARA_MODEL_SCRAP, kolicina);
 }
 
 // Dodaj Sirovi Metal u inventory
 stock ZeljInv_AddRaw(playerid, kolicina) {
-    #if defined Inventory_Add
-        return Inventory_Add(playerid, ZELJEZARA_ITEM_RAW_METAL, ZELJEZARA_MODEL_RAW_METAL, kolicina);
-    #endif
+    return CallLocalFunction("Inventory_Add", "dsdd", playerid, ZELJEZARA_ITEM_RAW_METAL, ZELJEZARA_MODEL_RAW_METAL, kolicina);
 }
 
 // Provjeri kolicinu sirovog metala
 stock ZeljInv_CountRaw(playerid) {
-    #if defined Inventory_Count
-        return Inventory_Count(playerid, ZELJEZARA_ITEM_RAW_METAL);
-    #else
-        return ZeljPlayerData[playerid][zeljRawMetal];
-    #endif
+    return CallLocalFunction("Inventory_Count", "ds", playerid, ZELJEZARA_ITEM_RAW_METAL);
 }
 
 // Ukloni sirovi metal iz inventoryja
 stock ZeljInv_RemoveRaw(playerid, kolicina) {
-    #if defined Inventory_Remove
-        return Inventory_Remove(playerid, ZELJEZARA_ITEM_RAW_METAL, kolicina);
-    #endif
+    return CallLocalFunction("Inventory_Remove", "dsd", playerid, ZELJEZARA_ITEM_RAW_METAL, kolicina);
 }
 
 // ===========================================================================
@@ -512,7 +498,7 @@ stock Zeljezara_Init() {
     ZeljPickup_Prerada[1] = CreateDynamicPickup(19631, 23, ZeljProcessPos[1][0], ZeljProcessPos[1][1], ZeljProcessPos[1][2]);
 
     // 3D Text labelovi
-    Zelj3D_Oprema = CreateDynamic3DTextLabel("{00BFFF}[ZELEZARA - OPREMA]{FFFFFF}\nKucaj /uzmiopremu da uzmes opremu za rad u zeljezari", 
+    Zelj3D_Oprema = CreateDynamic3DTextLabel("{00BFFF}[ZELEZARA - OPREMA]{FFFFFF}\nPritisni ALT da uzmes opremu\nKucaj /uzmiopremu", 
         0xFFFFFFFF, ZeljEquipmentPos[0], ZeljEquipmentPos[1], ZeljEquipmentPos[2], 10.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0, -1, -1);
     
     Zelj3D_Prerada[0] = CreateDynamic3DTextLabel("{FFD700}[ZELEZARA - PRERADA]{FFFFFF}\nKucaj /preradi da preradis sirovi metal", 
@@ -1011,7 +997,37 @@ stock Zelj_OnCheckpointEnter(playerid) {
 
 // OnPlayerKeyStateChange handler - klik za kopanje
 stock Zeljezara_OnKeyStateChange(playerid, newkeys, oldkeys) {
-    // Provjeri da li je u modu cekanja klika za kopanje
+    // ========================================================
+    // ALT tipka (KEY_WALK) za uzimanje/skidanje opreme
+    // ========================================================
+    if((newkeys & KEY_WALK) && !(oldkeys & KEY_WALK)) {
+        if(IsPlayerInAnyVehicle(playerid)) return 0;
+
+        // Ako igrac NEMA opremu - probaj uzeti opremu
+        if(ZeljPlayerData[playerid][zeljState] == ZELJEZARA_STATE_NONE && !ZeljPlayerData[playerid][zeljHasEquipment]) {
+            new Float:x, Float:y, Float:z;
+            GetPlayerPos(playerid, x, y, z);
+            if(ZeljDist(x, y, z, ZeljEquipmentPos[0], ZeljEquipmentPos[1], ZeljEquipmentPos[2]) <= ZELJEZARA_OPREMA_DIST) {
+                Zelj_UzmiOpremu(playerid);
+                return 1;
+            }
+        }
+
+        // Ako igrac IMA opremu ali ne kopa/preradjuje - skini opremu
+        if(ZeljPlayerData[playerid][zeljHasEquipment] && 
+           (ZeljPlayerData[playerid][zeljState] == ZELJEZARA_STATE_EQUIPPED || ZeljPlayerData[playerid][zeljState] == ZELJEZARA_STATE_COOLDOWN)) {
+            new Float:x, Float:y, Float:z;
+            GetPlayerPos(playerid, x, y, z);
+            if(ZeljDist(x, y, z, ZeljEquipmentPos[0], ZeljEquipmentPos[1], ZeljEquipmentPos[2]) <= ZELJEZARA_OPREMA_DIST) {
+                Zelj_Prekini(playerid);
+                return 1;
+            }
+        }
+    }
+
+    // ========================================================
+    // KEY_FIRE (LMB) za kopanje - klik sistema
+    // ========================================================
     if(!ZeljPlayerData[playerid][zeljWaitingClick]) return 0;
     if(ZeljPlayerData[playerid][zeljState] != ZELJEZARA_STATE_MINING) return 0;
     
@@ -1486,6 +1502,8 @@ stock Zeljezara_OnUpdate(playerid) {
             GetPlayerPos(playerid, px, py, pz);
             new idx = ZeljPlayerData[playerid][zeljCheckpointIdx];
             new cpIdx = Zelj_GetActiveCP(playerid, idx);
+            // FIX: Bounds checking - sprijeci crash ako je cpIdx -1
+            if(cpIdx < 0 || cpIdx >= sizeof(ZeljMiningCoords)) return 0;
             new Float:dist = ZeljDist(px, py, pz,
                 ZeljMiningCoords[cpIdx][0],
                 ZeljMiningCoords[cpIdx][1],
