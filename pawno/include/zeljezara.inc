@@ -53,7 +53,7 @@
 // Item modeli za inventory prikaz
 #define ZELJEZARA_MODEL_METAL          19631   // Metal box model
 #define ZELJEZARA_MODEL_SCRAP          19941   // Scrap model
-#define ZELJEZARA_MODEL_RAW_METAL      19632   // Raw ore model
+#define ZELJEZARA_MODEL_RAW_METAL      19942   // Raw ore model (zuta ikona)
 #define ZELJEZARA_MODEL_METAL_BELT     19846   // Metal na traci model
 
 // Zvukovi
