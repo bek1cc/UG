@@ -115,9 +115,9 @@
 #define PLAS_VILICAR_MODEL  530
 
 #define PLAS_MACHINE_TIME   7
-#define PLAS_MINI_SPEED1    2.0
-#define PLAS_MINI_SPEED2    3.0
-#define PLAS_MINI_SPEED3    4.0
+#define PLAS_MINI_SPEED1    3.5
+#define PLAS_MINI_SPEED2    5.0
+#define PLAS_MINI_SPEED3    7.0
 #define PLAS_GREEN1         0.22
 #define PLAS_GREEN2         0.17
 #define PLAS_GREEN3         0.12
@@ -189,7 +189,7 @@ enum e_PlasPlayer {
     PlayerText:plasMiniPanel,
     PlayerText:plasMiniTitle,
     PlayerText:plasMiniIcons,
-    PlayerText:plasMiniPhase,
+    PlayerText:plasMiniPhaseTD,
     PlayerText:plasMiniBarBg,
     PlayerText:plasMiniBarGreen,
     PlayerText:plasMiniMarker,
@@ -218,6 +218,9 @@ static Text3D:Plas3D_Skl[4] = {Text3D:-1, ...};
 
 static PlasMapIcon = -1;
 
+#pragma unused PlasPickup_Oprema, PlasPickup_Gajba1, PlasPickup_Gajba2
+#pragma unused Plas3D_Oprema, Plas3D_Gajba1, Plas3D_Gajba2, PlasMapIcon
+
 forward PlasTimer_MiniUpdate(playerid);
 forward PlasTimer_Machine(playerid);
 forward PlasMini_NextPhase(playerid);
@@ -240,7 +243,7 @@ stock PlasRand(min, max) return min + random(max - min + 1);
 
 stock bool:PlasValid(playerid) {
     if(playerid < 0 || playerid >= MAX_PLAYERS) return false;
-    return IsPlayerConnected(playerid);
+    return bool:IsPlayerConnected(playerid);
 }
 
 stock PlasInv_Add(playerid, amt) {
@@ -390,13 +393,13 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 1);
 
     // Phase
-    PlastikaPlayerData[playerid][plasMiniPhase] = CreatePlayerTextDraw(playerid, 320.0, 205.0, "FAZA 1/3: ZAGRIJAVANJE");
-    PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 2);
-    PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 2);
-    PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 0.25, 1.1);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 0xFFD700FF);
-    PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 1);
-    PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniPhase], 1);
+    PlastikaPlayerData[playerid][plasMiniPhaseTD] = CreatePlayerTextDraw(playerid, 320.0, 205.0, "FAZA 1/3: ZAGRIJAVANJE");
+    PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 2);
+    PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 2);
+    PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 0.25, 1.1);
+    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 0xFFD700FF);
+    PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 1);
+    PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 1);
 
     // Temp
     PlastikaPlayerData[playerid][plasMiniTemp] = CreatePlayerTextDraw(playerid, 320.0, 228.0, "TEMP: 45 C");
@@ -456,7 +459,7 @@ stock PlasMini_Show(playerid) {
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniPanel]);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniTitle]);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniIcons]);
-    PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniPhase]);
+    PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD]);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniTemp]);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniBarBg]);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen]);
@@ -471,7 +474,7 @@ stock PlasMini_Hide(playerid) {
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniPanel]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniTitle]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniIcons]);
-    PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniPhase]);
+    PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniTemp]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniBarBg]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen]);
@@ -529,23 +532,23 @@ stock PlasMini_UpdateStars(playerid) {
 
 stock PlasMini_StartPhase(playerid) {
     new phase = PlastikaPlayerData[playerid][plasMiniPhase];
-    new Float:speed, Float:gw;
+    new Float:gw;
     new name[24];
 
     switch(phase) {
-        case 0: { speed=PLAS_MINI_SPEED1; gw=PLAS_GREEN1; name="ZAGRIJAVANJE"; }
-        case 1: { speed=PLAS_MINI_SPEED2; gw=PLAS_GREEN2; name="PRESOVANJE"; }
-        case 2: { speed=PLAS_MINI_SPEED3; gw=PLAS_GREEN3; name="HLADJENJE"; }
-        default: { speed=PLAS_MINI_SPEED1; gw=PLAS_GREEN1; name="ZAGRIJAVANJE"; }
+        case 0: { gw=PLAS_GREEN1; name="ZAGRIJAVANJE"; }
+        case 1: { gw=PLAS_GREEN2; name="PRESOVANJE"; }
+        case 2: { gw=PLAS_GREEN3; name="HLADJENJE"; }
+        default: { gw=PLAS_GREEN1; name="ZAGRIJAVANJE"; }
     }
 
-    PlastikaPlayerData[playerid][plasGreenStart] = floatrandom(100)/100.0 * (1.0-gw-0.05) + 0.03;
+    PlastikaPlayerData[playerid][plasGreenStart] = float(random(100))/100.0 * (1.0-gw-0.05) + 0.03;
     PlastikaPlayerData[playerid][plasGreenWidth] = gw;
     PlastikaPlayerData[playerid][plasMarkerPos] = 0.0;
     PlastikaPlayerData[playerid][plasMarkerDir] = 1;
 
     new ps[48]; format(ps, sizeof(ps), "FAZA %d/3: %s", phase+1, name);
-    PlayerTextDrawSetString(playerid, PlastikaPlayerData[playerid][plasMiniPhase], ps);
+    PlayerTextDrawSetString(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], ps);
 
     new ts[24];
     switch(phase) {
@@ -560,7 +563,7 @@ stock PlasMini_StartPhase(playerid) {
     PlasMini_UpdateMarker(playerid);
     PlasMini_UpdateStars(playerid);
 
-    PlastikaPlayerData[playerid][plasTimerMini] = SetTimerEx("PlasTimer_MiniUpdate", 100, true, "i", playerid);
+    PlastikaPlayerData[playerid][plasTimerMini] = SetTimerEx("PlasTimer_MiniUpdate", 150, true, "i", playerid);
 }
 
 stock PlasMini_StopPhase(playerid, bool:hit) {
@@ -594,7 +597,7 @@ public PlasMini_NextPhase(playerid) {
 
 stock PlasMini_Finish(playerid) {
     PlasMini_Hide(playerid);
-    TogglePlayerControllable(playerid, true);
+    ClearAnimations(playerid);
 
     new hits = PlastikaPlayerData[playerid][plasMiniHits], str[128];
 
@@ -602,7 +605,7 @@ stock PlasMini_Finish(playerid) {
         format(str, sizeof(str), "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} Uspjesno presovanje! (%d/3) Dobili ste plasticni box.", hits);
         PlasMSG(playerid, str);
         SetPlayerAttachedObject(playerid, 4, PLAS_BOX_MODEL, 5, 0.1, 0.05, 0.0, 0.0, 90.0, 0.0);
-        if(IsValidPlayerAttachedObject(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
+        if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
 
         PlastikaPlayerData[playerid][plasState] = PLAS_CARRYING_BOX;
         PlasINFO(playerid, "Nosite plasticni box. Idite do masine i stisnite ALT.");
@@ -611,7 +614,7 @@ stock PlasMini_Finish(playerid) {
     } else {
         format(str, sizeof(str), "{FF6347}[FABRIKA PLASTIKE]{FFFFFF} Presovanje neuspjesno! (%d/3) Gajba unistena.", hits);
         PlasGRESKA(playerid, str);
-        if(IsValidPlayerAttachedObject(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
+        if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
 
         PlastikaPlayerData[playerid][plasState] = PLAS_EQUIPPED;
         PlasINFO(playerid, "Uzmite novu gajbu i pokusajte ponovo.");
@@ -638,7 +641,7 @@ public PlasTimer_MiniUpdate(playerid) {
     }
     new Float:pos = PlastikaPlayerData[playerid][plasMarkerPos];
     new dir = PlastikaPlayerData[playerid][plasMarkerDir];
-    pos += Float:dir * speed * 0.1;
+    pos += Float:dir * speed * 0.15;
     if(pos >= 1.0) { pos=1.0; PlastikaPlayerData[playerid][plasMarkerDir]=-1; }
     if(pos <= 0.0) { pos=0.0; PlastikaPlayerData[playerid][plasMarkerDir]=1; }
     PlastikaPlayerData[playerid][plasMarkerPos] = pos;
@@ -677,7 +680,7 @@ public PlasTimer_Machine(playerid) {
         PlasINFO(playerid, "Idite do vilicara i stisnite ALT.");
 
         PlastikaPlayerData[playerid][plasState] = PLAS_CARRYING_BIGBOX;
-        if(IsValidPlayerAttachedObject(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
+        if(IsPlayerAttachedObjectSlotUsed(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
 
         // SetCP ka najblizem vilicaru
         new Float:x,Float:y,Float:z; GetPlayerPos(playerid,x,y,z);
@@ -706,8 +709,8 @@ stock Plastika_StopJob(playerid) {
     }
     if(PlastikaPlayerData[playerid][plasBoxObjID] != -1) { DestroyDynamicObject(PlastikaPlayerData[playerid][plasBoxObjID]); PlastikaPlayerData[playerid][plasBoxObjID]=-1; }
 
-    if(IsValidPlayerAttachedObject(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
-    if(IsValidPlayerAttachedObject(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
 
     Plas_HideProgress(playerid);
     PlasMini_Hide(playerid);
@@ -716,7 +719,6 @@ stock Plastika_StopJob(playerid) {
     if(PlastikaPlayerData[playerid][plasEquipped] && PlastikaPlayerData[playerid][plasOldSkin] != -1)
         SetPlayerSkin(playerid, PlastikaPlayerData[playerid][plasOldSkin]);
 
-    TogglePlayerControllable(playerid, true);
     ClearAnimations(playerid);
 
     PlastikaPlayerData[playerid][plasState] = PLAS_NONE;
@@ -770,7 +772,9 @@ stock Plas_PocniStol(playerid) {
     if(!PlasNearStol(playerid)) return PlasGRESKA(playerid, "Niste blizu radnog stola.");
     if(IsPlayerInAnyVehicle(playerid)) return PlasGRESKA(playerid, "Ne mozete raditi na stolu dok ste u vozilu.");
 
-    TogglePlayerControllable(playerid, false);
+    // NE koristimo TogglePlayerControllable(false) - blokira detekciju tipki!
+    // Umjesto toga koristimo ApplyAnimation sa freeze=1 (dozvoljava tipke)
+    ApplyAnimation(playerid, "BOMBER", "BOM_Plant_Loop", 4.1, 1, 0, 0, 0, 0, 1);
     PlastikaPlayerData[playerid][plasState] = PLAS_MINIGAME;
     PlastikaPlayerData[playerid][plasMiniPhase] = 0;
     PlastikaPlayerData[playerid][plasMiniHits] = 0;
@@ -781,7 +785,7 @@ stock Plas_PocniStol(playerid) {
     PlasMini_Show(playerid);
     PlasMini_StartPhase(playerid);
 
-    PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} TERMO PRESOVANJE! Pritisnite SPACE u zelenoj zoni!");
+    PlasMSG(playerid, "{1D75C4}[FABRIKA PLASTIKE]{FFFFFF} TERMO PRESOVANJE! Pritisni SPACE u zelenoj zoni!");
     return 1;
 }
 
@@ -790,7 +794,7 @@ stock Plas_UbaciUMasinu(playerid) {
     if(!PlasNearMasina(playerid)) return PlasGRESKA(playerid, "Niste blizu masine.");
     if(IsPlayerInAnyVehicle(playerid)) return PlasGRESKA(playerid, "Ne mozete ubaciti box dok ste u vozilu.");
 
-    if(IsValidPlayerAttachedObject(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
 
     PlastikaPlayerData[playerid][plasState] = PLAS_MACHINE;
     PlastikaPlayerData[playerid][plasMachineProgress] = 0;
@@ -825,7 +829,8 @@ stock Plas_SpawnVilicar(playerid) {
     PutPlayerInVehicle(playerid, vid, 0);
 
     new boxObj = CreateDynamicObject(PLAS_BIGBOX_MODEL, 0.0,0.0,-1000.0, 0.0,0.0,0.0);
-    AttachDynamicObjectToVehicle(boxObj, vid, 0.0, 1.2, 0.5, 0.0, 0.0, 0.0);
+    SetDynamicObjectMaterial(boxObj, 0, 1631, "landjump", "plasticdrum1_128", 0);
+    AttachDynamicObjectToVehicle(boxObj, vid, 0.000, 0.870, 0.769, 0.000, 0.000, 0.000);
     PlastikaPlayerData[playerid][plasBoxObjID] = boxObj;
 
     PlastikaPlayerData[playerid][plasState] = PLAS_FORKLIFT;
@@ -899,49 +904,55 @@ stock Plastika_SkinOpremu(playerid) {
 // ===========================================================================
 
 stock Plastika_Init() {
-    PlasPickup_Oprema = CreateDynamicPickup(2652, 23, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z);
+    // Oprema - mali info pickup (1239 = info ikona)
+    PlasPickup_Oprema = CreateDynamicPickup(1239, 1, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z);
     Plas3D_Oprema = CreateDynamic3DTextLabel("{1D75C4}[FABRIKA PLASTIKE - OPREMA]{FFFFFF}\nKucaj /uzmiopremup", 0xFFFFFFFF, PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z+0.5, 10.0);
 
-    PlasPickup_Gajba1 = CreateDynamicPickup(19587, 23, PLAS_GAJBA1_X,PLAS_GAJBA1_Y,PLAS_GAJBA1_Z);
-    Plas3D_Gajba1 = CreateDynamic3DTextLabel("{1D75C4}[GAJBE - PRVA STRANA]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da uzmes gajbu", 0xFFFFFFFF, PLAS_GAJBA1_X,PLAS_GAJBA1_Y,PLAS_GAJBA1_Z+0.5, 8.0);
+    // Gajbe - mali info pickup
+    PlasPickup_Gajba1 = CreateDynamicPickup(1239, 1, PLAS_GAJBA1_X,PLAS_GAJBA1_Y,PLAS_GAJBA1_Z);
+    Plas3D_Gajba1 = CreateDynamic3DTextLabel("{1D75C4}[GAJBE - STRANA 1]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da uzmes gajbu", 0xFFFFFFFF, PLAS_GAJBA1_X,PLAS_GAJBA1_Y,PLAS_GAJBA1_Z+0.5, 8.0);
 
-    PlasPickup_Gajba2 = CreateDynamicPickup(19587, 23, PLAS_GAJBA2_X,PLAS_GAJBA2_Y,PLAS_GAJBA2_Z);
-    Plas3D_Gajba2 = CreateDynamic3DTextLabel("{1D75C4}[GAJBE - DRUGA STRANA]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da uzmes gajbu", 0xFFFFFFFF, PLAS_GAJBA2_X,PLAS_GAJBA2_Y,PLAS_GAJBA2_Z+0.5, 8.0);
+    PlasPickup_Gajba2 = CreateDynamicPickup(1239, 1, PLAS_GAJBA2_X,PLAS_GAJBA2_Y,PLAS_GAJBA2_Z);
+    Plas3D_Gajba2 = CreateDynamic3DTextLabel("{1D75C4}[GAJBE - STRANA 2]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da uzmes gajbu", 0xFFFFFFFF, PLAS_GAJBA2_X,PLAS_GAJBA2_Y,PLAS_GAJBA2_Z+0.5, 8.0);
 
+    // Radni stolovi - mali info pickup
     new Float:stolX[4] = {PLAS_STOL1_X,PLAS_STOL2_X,PLAS_STOL3_X,PLAS_STOL4_X};
     new Float:stolY[4] = {PLAS_STOL1_Y,PLAS_STOL2_Y,PLAS_STOL3_Y,PLAS_STOL4_Y};
     new Float:stolZ[4] = {PLAS_STOL1_Z,PLAS_STOL2_Z,PLAS_STOL3_Z,PLAS_STOL4_Z};
     for(new i = 0; i < 4; i++) {
-        PlasPickup_Stol[i] = CreateDynamicPickup(1271, 23, stolX[i],stolY[i],stolZ[i]);
-        new lbl[64]; format(lbl, sizeof(lbl), "{FFD700}[RADNI STOL %d]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za presovanje", i+1);
+        PlasPickup_Stol[i] = CreateDynamicPickup(1239, 1, stolX[i],stolY[i],stolZ[i]);
+        new lbl[128]; format(lbl, sizeof(lbl), "{FFD700}[RADNI STOL %d]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za preradu", i+1);
         Plas3D_Stol[i] = CreateDynamic3DTextLabel(lbl, 0xFFFFFFFF, stolX[i],stolY[i],stolZ[i]+0.5, 5.0);
     }
 
+    // Masine - mali info pickup
     new Float:masX[3] = {PLAS_MAS1_X,PLAS_MAS2_X,PLAS_MAS3_X};
     new Float:masY[3] = {PLAS_MAS1_Y,PLAS_MAS2_Y,PLAS_MAS3_Y};
     new Float:masZ[3] = {PLAS_MAS1_Z,PLAS_MAS2_Z,PLAS_MAS3_Z};
     for(new i = 0; i < 3; i++) {
-        PlasPickup_Mas[i] = CreateDynamicPickup(1685, 23, masX[i],masY[i],masZ[i]);
-        new lbl[64]; format(lbl, sizeof(lbl), "{00FF00}[MASINA %d]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za preradu", i+1);
+        PlasPickup_Mas[i] = CreateDynamicPickup(1239, 1, masX[i],masY[i],masZ[i]);
+        new lbl[128]; format(lbl, sizeof(lbl), "{00FF00}[MASINA %d]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za preradu", i+1);
         Plas3D_Mas[i] = CreateDynamic3DTextLabel(lbl, 0xFFFFFFFF, masX[i],masY[i],masZ[i]+0.5, 5.0);
     }
 
-    PlasPickup_Vil[0] = CreateDynamicPickup(530, 23, PLAS_VIL1_X,PLAS_VIL1_Y,PLAS_VIL1_Z);
-    Plas3D_Vil[0] = CreateDynamic3DTextLabel("{1D75C4}[VILICAR - PRVA STRANA]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da podignes box", 0xFFFFFFFF, PLAS_VIL1_X,PLAS_VIL1_Y,PLAS_VIL1_Z+0.5, 5.0);
+    // Vilicari - mali info pickup
+    PlasPickup_Vil[0] = CreateDynamicPickup(1239, 1, PLAS_VIL1_X,PLAS_VIL1_Y,PLAS_VIL1_Z);
+    Plas3D_Vil[0] = CreateDynamic3DTextLabel("{1D75C4}[VILICAR - STRANA 1]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za vilicar", 0xFFFFFFFF, PLAS_VIL1_X,PLAS_VIL1_Y,PLAS_VIL1_Z+0.5, 5.0);
 
-    PlasPickup_Vil[1] = CreateDynamicPickup(530, 23, PLAS_VIL2_X,PLAS_VIL2_Y,PLAS_VIL2_Z);
-    Plas3D_Vil[1] = CreateDynamic3DTextLabel("{1D75C4}[VILICAR - DRUGA STRANA]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} da podignes box", 0xFFFFFFFF, PLAS_VIL2_X,PLAS_VIL2_Y,PLAS_VIL2_Z+0.5, 5.0);
+    PlasPickup_Vil[1] = CreateDynamicPickup(1239, 1, PLAS_VIL2_X,PLAS_VIL2_Y,PLAS_VIL2_Z);
+    Plas3D_Vil[1] = CreateDynamic3DTextLabel("{1D75C4}[VILICAR - STRANA 2]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za vilicar", 0xFFFFFFFF, PLAS_VIL2_X,PLAS_VIL2_Y,PLAS_VIL2_Z+0.5, 5.0);
 
+    // Skladista
     new Float:sklX[4] = {PLAS_SKL1_X,PLAS_SKL2_X,PLAS_SKL3_X,PLAS_SKL4_X};
     new Float:sklY[4] = {PLAS_SKL1_Y,PLAS_SKL2_Y,PLAS_SKL3_Y,PLAS_SKL4_Y};
     new Float:sklZ[4] = {PLAS_SKL1_Z,PLAS_SKL2_Z,PLAS_SKL3_Z,PLAS_SKL4_Z};
     for(new i = 0; i < 4; i++) {
-        new lbl[64]; format(lbl, sizeof(lbl), "{1D75C4}[SKLADISTE %d]{FFFFFF}\nOstavi box ovdje", i+1);
+        new lbl[96]; format(lbl, sizeof(lbl), "{1D75C4}[SKLADISTE %d]{FFFFFF}\nOstavi box ovdje", i+1);
         Plas3D_Skl[i] = CreateDynamic3DTextLabel(lbl, 0xFFFFFFFF, sklX[i],sklY[i],sklZ[i]+0.5, 8.0);
     }
 
     PlasMapIcon = CreateDynamicMapIcon(PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z, 55, 0);
-    print("[PLASTIKA v2.0] Sistem skladištenja plastike uspjesno ucitan!");
+    print("[PLASTIKA v2.0] Sistem skladistenja plastike uspjesno ucitan!");
     return 1;
 }
 
@@ -983,8 +994,8 @@ stock Plastika_OnDisconnect(playerid) {
     }
     if(PlastikaPlayerData[playerid][plasBoxObjID] != -1) { DestroyDynamicObject(PlastikaPlayerData[playerid][plasBoxObjID]); PlastikaPlayerData[playerid][plasBoxObjID]=-1; }
 
-    if(IsValidPlayerAttachedObject(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
-    if(IsValidPlayerAttachedObject(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) RemovePlayerAttachedObject(playerid, 3);
+    if(IsPlayerAttachedObjectSlotUsed(playerid, 4)) RemovePlayerAttachedObject(playerid, 4);
 
     Plas_HideProgress(playerid);
     PlasMini_Hide(playerid);
@@ -1029,8 +1040,8 @@ stock Plastika_OnCP(playerid) {
 stock Plastika_OnKeyStateChange(playerid, newkeys, oldkeys) {
     if(PlastikaPlayerData[playerid][plasState] == PLAS_NONE) return 0;
 
-    // SPACE za minigame
-    if((newkeys & KEY_JUMP) && !(oldkeys & KEY_JUMP)) {
+    // SPACE (KEY_SPRINT) za minigame - na nogama SPACE je KEY_SPRINT!
+    if((newkeys & KEY_SPRINT) && !(oldkeys & KEY_SPRINT)) {
         if(PlastikaPlayerData[playerid][plasState] == PLAS_MINIGAME) {
             new Float:pos = PlastikaPlayerData[playerid][plasMarkerPos];
             new Float:gs = PlastikaPlayerData[playerid][plasGreenStart];
