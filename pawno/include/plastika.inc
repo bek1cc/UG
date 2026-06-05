@@ -1511,9 +1511,9 @@ stock Plastika_Init() {
 
     PlasMapIcon = CreateDynamicMapIcon(PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z, 55, 0);
 
-    // Baza return point - crveni CP za bonus kamion - na podu
-    CreateDynamicCP(PLAS_BAZA_X, PLAS_BAZA_Y, PLAS_BAZA_Z, 6.0, -1, -1, -1, 50.0);
-    CreateDynamic3DTextLabel("{FF6347}[BAZA - PLATA]{FFFFFF}\nVozite kamion ovde", 0xFFFFFFFF, PLAS_BAZA_X, PLAS_BAZA_Y, PLAS_BAZA_Z+0.3, 15.0);
+    // Baza return point - NE treba permanentni CP ni 3D label
+    // Per-player SetPlayerCheckpoint + SetPlayerMapIcon se pali samo kad
+    // igrač vraća kamion (PLAS_TRUCK_RETURNING) i gasi nakon plate
 
     print("[PLASTIKA v3.1] Sistem fabrike plastike (Forklift + Bonus Truck) uspjesno ucitan!");
     return 1;
@@ -1745,6 +1745,7 @@ stock Plastika_OnVehicleDeath(vehicleid) {
             Plas_HideProgress(i);
             PlasMini_Hide(i);
             DisablePlayerCheckpoint(i);
+            RemovePlayerMapIcon(i, 1);
             if(PlastikaPlayerData[i][plasEquipped] && PlastikaPlayerData[i][plasOldSkin] != -1) SetPlayerSkin(i, PlastikaPlayerData[i][plasOldSkin]);
             PlastikaPlayerData[i][plasState] = PLAS_NONE;
             PlastikaPlayerData[i][plasEquipped] = false;
