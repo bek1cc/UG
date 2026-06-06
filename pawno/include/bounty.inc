@@ -1177,11 +1177,17 @@ stock Bounty_OnClickTD(playerid, PlayerText:playertextid) {
 
                 if(foundSlot >= 0) {
                     new msg[256];
+                    new placerDisplay[MAX_PLAYER_NAME + 12];
+                    if(BountyList[foundSlot][bAnonymous]) {
+                        format(placerDisplay, sizeof(placerDisplay), "{8CB4E0}???");
+                    } else {
+                        format(placerDisplay, sizeof(placerDisplay), "%s", BountyList[foundSlot][bPlacerName]);
+                    }
                     format(msg, sizeof(msg),
                         "{FFFFFF}Meta: {FF453A}%s\n{FFFFFF}Nagrada: {FFD60A}$%d\n{FFFFFF}Postavio: %s\n{5B7FA5}Prije: %s",
                         BountyList[foundSlot][bTargetName],
                         BountyList[foundSlot][bAmount],
-                        (BountyList[foundSlot][bAnonymous] ? ("{8CB4E0}???") : BountyList[foundSlot][bPlacerName]),
+                        placerDisplay,
                         Bounty_FormatTimeAgo(BountyList[foundSlot][bTimestamp]));
                     ShowPlayerDialog(playerid, BOUNTY_DLG_DETAIL, DIALOG_STYLE_MSGBOX,
                         "{C0392B}Bounty Detalji", msg, "Zatvori", "");

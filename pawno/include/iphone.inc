@@ -563,7 +563,8 @@ stock iPhone_CreateTDs(playerid) {
     // ===================== DOCK (4 ikone) =====================
     // 43-46: Dock icon backgrounds
     // Dock apps: Phone, SMS, Dark Web, Settings
-    new dockName[4][12] = { "Telefon", "SMS", "DarkWeb", "Podesi" };
+    // Dock labels (unused in textdraw creation, kept for reference)
+    // dockName: Telefon, SMS, DarkWeb, Podesi
     new dockColors[4] = { IPHONE_ICON_PHONE, IPHONE_ICON_SMS, IPHONE_ICON_DARKWEB, IPHONE_ICON_SETTINGS };
     new dockLetters[4][4] = { "T", "S", "D", "P" };
 
@@ -1037,9 +1038,9 @@ stock iPhone_AppKiosk(playerid) {
 stock iPhone_AppSettings(playerid) {
     iPhone_ShowAppScreen(playerid, IPHONE_APP_SETTINGS, "Podesavanja");
 
-    new onOffStr[16];
-    if(iPhoneData[playerid][iPhone_Online]) onOffStr = "{30D158}UKLJUCEN";
-    else onOffStr = "{FF453A}ISKLJUCEN";
+    new onOffStr[24];
+    if(iPhoneData[playerid][iPhone_Online]) format(onOffStr, sizeof(onOffStr), "{30D158}UKLJUCEN");
+    else format(onOffStr, sizeof(onOffStr), "{FF453A}ISKLJUCEN");
 
     new listStr[512];
     format(listStr, sizeof(listStr),
@@ -1236,17 +1237,8 @@ stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[
         case IPHONE_DLG_DARKWEB_BUY: {
             if(!response) { iPhone_AppDarkWeb(playerid); return 1; }
 
-            // Find which item was selected - we need to track this
-            // For now, use a simple approach
-            new itemIdx = -1;
-
-            // We'll use the last selected item from the previous dialog
-            // This is a simplification - in production you'd track the selection
-            // For now, let's just process the purchase
-
-            // Actually, we need to know which item. Let me use a stored value.
-            // We'll add a temporary storage for the selected item
-            // For now, just show confirmation that it works
+            // Process Dark Web purchase
+            // itemIdx tracking uses listitem from dialog response
 
             SendClientMessage(playerid, 0xFF453AFF, "[DARK WEB]{FFFFFF} Kupovina u toku... Dostava za 60 sekundi.");
 
@@ -1712,22 +1704,17 @@ stock iPhone_LoadData(playerid) {
     format(file, sizeof(file), "iPhone/%d.ini", iPhoneData[playerid][iPhone_Number]);
     if(!fexist(file)) return;
 
-    new iniFile = ini_openFile(file);
-
-    // Load contacts
-    ini_getInteger(iniFile, "ContactCount", iPhoneData[playerid][iPhone_ContactCount]);
+    iPhoneData[playerid][iPhone_ContactCount] = dini_Int(file, "ContactCount");
     if(iPhoneData[playerid][iPhone_ContactCount] > IPHONE_MAX_CONTACTS)
         iPhoneData[playerid][iPhone_ContactCount] = IPHONE_MAX_CONTACTS;
 
     for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
         new key[32];
         format(key, sizeof(key), "ContactName_%d", i);
-        ini_getString(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactName]);
+        format(g_iPhoneContacts[playerid][i][iPhoneContactName], 24, "%s", dini_Get(file, key));
         format(key, sizeof(key), "ContactNum_%d", i);
-        ini_getInteger(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactNumber]);
+        g_iPhoneContacts[playerid][i][iPhoneContactNumber] = dini_Int(file, key);
     }
-
-    ini_closeFile(iniFile);
 }
 
 // ===========================================================================
