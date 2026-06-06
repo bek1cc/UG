@@ -727,14 +727,17 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // DIRECT SPAWN - same as running samp.exe manually
-    // Nuclear registry cleanup + direct spawn = exactly like manual connection
-    // Only pass IP and port - nickname comes from registry, NO password argument
+    // SA-MP R5 command line: samp.exe IP:PORT (colon format, single argument!)
+    // Two-argument format (IP PORT) causes "Wrong server password" bug
+    // The colon format is what samp:// protocol uses internally
     
     // Small delay to ensure registry is fully written before samp.exe reads it
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const child = spawn(sampExe, [srv.ip, String(srv.port)], {
+    const serverAddr = `${srv.ip}:${srv.port}`;
+    log('Launching with colon format: samp.exe ' + serverAddr);
+    
+    const child = spawn(sampExe, [serverAddr], {
       detached: true,
       stdio: 'ignore',
       cwd: gtaPath,
@@ -742,7 +745,7 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     });
     child.unref();
     
-    log('Launch OK - direct spawn (PID: ' + child.pid + ')');
+    log('Launch OK - direct spawn with colon format (PID: ' + child.pid + ')');
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
     if (deletedSet) fixes.push('obrisan gta_sa.set');
