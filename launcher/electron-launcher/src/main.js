@@ -706,30 +706,20 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // Write a bat file that kills zombie processes first, then launches SA-MP
+    // DIRECT LAUNCH - no bat file, no cmd window, instant startup!
     // IMPORTANT: samp.exe command line is: samp.exe <ip> <port> [password]
     // The 3rd argument is PASSWORD, NOT nickname! Nickname comes from registry.
-    // Passing nickname as 3rd arg causes "Wrong server password" error!
-    const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
-    const batContent = `@echo off
-taskkill /F /IM gta_sa.exe >nul 2>&1
-timeout /t 1 /nobreak >nul
-cd /d "${gtaPath}"
-start "" "${sampExe}" ${srv.ip} ${srv.port}
-exit
-`;
-    fs.writeFileSync(batPath, batContent);
-    log('Wrote launch bat: ' + batPath);
+    // We only pass IP and port - nickname is read from HKCU\Software\SAMP\PlayerName
     
-    // Run the bat file
-    const child = spawn('cmd.exe', ['/c', batPath], {
+    const child = spawn(sampExe, [srv.ip, String(srv.port)], {
       detached: true,
       stdio: 'ignore',
+      cwd: gtaPath,
       windowsHide: true
     });
     child.unref();
     
-    log('Launch OK (PID: ' + child.pid + ')');
+    log('Launch OK - direct spawn (PID: ' + child.pid + ')');
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
     if (deletedSet) fixes.push('obrisan gta_sa.set');
