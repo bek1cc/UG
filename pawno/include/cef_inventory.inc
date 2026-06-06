@@ -35,7 +35,7 @@ enum InvItemData {
     inv_Name[32],
     inv_Category,
     inv_Quantity,
-    inv_Weight,
+    Float:inv_Weight,
     Float:inv_Value,
     inv_Ammo,
     inv_Desc[64],
@@ -202,7 +202,7 @@ stock CEF_InvRemoveItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return 0;
     if(!InvItems[playerid][slot][inv_Exists]) return 0;
 
-    InvData[playerid][inv_TotalWeight] -= Float:InvItems[playerid][slot][inv_Weight];
+    InvData[playerid][inv_TotalWeight] -= InvItems[playerid][slot][inv_Weight];
     if(InvData[playerid][inv_TotalWeight] < 0.0) InvData[playerid][inv_TotalWeight] = 0.0;
 
     InvItems[playerid][slot][inv_Exists] = false;
