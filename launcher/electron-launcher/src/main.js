@@ -220,6 +220,19 @@ async function autoInstall(gtaPath, missing) {
 //  CREATE WINDOW
 // ============================================================
 function createWindow() {
+  // Resolve paths correctly - __dirname is the src/ folder
+  const srcDir = __dirname;
+  const indexPath = path.join(srcDir, 'index.html');
+  const preloadPath = path.join(srcDir, 'preload.js');
+  const iconPath = path.join(srcDir, 'ug_icon.ico');
+
+  // Debug: log paths to console
+  console.log('[LAUNCHER] __dirname:', srcDir);
+  console.log('[LAUNCHER] index.html path:', indexPath);
+  console.log('[LAUNCHER] index.html exists:', fs.existsSync(indexPath));
+  console.log('[LAUNCHER] preload.js exists:', fs.existsSync(preloadPath));
+  console.log('[LAUNCHER] Files in src/:', fs.readdirSync(srcDir));
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -229,15 +242,26 @@ function createWindow() {
     transparent: false,
     resizable: true,
     backgroundColor: '#0b0f1a',
-    icon: path.join(__dirname, 'ug_icon.ico'),
+    icon: fs.existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: preloadPath
     }
   });
 
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  // Open DevTools for debugging (remove in production)
+  mainWindow.webContents.openDevTools();
+
+  // Load the index.html
+  mainWindow.loadFile(indexPath).catch(err => {
+    console.error('[LAUNCHER] Failed to load index.html:', err);
+  });
+
+  // Log any console errors from renderer
+  mainWindow.webContents.on('console-message', (event, level, message) => {
+    console.log('[RENDERER]', message);
+  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
