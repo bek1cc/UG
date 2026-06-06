@@ -1,588 +1,684 @@
 #!/usr/bin/env python3
 # =============================================================================
-#  UNICATE GAMING - Launcher v2.0
-#  Professional SA-MP server launcher with portal UI
+#  UNICATE GAMING LAUNCHER
+#  Profesionalni launcher za SA-MP server
+#  Svi igraci MORAJU instalirati launcher da bi igrali
 #
-#  Features:
-#  - Modern dark blue portal with Unicate Gaming branding
-#  - Server status check (online/offline + player count)
-#  - One-click LAUNCH to connect to SA-MP server
-#  - Auto-install CEF client plugin to GTA SA folder
-#  - News & announcements panel
-#  - Settings for GTA SA path
-#  - Auto-detect GTA SA installation
-#
-#  Compile to .exe: pyinstaller --onefile --noconsole --icon=ug.ico launcher.py
+#  Kompajliranje u .exe:
+#    pip install pyinstaller pillow requests
+#    pyinstaller --onefile --windowed --icon=ug_icon.ico --name="Unicate Gaming" launcher.py
 # =============================================================================
 
 import tkinter as tk
-from tkinter import messagebox, filedialog
+from tkinter import messagebox
 import os
 import sys
 import subprocess
-import shutil
-import json
-import urllib.request
-import urllib.error
 import threading
 import time
+import json
+import struct
+import socket
+import webbrowser
+
+try:
+    from PIL import Image, ImageTk, ImageDraw, ImageFont
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+    print("[UG Launcher] Pillow nije instaliran. Pokreni: pip install Pillow")
+
+try:
+    import requests
+    HAS_REQUESTS = True
+except ImportError:
+    HAS_REQUESTS = False
+    print("[UG Launcher] Requests nije instaliran. Pokreni: pip install requests")
 
 # =============================================================================
-#  CONFIGURATION - Edit these for your server
+#  KONFIGURACIJA SERVERA
 # =============================================================================
-SERVER_IP = "51.222.12.34"      # Your SA-MP server IP
-SERVER_PORT = "7777"             # Your SA-MP server port
+SERVER_IP = "147.135.164.147"   # <-- PROMIJENI NA PRAVI IP
+SERVER_PORT = 7777              # <-- PROMIJENI NA PRAVI PORT
 SERVER_NAME = "Unicate Gaming"
-SERVER_WEBSITE = "https://ug-ogc.com"
-LAUNCHER_VERSION = "2.0"
+WEBSITE_URL = "https://ug-ogc.com"
+DISCORD_URL = "https://discord.gg/unicategaming"
+
+# Verzija launchera
+LAUNCHER_VERSION = "1.0.0"
+
+# Folderi
+if getattr(sys, 'frozen', False):
+    # Pokrenuto iz .exe
+    LAUNCHER_DIR = os.path.dirname(sys.executable)
+else:
+    LAUNCHER_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # =============================================================================
-#  COLORS - Unicate Gaming Blue Theme
+#  BOJE (Unicate Gaming tema - plava/tamna)
 # =============================================================================
-COLOR_BG_DARK = "#0a1628"
-COLOR_BG_MAIN = "#0f2040"
-COLOR_BG_LIGHT = "#152d50"
-COLOR_BG_ROW = "#1a3a6a"
-COLOR_ACCENT = "#2e86de"
-COLOR_BRIGHT = "#54a0ff"
-COLOR_CYAN = "#00d2ff"
-COLOR_WHITE = "#ffffff"
-COLOR_TEXT_LIGHT = "#8cb4e0"
-COLOR_TEXT_GRAY = "#5b7fa5"
-COLOR_GREEN = "#30d158"
-COLOR_RED = "#ff453a"
-COLOR_GOLD = "#ffd60a"
-COLOR_BTN_BLUE = "#2e86de"
-COLOR_BTN_GREEN = "#30d158"
-COLOR_INPUT_BG = "#0c1e36"
+COLOR_BG_DARK    = "#0a0e17"
+COLOR_BG_PANEL   = "#111827"
+COLOR_BG_CARD    = "#1a2332"
+COLOR_ACCENT     = "#3b82f6"
+COLOR_ACCENT_HOVER = "#2563eb"
+COLOR_ACCENT_GLOW = "#1d4ed8"
+COLOR_TEXT        = "#e2e8f0"
+COLOR_TEXT_DIM    = "#94a3b8"
+COLOR_TEXT_BRIGHT = "#ffffff"
+COLOR_SUCCESS     = "#22c55e"
+COLOR_ERROR       = "#ef4444"
+COLOR_WARNING     = "#f59e0b"
+COLOR_BORDER      = "#1e3a5f"
+COLOR_INPUT_BG    = "#0f172a"
 
 # =============================================================================
-#  PATHS
+#  SA-MP QUERY - provjera statusa servera
 # =============================================================================
-def get_app_dir():
-    """Get the directory where launcher.py is located"""
-    if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
-    return os.path.dirname(os.path.abspath(__file__))
+def query_samp_server(ip, port, timeout=3):
+    """Salje SA-MP query paket i vraca info o serveru"""
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.settimeout(timeout)
 
-def get_gta_paths():
-    """Try to auto-detect GTA SA installation"""
-    possible_paths = [
-        r"C:\Program Files\Rockstar Games\GTA San Andreas",
+        # SA-MP 'i' info query paket
+        packet = b'SAMP'
+        ip_parts = ip.split('.')
+        packet += struct.pack('4B', int(ip_parts[0]), int(ip_parts[1]),
+                              int(ip_parts[2]), int(ip_parts[3]))
+        packet += struct.pack('H', port)
+        packet += b'i'
+
+        sock.sendto(packet, (ip, port))
+        data, _ = sock.recvfrom(2048)
+        sock.close()
+
+        if len(data) < 11:
+            return None
+
+        offset = 11
+        # Password
+        password_len = struct.unpack_from('H', data, offset)[0]
+        offset += 2
+        password = data[offset:offset+password_len].decode('latin-1', errors='replace')
+        offset += password_len
+
+        # Players
+        players = struct.unpack_from('H', data, offset)[0]
+        offset += 2
+
+        # Max players
+        max_players = struct.unpack_from('H', data, offset)[0]
+        offset += 2
+
+        # Server name
+        name_len = struct.unpack_from('I', data, offset)[0]
+        offset += 4
+        server_name = data[offset:offset+name_len].decode('latin-1', errors='replace')
+        offset += name_len
+
+        # Gamemode
+        mode_len = struct.unpack_from('I', data, offset)[0]
+        offset += 4
+        gamemode = data[offset:offset+mode_len].decode('latin-1', errors='replace')
+        offset += mode_len
+
+        # Map
+        map_len = struct.unpack_from('I', data, offset)[0]
+        offset += 4
+        map_name = data[offset:offset+map_len].decode('latin-1', errors='replace')
+
+        return {
+            'password': password,
+            'players': players,
+            'max_players': max_players,
+            'name': server_name,
+            'gamemode': gamemode,
+            'map': map_name,
+            'online': True
+        }
+    except socket.timeout:
+        return {'online': False}
+    except Exception as e:
+        return {'online': False, 'error': str(e)}
+
+
+# =============================================================================
+#  DETEKCIJA GTA SA INSTALACIJE
+# =============================================================================
+def find_gta_sa_path():
+    """Traziti GTA San Andreas instalaciju na racunaru"""
+    # 1. Provjeri registry
+    try:
+        import winreg
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                             r"Software\SAMP")
+        path, _ = winreg.QueryValueEx(key, "gta_sa_exe")
+        winreg.CloseKey(key)
+        if path and os.path.exists(path):
+            return os.path.dirname(path)
+    except:
+        pass
+
+    try:
+        import winreg
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                             r"SOFTWARE\WOW6432Node\Rockstar Games\GTA San Andreas")
+        path, _ = winreg.QueryValueEx(key, "InstallFolder")
+        winreg.CloseKey(key)
+        if path and os.path.exists(path):
+            return path
+    except:
+        pass
+
+    # 2. Provjeri uobicajene lokacije
+    common_paths = [
         r"C:\Program Files (x86)\Rockstar Games\GTA San Andreas",
-        r"C:\GTA San Andreas",
+        r"C:\Program Files\Rockstar Games\GTA San Andreas",
         r"C:\Games\GTA San Andreas",
-        r"D:\GTA San Andreas",
+        r"C:\Games\GTA SA",
         r"D:\Games\GTA San Andreas",
+        r"D:\GTA San Andreas",
+        r"D:\Games\GTA SA",
+        r"D:\GTA SA",
         r"E:\GTA San Andreas",
-        os.path.expanduser("~/GTA San Andreas"),
+        r"E:\GTA SA",
+        os.path.expanduser(r"~\Desktop\GTA San Andreas"),
+        os.path.expanduser(r"~\Desktop\GTA SA"),
     ]
 
-    # Check registry
+    for path in common_paths:
+        gta_exe = os.path.join(path, "gta_sa.exe")
+        if os.path.exists(gta_exe):
+            return path
+
+    # 3. Provjeri sa samp.exe (ako je SA-MP vec instaliran)
     try:
         import winreg
-        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-            r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 12120")
-        path, _ = winreg.QueryValueEx(key, "InstallLocation")
-        if path and os.path.isdir(path):
-            possible_paths.insert(0, path)
+        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"Software\SAMP")
+        path, _ = winreg.QueryValueEx(key, "gta_sa_exe")
+        winreg.CloseKey(key)
+        if path and os.path.exists(path):
+            return os.path.dirname(path)
     except:
         pass
 
-    try:
-        import winreg
-        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
-            r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 12120")
-        path, _ = winreg.QueryValueEx(key, "InstallLocation")
-        if path and os.path.isdir(path):
-            possible_paths.insert(0, path)
-    except:
-        pass
+    return None
 
-    for p in possible_paths:
-        gta_exe = os.path.join(p, "gta_sa.exe")
-        samp_exe = os.path.join(p, "samp.exe")
-        if os.path.isfile(gta_exe) or os.path.isfile(samp_exe):
-            return p
 
-    return ""
+def find_samp_exe(gta_path):
+    """Pronadji samp.exe u GTA folderu"""
+    if not gta_path:
+        return None
+    samp_path = os.path.join(gta_path, "samp.exe")
+    if os.path.exists(samp_path):
+        return samp_path
+    return None
 
-def load_settings():
-    """Load settings from JSON file"""
-    settings_file = os.path.join(get_app_dir(), "settings.json")
-    defaults = {
-        "gta_path": get_gta_paths(),
-        "server_ip": SERVER_IP,
-        "server_port": SERVER_PORT,
-        "cef_installed": False,
-        "nickname": ""
-    }
-    try:
-        if os.path.isfile(settings_file):
-            with open(settings_file, 'r') as f:
-                saved = json.load(f)
-                defaults.update(saved)
-    except:
-        pass
-    return defaults
-
-def save_settings(settings):
-    """Save settings to JSON file"""
-    settings_file = os.path.join(get_app_dir(), "settings.json")
-    try:
-        with open(settings_file, 'w') as f:
-            json.dump(settings, f, indent=2)
-    except:
-        pass
 
 # =============================================================================
-#  CEF CLIENT INSTALLER
+#  CEF PLUGIN INSTALACIJA
 # =============================================================================
-def install_cef_client(gta_path):
-    """Copy CEF client files to GTA SA folder"""
-    launcher_dir = get_app_dir()
-    cef_source = os.path.join(launcher_dir, "CEF_Client")
-
-    if not os.path.isdir(cef_source):
-        return False, "CEF_Client folder not found in launcher directory!"
-
-    cef_dest = os.path.join(gta_path, "CEF")
-
-    try:
-        # Remove old CEF folder if exists
-        if os.path.isdir(cef_dest):
-            shutil.rmtree(cef_dest)
-
-        # Copy entire CEF_Client folder as CEF
-        shutil.copytree(cef_source, cef_dest)
-        return True, "CEF client installed successfully!"
-    except Exception as e:
-        return False, f"Error installing CEF: {str(e)}"
-
-def check_cef_installed(gta_path):
-    """Check if CEF client is already installed"""
+def check_cef_plugin(gta_path):
+    """Provjeri da li je CEF plugin instaliran"""
     if not gta_path:
         return False
+    cef_asi = os.path.join(gta_path, "cef.asi")
     cef_folder = os.path.join(gta_path, "CEF")
-    return os.path.isdir(cef_folder)
+    return os.path.exists(cef_asi) and os.path.exists(cef_folder)
+
 
 # =============================================================================
-#  SERVER STATUS CHECKER
+#  MAIN LAUNCHER CLASS
 # =============================================================================
-def check_server_status(callback):
-    """Check if SA-MP server is online (runs in thread)"""
-    try:
-        url = f"http://api.samp.southcla.ws/v1/server/{SERVER_IP}:{SERVER_PORT}"
-        req = urllib.request.Request(url, headers={'User-Agent': 'UG-Launcher/2.0'})
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode())
-            callback(True, data.get('core', {}).get('players', 0),
-                     data.get('core', {}).get('maxplayers', 100))
-    except:
-        try:
-            # Fallback: simple socket check
-            import socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(3)
-            server_addr = (SERVER_IP, int(SERVER_PORT))
-            # SA-MP query
-            packet = b'SAMP'
-            for c in SERVER_IP.split('.'):
-                packet += bytes([int(c)])
-            packet += int(SERVER_PORT).to_bytes(2, 'little')
-            packet += b'i'
-            sock.sendto(packet, server_addr)
-            data, _ = sock.recvfrom(1024)
-            sock.close()
-            if len(data) > 10:
-                players = int.from_bytes(data[11:13], 'little')
-                maxplayers = int.from_bytes(data[13:15], 'little')
-                callback(True, players, maxplayers)
-            else:
-                callback(True, -1, -1)
-        except:
-            callback(False, 0, 0)
-
-# =============================================================================
-#  LAUNCHER GUI
-# =============================================================================
-class UnicateLauncher:
+class UnicateGamingLauncher:
     def __init__(self):
-        self.settings = load_settings()
         self.root = tk.Tk()
-        self.root.title(f"{SERVER_NAME} - Launcher v{LAUNCHER_VERSION}")
+        self.root.title("Unicate Gaming Launcher")
         self.root.geometry("900x650")
         self.root.resizable(False, False)
         self.root.configure(bg=COLOR_BG_DARK)
 
-        # Center window on screen
-        self.root.update_idletasks()
-        x = (self.root.winfo_screenwidth() // 2) - (900 // 2)
-        y = (self.root.winfo_screenheight() // 2) - (650 // 2)
-        self.root.geometry(f"900x650+{x}+{y}")
+        # Ukloni window decorations za moderniji izgled
+        self.root.overrideredirect(False)
 
-        # Try to set icon
-        try:
-            ico_path = os.path.join(get_app_dir(), "ug.ico")
-            if os.path.isfile(ico_path):
-                self.root.iconbitmap(ico_path)
-        except:
-            pass
+        # Centriraj prozor
+        self.center_window()
 
-        self.server_online = False
-        self.player_count = 0
-        self.max_players = 0
+        # Varijable
+        self.gta_path = find_gta_sa_path()
+        self.server_info = None
+        self.is_launching = False
+        self.drag_start_x = 0
+        self.drag_start_y = 0
 
+        # Build UI
         self.build_ui()
 
-        # Check server status on startup
-        self.refresh_server_status()
+        # Pokreni server status check u background threadu
+        self.check_server_status()
 
+        # Periodicni refresh (svakih 30 sekundi)
+        self.schedule_status_refresh()
+
+    def center_window(self):
+        self.root.update_idletasks()
+        w = 900
+        h = 650
+        x = (self.root.winfo_screenwidth() // 2) - (w // 2)
+        y = (self.root.winfo_screenheight() // 2) - (h // 2)
+        self.root.geometry(f'{w}x{h}+{x}+{y}')
+
+    # =========================================================================
+    #  UI BUILDING
+    # =========================================================================
     def build_ui(self):
-        """Build the complete launcher UI"""
-        # ========== TOP BAR ==========
-        top_bar = tk.Frame(self.root, bg=COLOR_BG_MAIN, height=60)
-        top_bar.pack(fill=tk.X, side=tk.TOP)
-        top_bar.pack_propagate(False)
+        # ===== TOP BAR (naslov + close/minimize) =====
+        self.top_bar = tk.Frame(self.root, bg=COLOR_BG_PANEL, height=45)
+        self.top_bar.pack(fill=tk.X, side=tk.TOP)
+        self.top_bar.pack_propagate(False)
+
+        # Drag za pomicanje prozora
+        self.top_bar.bind('<Button-1>', self.start_drag)
+        self.top_bar.bind('<B1-Motion>', self.do_drag)
 
         # Logo text
-        logo_frame = tk.Frame(top_bar, bg=COLOR_BG_MAIN)
-        logo_frame.pack(side=tk.LEFT, padx=20, pady=10)
+        title_frame = tk.Frame(self.top_bar, bg=COLOR_BG_PANEL)
+        title_frame.pack(side=tk.LEFT, padx=15, pady=8)
 
-        tk.Label(logo_frame, text="UNICATE", font=("Segoe UI", 22, "bold"),
-                fg=COLOR_BRIGHT, bg=COLOR_BG_MAIN).pack(side=tk.LEFT)
-        tk.Label(logo_frame, text=" GAMING", font=("Segoe UI", 22, "bold"),
-                fg=COLOR_CYAN, bg=COLOR_BG_MAIN).pack(side=tk.LEFT)
+        tk.Label(title_frame, text="UNICATE", font=("Segoe UI", 16, "bold"),
+                fg=COLOR_ACCENT, bg=COLOR_BG_PANEL).pack(side=tk.LEFT)
+        tk.Label(title_frame, text=" GAMING", font=("Segoe UI", 16, "bold"),
+                fg=COLOR_TEXT_BRIGHT, bg=COLOR_BG_PANEL).pack(side=tk.LEFT)
 
-        # Version label
-        tk.Label(top_bar, text=f"v{LAUNCHER_VERSION}", font=("Segoe UI", 10),
-                fg=COLOR_TEXT_GRAY, bg=COLOR_BG_MAIN).pack(side=tk.RIGHT, padx=20)
+        # Verzija
+        tk.Label(self.top_bar, text=f"v{LAUNCHER_VERSION}",
+                font=("Segoe UI", 9), fg=COLOR_TEXT_DIM, bg=COLOR_BG_PANEL).pack(side=tk.LEFT, padx=10)
 
-        # ========== MAIN CONTENT ==========
-        main = tk.Frame(self.root, bg=COLOR_BG_DARK)
-        main.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+        # Close / Minimize dugmad
+        btn_frame = tk.Frame(self.top_bar, bg=COLOR_BG_PANEL)
+        btn_frame.pack(side=tk.RIGHT, padx=5)
 
-        # --- LEFT PANEL: Portal / News ---
-        left_panel = tk.Frame(main, bg=COLOR_BG_MAIN, width=550)
-        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(15, 7), pady=15)
+        self.min_btn = tk.Label(btn_frame, text="  —  ", font=("Segoe UI", 11),
+                               fg=COLOR_TEXT_DIM, bg=COLOR_BG_PANEL, cursor="hand2")
+        self.min_btn.pack(side=tk.LEFT, pady=5)
+        self.min_btn.bind('<Enter>', lambda e: self.min_btn.configure(bg=COLOR_BG_CARD))
+        self.min_btn.bind('<Leave>', lambda e: self.min_btn.configure(bg=COLOR_BG_PANEL))
+        self.min_btn.bind('<Button-1>', lambda e: self.root.iconify())
+
+        self.close_btn = tk.Label(btn_frame, text="  ✕  ", font=("Segoe UI", 11, "bold"),
+                                  fg=COLOR_TEXT_DIM, bg=COLOR_BG_PANEL, cursor="hand2")
+        self.close_btn.pack(side=tk.LEFT, pady=5)
+        self.close_btn.bind('<Enter>', lambda e: self.close_btn.configure(bg=COLOR_ERROR))
+        self.close_btn.bind('<Leave>', lambda e: self.close_btn.configure(bg=COLOR_BG_PANEL))
+        self.close_btn.bind('<Button-1>', lambda e: self.on_close())
+
+        # ===== MAIN CONTENT =====
+        main_frame = tk.Frame(self.root, bg=COLOR_BG_DARK)
+        main_frame.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
+
+        # --- LEFT PANEL (Server Info + News) ---
+        left_panel = tk.Frame(main_frame, bg=COLOR_BG_PANEL, width=550)
+        left_panel.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=0, pady=0)
         left_panel.pack_propagate(False)
 
-        # Welcome section
-        tk.Label(left_panel, text="DOBRODOSLI NA PORTAL",
-                font=("Segoe UI", 16, "bold"), fg=COLOR_BRIGHT,
-                bg=COLOR_BG_MAIN).pack(pady=(20, 5), padx=20, anchor=tk.W)
+        # Hero sekcija
+        hero_frame = tk.Frame(left_panel, bg=COLOR_BG_DARK, height=200)
+        hero_frame.pack(fill=tk.X, padx=0, pady=0)
+        hero_frame.pack_propagate(False)
 
-        tk.Label(left_panel, text="Unicate Gaming RPG Server",
-                font=("Segoe UI", 11), fg=COLOR_TEXT_LIGHT,
-                bg=COLOR_BG_MAIN).pack(pady=(0, 15), padx=20, anchor=tk.W)
+        # Hero content
+        hero_inner = tk.Frame(hero_frame, bg=COLOR_BG_DARK)
+        hero_inner.pack(fill=tk.BOTH, expand=True, padx=25, pady=20)
 
-        # Separator
-        sep = tk.Frame(left_panel, bg=COLOR_ACCENT, height=2)
-        sep.pack(fill=tk.X, padx=20, pady=5)
+        tk.Label(hero_inner, text="Unicate Gaming", font=("Segoe UI", 28, "bold"),
+                fg=COLOR_TEXT_BRIGHT, bg=COLOR_BG_DARK).pack(anchor=tk.W)
+        tk.Label(hero_inner, text="Online Gaming Community",
+                font=("Segoe UI", 13), fg=COLOR_ACCENT, bg=COLOR_BG_DARK).pack(anchor=tk.W, pady=(0,10))
 
-        # News section
-        tk.Label(left_panel, text="NOVOSTI & OBAVIJESTI",
-                font=("Segoe UI", 12, "bold"), fg=COLOR_GOLD,
-                bg=COLOR_BG_MAIN).pack(pady=(15, 10), padx=20, anchor=tk.W)
+        # Status indikator
+        self.status_frame = tk.Frame(hero_inner, bg=COLOR_BG_DARK)
+        self.status_frame.pack(anchor=tk.W, pady=5)
 
+        self.status_dot = tk.Canvas(self.status_frame, width=12, height=12,
+                                    bg=COLOR_BG_DARK, highlightthickness=0)
+        self.status_dot.pack(side=tk.LEFT, padx=(0,8))
+        self.status_dot.create_oval(2, 2, 10, 10, fill=COLOR_WARNING, outline="")
+
+        self.status_label = tk.Label(self.status_frame, text="Provjeravam status servera...",
+                                     font=("Segoe UI", 10), fg=COLOR_TEXT_DIM, bg=COLOR_BG_DARK)
+        self.status_label.pack(side=tk.LEFT)
+
+        # Player count
+        self.player_label = tk.Label(hero_inner, text="",
+                                     font=("Segoe UI", 11), fg=COLOR_TEXT, bg=COLOR_BG_DARK)
+        self.player_label.pack(anchor=tk.W, pady=2)
+
+        # Gamemode
+        self.gamemode_label = tk.Label(hero_inner, text="",
+                                       font=("Segoe UI", 10), fg=COLOR_TEXT_DIM, bg=COLOR_BG_DARK)
+        self.gamemode_label.pack(anchor=tk.W)
+
+        # --- NEWS SEKCIJA ---
+        news_section = tk.Frame(left_panel, bg=COLOR_BG_PANEL)
+        news_section.pack(fill=tk.BOTH, expand=True, padx=20, pady=(10,15))
+
+        tk.Label(news_section, text="NOVOSTI", font=("Segoe UI", 11, "bold"),
+                fg=COLOR_ACCENT, bg=COLOR_BG_PANEL).pack(anchor=tk.W, pady=(0,8))
+
+        # News kartice
         news_items = [
-            ("CEF TABLET SYSTEM", "Novi tablet UI sa modernim dizajnom, bounty board, porukama i vise! Pokreni /phone u igri.", COLOR_BRIGHT),
-            ("INVENTORY SYSTEM", "Inventar sa ikonicama - pregledaj oruzje, predmete i opremu na moderni nacin.", COLOR_GREEN),
-            ("LAPTOP SYSTEM", "Realisticki laptop UI za pristup mrezi, Dark Web, banki i drugim aplikacijama.", COLOR_CYAN),
-            ("BOUNTY BOARD", "Postavi nagradu na glavu drugog igraca! Koristi /bounty ili tablet.", COLOR_RED),
-            ("NOVI POSLOVI", "Dodano 15+ poslova sa platama i zadacima. Prijavi se na posao!", COLOR_GOLD),
+            ("CEF Update", "Novi CEF tablet, inventar i laptop UI sada dostupni! Koristite /tablet, /inventory, /laptop.", COLOR_ACCENT),
+            ("Bounty Sistem", "Postavljanje nagrada za igrace putem tableta ili laptopa. PIN registracija obavezna!", "#8b5cf6"),
+            ("Launcher Obavezan", "Svi igraci moraju koristiti Unicate Gaming Launcher za konekciju na server.", COLOR_WARNING),
         ]
 
         for title, desc, color in news_items:
-            news_frame = tk.Frame(left_panel, bg=COLOR_BG_LIGHT)
-            news_frame.pack(fill=tk.X, padx=20, pady=4)
+            card = tk.Frame(news_section, bg=COLOR_BG_CARD, padx=12, pady=8)
+            card.pack(fill=tk.X, pady=3)
 
-            tk.Label(news_frame, text=f"  {title}", font=("Segoe UI", 10, "bold"),
-                    fg=color, bg=COLOR_BG_LIGHT, anchor=tk.W).pack(fill=tk.X, pady=(5, 0))
-            tk.Label(news_frame, text=f"  {desc}", font=("Segoe UI", 9),
-                    fg=COLOR_TEXT_GRAY, bg=COLOR_BG_LIGHT, anchor=tk.W,
-                    wraplength=480).pack(fill=tk.X, pady=(0, 5))
+            # Color bar
+            bar = tk.Frame(card, bg=color, width=3)
+            bar.pack(side=tk.LEFT, fill=tk.Y, padx=(0,10), pady=2)
 
-        # ========== RIGHT PANEL: Controls ==========
-        right_panel = tk.Frame(main, bg=COLOR_BG_MAIN, width=300)
-        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, padx=(7, 15), pady=15)
+            tk.Label(card, text=title, font=("Segoe UI", 10, "bold"),
+                    fg=COLOR_TEXT_BRIGHT, bg=COLOR_BG_CARD, anchor=tk.W).pack(anchor=tk.W)
+            tk.Label(card, text=desc, font=("Segoe UI", 9),
+                    fg=COLOR_TEXT_DIM, bg=COLOR_BG_CARD, anchor=tk.W,
+                    wraplength=420, justify=tk.LEFT).pack(anchor=tk.W, pady=(2,0))
+
+        # --- BOTTOM LINKOVI ---
+        bottom_links = tk.Frame(left_panel, bg=COLOR_BG_PANEL)
+        bottom_links.pack(fill=tk.X, padx=20, pady=(0,10))
+
+        links = [
+            ("Website", WEBSITE_URL),
+            ("Discord", DISCORD_URL),
+            ("Forum", f"{WEBSITE_URL}/forum"),
+        ]
+
+        for name, url in links:
+            link_label = tk.Label(bottom_links, text=name, font=("Segoe UI", 9, "underline"),
+                                 fg=COLOR_ACCENT, bg=COLOR_BG_PANEL, cursor="hand2")
+            link_label.pack(side=tk.LEFT, padx=(0,15))
+            link_label.bind('<Button-1>', lambda e, u=url: webbrowser.open(u))
+
+        # --- RIGHT PANEL (Launch + Settings) ---
+        right_panel = tk.Frame(main_frame, bg=COLOR_BG_CARD, width=350)
+        right_panel.pack(side=tk.RIGHT, fill=tk.BOTH, padx=0, pady=0)
         right_panel.pack_propagate(False)
 
-        # Server Status Section
-        tk.Label(right_panel, text="STATUS SERVERA",
-                font=("Segoe UI", 12, "bold"), fg=COLOR_BRIGHT,
-                bg=COLOR_BG_MAIN).pack(pady=(20, 10))
+        # Right content
+        right_content = tk.Frame(right_panel, bg=COLOR_BG_CARD)
+        right_content.pack(fill=tk.BOTH, expand=True, padx=25, pady=25)
 
-        # Status indicator
-        self.status_frame = tk.Frame(right_panel, bg=COLOR_BG_LIGHT, padx=15, pady=10)
-        self.status_frame.pack(fill=tk.X, padx=15, pady=5)
+        # Server connect info
+        tk.Label(right_content, text="KONEKCIJA", font=("Segoe UI", 11, "bold"),
+                fg=COLOR_TEXT_DIM, bg=COLOR_BG_CARD).pack(anchor=tk.W, pady=(0,5))
 
-        self.status_dot = tk.Canvas(self.status_frame, width=16, height=16,
-                                    bg=COLOR_BG_LIGHT, highlightthickness=0)
-        self.status_dot.pack(side=tk.LEFT, padx=(0, 10))
-        self.status_dot_circle = self.status_dot.create_oval(2, 2, 14, 14, fill=COLOR_RED, outline="")
+        info_frame = tk.Frame(right_content, bg=COLOR_INPUT_BG, padx=12, pady=10)
+        info_frame.pack(fill=tk.X, pady=(0,15))
 
-        self.status_label = tk.Label(self.status_frame, text="Provjera...",
-                font=("Segoe UI", 11, "bold"), fg=COLOR_WHITE, bg=COLOR_BG_LIGHT)
-        self.status_label.pack(side=tk.LEFT)
+        tk.Label(info_frame, text=f"IP: {SERVER_IP}:{SERVER_PORT}",
+                font=("Consolas", 10), fg=COLOR_TEXT, bg=COLOR_INPUT_BG).pack(anchor=tk.W)
+        tk.Label(info_frame, text=f"Server: {SERVER_NAME}",
+                font=("Consolas", 10), fg=COLOR_TEXT, bg=COLOR_INPUT_BG).pack(anchor=tk.W)
 
-        self.players_label = tk.Label(right_panel, text="Igraci: ---/---",
-                font=("Segoe UI", 10), fg=COLOR_TEXT_LIGHT, bg=COLOR_BG_MAIN)
-        self.players_label.pack(pady=(5, 15))
+        # GTA SA Path
+        tk.Label(right_content, text="GTA SAN ANDREAS", font=("Segoe UI", 11, "bold"),
+                fg=COLOR_TEXT_DIM, bg=COLOR_BG_CARD).pack(anchor=tk.W, pady=(10,5))
 
-        # IP Display
-        ip_frame = tk.Frame(right_panel, bg=COLOR_BG_LIGHT, padx=10, pady=8)
-        ip_frame.pack(fill=tk.X, padx=15, pady=5)
-        tk.Label(ip_frame, text="IP:", font=("Segoe UI", 9), fg=COLOR_TEXT_GRAY,
-                bg=COLOR_BG_LIGHT).pack(side=tk.LEFT)
-        tk.Label(ip_frame, text=f"{SERVER_IP}:{SERVER_PORT}", font=("Segoe UI", 10, "bold"),
-                fg=COLOR_BRIGHT, bg=COLOR_BG_LIGHT).pack(side=tk.LEFT, padx=5)
+        path_frame = tk.Frame(right_content, bg=COLOR_INPUT_BG, padx=12, pady=10)
+        path_frame.pack(fill=tk.X, pady=(0,5))
 
-        # Copy IP button
-        copy_btn = tk.Button(ip_frame, text="KOPIRAJ", font=("Segoe UI", 8),
-                bg=COLOR_BG_ROW, fg=COLOR_TEXT_LIGHT, relief=tk.FLAT,
-                cursor="hand2", command=self.copy_ip)
-        copy_btn.pack(side=tk.RIGHT)
+        self.path_label = tk.Label(path_frame, text="Pretrazujem...",
+                                   font=("Consolas", 9), fg=COLOR_TEXT, bg=COLOR_INPUT_BG,
+                                   wraplength=270, justify=tk.LEFT)
+        self.path_label.pack(anchor=tk.W)
 
-        # Separator
-        sep2 = tk.Frame(right_panel, bg=COLOR_ACCENT, height=2)
-        sep2.pack(fill=tk.X, padx=15, pady=15)
+        if self.gta_path:
+            self.path_label.configure(text=self.gta_path, fg=COLOR_SUCCESS)
+        else:
+            self.path_label.configure(text="GTA San Andreas nije pronadjen! Klikni Browse.",
+                                      fg=COLOR_ERROR)
 
-        # Nickname input
-        tk.Label(right_panel, text="NADIMAK",
-                font=("Segoe UI", 10, "bold"), fg=COLOR_TEXT_LIGHT,
-                bg=COLOR_BG_MAIN).pack(pady=(5, 5))
+        # Browse dugme
+        browse_btn = tk.Frame(right_content, bg=COLOR_ACCENT, padx=15, pady=6, cursor="hand2")
+        browse_btn.pack(anchor=tk.W, pady=(0,15))
 
-        self.nickname_var = tk.StringVar(value=self.settings.get("nickname", ""))
-        nick_entry = tk.Entry(right_panel, textvariable=self.nickname_var,
-                font=("Segoe UI", 12), bg=COLOR_INPUT_BG, fg=COLOR_WHITE,
-                insertbackground=COLOR_WHITE, relief=tk.FLAT, justify=tk.CENTER)
-        nick_entry.pack(fill=tk.X, padx=15, pady=5, ipady=6)
+        browse_inner = tk.Label(browse_btn, text="Browse", font=("Segoe UI", 10, "bold"),
+                               fg=COLOR_TEXT_BRIGHT, bg=COLOR_ACCENT, cursor="hand2")
+        browse_inner.pack()
+        browse_btn.bind('<Enter>', lambda e: browse_btn.configure(bg=COLOR_ACCENT_HOVER))
+        browse_btn.bind('<Leave>', lambda e: browse_btn.configure(bg=COLOR_ACCENT))
+        browse_btn.bind('<Button-1>', lambda e: self.browse_gta_path())
+        browse_inner.bind('<Button-1>', lambda e: self.browse_gta_path())
 
-        # GTA Path
-        tk.Label(right_panel, text="GTA SA FOLDER",
-                font=("Segoe UI", 9), fg=COLOR_TEXT_GRAY,
-                bg=COLOR_BG_MAIN).pack(pady=(10, 3))
+        # CEF Plugin status
+        tk.Label(right_content, text="CEF PLUGIN", font=("Segoe UI", 11, "bold"),
+                fg=COLOR_TEXT_DIM, bg=COLOR_BG_CARD).pack(anchor=tk.W, pady=(10,5))
 
-        path_frame = tk.Frame(right_panel, bg=COLOR_BG_MAIN)
-        path_frame.pack(fill=tk.X, padx=15)
+        cef_frame = tk.Frame(right_content, bg=COLOR_INPUT_BG, padx=12, pady=10)
+        cef_frame.pack(fill=tk.X, pady=(0,15))
 
-        self.path_var = tk.StringVar(value=self.settings.get("gta_path", ""))
-        path_entry = tk.Entry(path_frame, textvariable=self.path_var,
-                font=("Segoe UI", 8), bg=COLOR_INPUT_BG, fg=COLOR_TEXT_LIGHT,
-                insertbackground=COLOR_WHITE, relief=tk.FLAT)
-        path_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=4)
+        cef_status = check_cef_plugin(self.gta_path) if self.gta_path else False
+        self.cef_label = tk.Label(cef_frame,
+                                  text="CEF Plugin instaliran" if cef_status else "CEF Plugin NIJE pronadjen",
+                                  font=("Segoe UI", 9),
+                                  fg=COLOR_SUCCESS if cef_status else COLOR_WARNING,
+                                  bg=COLOR_INPUT_BG)
+        self.cef_label.pack(anchor=tk.W)
 
-        browse_btn = tk.Button(path_frame, text="...", font=("Segoe UI", 8),
-                bg=COLOR_BG_ROW, fg=COLOR_TEXT_LIGHT, relief=tk.FLAT,
-                cursor="hand2", command=self.browse_gta_path)
-        browse_btn.pack(side=tk.RIGHT, padx=(5, 0), ipady=2)
+        if not cef_status:
+            cef_info = tk.Label(cef_frame,
+                               text="Potreban za Tablet, Inventar i Laptop UI",
+                               font=("Segoe UI", 8),
+                               fg=COLOR_TEXT_DIM, bg=COLOR_INPUT_BG)
+            cef_info.pack(anchor=tk.W, pady=(2,0))
 
-        # CEF Install button
-        self.cef_status_text = "CEF: Provjera..."
-        self.cef_btn = tk.Button(right_panel, text=self.cef_status_text,
-                font=("Segoe UI", 9), bg=COLOR_BG_ROW, fg=COLOR_TEXT_LIGHT,
-                relief=tk.FLAT, cursor="hand2", command=self.install_cef)
-        self.cef_btn.pack(fill=tk.X, padx=15, pady=(10, 5), ipady=4)
-        self.update_cef_status()
+        # Spacer
+        tk.Frame(right_content, bg=COLOR_BG_CARD).pack(fill=tk.BOTH, expand=True)
 
-        # ========== LAUNCH BUTTON ==========
-        launch_frame = tk.Frame(right_panel, bg=COLOR_BG_MAIN)
-        launch_frame.pack(fill=tk.X, padx=15, pady=(20, 10))
+        # ===== LAUNCH DUGME =====
+        self.launch_btn = tk.Frame(right_content, bg=COLOR_ACCENT, padx=0, pady=0,
+                                   cursor="hand2")
+        self.launch_btn.pack(fill=tk.X, pady=(10,0), ipady=12)
 
-        self.launch_btn = tk.Button(launch_frame,
-                text="LAUNCH",
-                font=("Segoe UI", 20, "bold"),
-                bg=COLOR_ACCENT, fg=COLOR_WHITE,
-                activebackground=COLOR_BRIGHT, activeforeground=COLOR_WHITE,
-                relief=tk.FLAT, cursor="hand2",
-                command=self.launch_game)
-        self.launch_btn.pack(fill=tk.X, ipady=12)
+        self.launch_text = tk.Label(self.launch_btn, text="LAUNCH",
+                                    font=("Segoe UI", 18, "bold"),
+                                    fg=COLOR_TEXT_BRIGHT, bg=COLOR_ACCENT,
+                                    cursor="hand2")
+        self.launch_text.pack()
 
-        # Hover effect for launch button
-        self.launch_btn.bind("<Enter>", lambda e: self.launch_btn.configure(bg=COLOR_BRIGHT))
-        self.launch_btn.bind("<Leave>", lambda e: self.launch_btn.configure(bg=COLOR_ACCENT))
+        # Bind hover efekte
+        self.launch_btn.bind('<Enter>', self.on_launch_hover)
+        self.launch_btn.bind('<Leave>', self.on_launch_leave)
+        self.launch_btn.bind('<Button-1>', lambda e: self.launch_game())
+        self.launch_text.bind('<Enter>', self.on_launch_hover)
+        self.launch_text.bind('<Leave>', self.on_launch_leave)
+        self.launch_text.bind('<Button-1>', lambda e: self.launch_game())
 
-        # Refresh status button
-        refresh_btn = tk.Button(right_panel, text="Osvjezi status",
-                font=("Segoe UI", 9), bg=COLOR_BG_LIGHT, fg=COLOR_TEXT_LIGHT,
-                relief=tk.FLAT, cursor="hand2", command=self.refresh_server_status)
-        refresh_btn.pack(pady=5)
+        # Status text ispod launch
+        self.launch_status = tk.Label(right_content, text="",
+                                      font=("Segoe UI", 9),
+                                      fg=COLOR_TEXT_DIM, bg=COLOR_BG_CARD)
+        self.launch_status.pack(pady=(8,0))
 
-        # ========== BOTTOM BAR ==========
-        bottom = tk.Frame(self.root, bg=COLOR_BG_MAIN, height=30)
-        bottom.pack(fill=tk.X, side=tk.BOTTOM)
-        bottom.pack_propagate(False)
+    # =========================================================================
+    #  EVENT HANDLERS
+    # =========================================================================
+    def start_drag(self, event):
+        self.drag_start_x = event.x
+        self.drag_start_y = event.y
 
-        tk.Label(bottom, text=f"{SERVER_NAME} Launcher v{LAUNCHER_VERSION} | {SERVER_WEBSITE}",
-                font=("Segoe UI", 8), fg=COLOR_TEXT_GRAY, bg=COLOR_BG_MAIN).pack(pady=5)
+    def do_drag(self, event):
+        x = self.root.winfo_x() + (event.x - self.drag_start_x)
+        y = self.root.winfo_y() + (event.y - self.drag_start_y)
+        self.root.geometry(f'+{x}+{y}')
 
-    # ========== ACTIONS ==========
+    def on_launch_hover(self, event):
+        if not self.is_launching:
+            self.launch_btn.configure(bg=COLOR_ACCENT_HOVER)
+            self.launch_text.configure(bg=COLOR_ACCENT_HOVER)
 
-    def copy_ip(self):
-        """Copy server IP to clipboard"""
-        self.root.clipboard_clear()
-        self.root.clipboard_append(f"{SERVER_IP}:{SERVER_PORT}")
-        messagebox.showinfo("Kopirano", f"IP adresa {SERVER_IP}:{SERVER_PORT} kopirana!")
+    def on_launch_leave(self, event):
+        if not self.is_launching:
+            self.launch_btn.configure(bg=COLOR_ACCENT)
+            self.launch_text.configure(bg=COLOR_ACCENT)
 
+    def on_close(self):
+        self.root.destroy()
+        sys.exit(0)
+
+    # =========================================================================
+    #  BROWSE GTA PATH
+    # =========================================================================
     def browse_gta_path(self):
-        """Browse for GTA SA folder"""
-        folder = filedialog.askdirectory(title="Izaberi GTA San Andreas folder")
-        if folder:
-            self.path_var.set(folder)
-            self.settings["gta_path"] = folder
-            save_settings(self.settings)
-            self.update_cef_status()
+        from tkinter import filedialog
+        gta_exe = filedialog.askopenfilename(
+            title="Pronadji gta_sa.exe",
+            filetypes=[("GTA SA Executable", "gta_sa.exe"), ("All files", "*.*")]
+        )
+        if gta_exe:
+            self.gta_path = os.path.dirname(gta_exe)
+            self.path_label.configure(text=self.gta_path, fg=COLOR_SUCCESS)
 
-    def update_cef_status(self):
-        """Update CEF installation status button"""
-        gta_path = self.path_var.get()
-        if check_cef_installed(gta_path):
-            self.cef_btn.configure(text="CEF: Instaliran  Povuci ponovo", bg=COLOR_BG_ROW, fg=COLOR_GREEN)
-        else:
-            self.cef_btn.configure(text="CEF: Instaliraj u GTA folder", bg=COLOR_BG_ROW, fg=COLOR_GOLD)
+            # Azuriraj CEF status
+            cef_status = check_cef_plugin(self.gta_path)
+            self.cef_label.configure(
+                text="CEF Plugin instaliran" if cef_status else "CEF Plugin NIJE pronadjen",
+                fg=COLOR_SUCCESS if cef_status else COLOR_WARNING
+            )
 
-    def install_cef(self):
-        """Install CEF client files to GTA SA folder"""
-        gta_path = self.path_var.get()
-        if not gta_path:
-            messagebox.showwarning("Upozorenje", "Prvo izaberi GTA San Andreas folder!")
-            return
-
-        if not os.path.isdir(gta_path):
-            messagebox.showerror("Greska", "Izabrani folder ne postoji!")
-            return
-
-        self.cef_btn.configure(text="CEF: Instalacija...", fg=COLOR_GOLD)
-
-        success, msg = install_cef_client(gta_path)
-        if success:
-            self.cef_btn.configure(text="CEF: Instaliran!", fg=COLOR_GREEN)
-            self.settings["cef_installed"] = True
-            save_settings(self.settings)
-            messagebox.showinfo("Uspjeh", msg)
-        else:
-            self.cef_btn.configure(text="CEF: Greska!", fg=COLOR_RED)
-            messagebox.showerror("Greska", msg)
-
-        self.update_cef_status()
-
-    def refresh_server_status(self):
-        """Check server status in background thread"""
-        self.status_label.configure(text="Provjera...")
-        self.status_dot.itemconfigure(self.status_dot_circle, fill=COLOR_GOLD)
-
-        def do_check():
-            check_server_status(self.on_status_checked)
-
-        thread = threading.Thread(target=do_check, daemon=True)
+    # =========================================================================
+    #  SERVER STATUS CHECK
+    # =========================================================================
+    def check_server_status(self):
+        """Pokreni provjeru statusa u background threadu"""
+        thread = threading.Thread(target=self._do_status_check, daemon=True)
         thread.start()
 
-    def on_status_clicked(self):
-        """Manual refresh on click"""
-        self.refresh_server_status()
+    def _do_status_check(self):
+        info = query_samp_server(SERVER_IP, SERVER_PORT)
+        self.server_info = info
+        self.root.after(0, self._update_status_ui, info)
 
-    def on_status_checked(self, online, players, maxplayers):
-        """Callback when server status is checked"""
-        self.server_online = online
-        self.player_count = players
-        self.max_players = maxplayers
+    def _update_status_ui(self, info):
+        if info and info.get('online'):
+            # Server je online
+            self.status_dot.delete("all")
+            self.status_dot.create_oval(2, 2, 10, 10, fill=COLOR_SUCCESS, outline="")
 
-        def update_ui():
-            if online:
-                self.status_dot.itemconfigure(self.status_dot_circle, fill=COLOR_GREEN)
-                self.status_label.configure(text="ONLINE", fg=COLOR_GREEN)
-                if players >= 0:
-                    self.players_label.configure(text=f"Igraci: {players}/{maxplayers}")
-                else:
-                    self.players_label.configure(text="Igraci: N/A")
-            else:
-                self.status_dot.itemconfigure(self.status_dot_circle, fill=COLOR_RED)
-                self.status_label.configure(text="OFFLINE", fg=COLOR_RED)
-                self.players_label.configure(text="Server nije dostupan")
+            self.status_label.configure(
+                text=f"Server Online  |  {info.get('name', SERVER_NAME)}",
+                fg=COLOR_SUCCESS
+            )
+            self.player_label.configure(
+                text=f"Igraci: {info.get('players', 0)} / {info.get('max_players', 0)}"
+            )
+            self.gamemode_label.configure(
+                text=f"Gamemode: {info.get('gamemode', 'N/A')}  |  Map: {info.get('map', 'N/A')}"
+            )
+        else:
+            # Server je offline
+            self.status_dot.delete("all")
+            self.status_dot.create_oval(2, 2, 10, 10, fill=COLOR_ERROR, outline="")
 
-        self.root.after(0, update_ui)
+            self.status_label.configure(text="Server Offline", fg=COLOR_ERROR)
+            self.player_label.configure(text="Server trenutno nije dostupan")
+            self.gamemode_label.configure(text="")
 
+    def schedule_status_refresh(self):
+        """Osvjezavaj status svakih 30 sekundi"""
+        self.check_server_status()
+        self.root.after(30000, self.schedule_status_refresh)
+
+    # =========================================================================
+    #  LAUNCH GAME
+    # =========================================================================
     def launch_game(self):
-        """Launch SA-MP and connect to server"""
-        gta_path = self.path_var.get()
-        nickname = self.nickname_var.get().strip()
-
-        # Save settings
-        self.settings["gta_path"] = gta_path
-        self.settings["nickname"] = nickname
-        save_settings(self.settings)
-
-        if not gta_path:
-            messagebox.showwarning("Upozorenje",
-                "Izaberi GTA San Andreas folder!\n\nKlikni '...' dugme pored putanje.")
+        if self.is_launching:
             return
 
-        if not os.path.isdir(gta_path):
-            messagebox.showerror("Greska", "GTA San Andreas folder ne postoji!\n\nIzaberi ispravan folder.")
-            return
-
-        # Check for samp.exe
-        samp_exe = os.path.join(gta_path, "samp.exe")
-        if not os.path.isfile(samp_exe):
+        # Provjeri da li je GTA SA pronadjen
+        if not self.gta_path:
             messagebox.showerror("Greska",
-                "samp.exe nije pronadjen u izabranom folderu!\n\n"
-                "Provjeri da li je SA-MP klijent instaliran.")
+                "GTA San Andreas nije pronadjen!\n\n"
+                "Klikni 'Browse' dugme i pronadji gta_sa.exe na svom racunaru.",
+                parent=self.root)
             return
 
-        # Auto-install CEF if not installed
-        if not check_cef_installed(gta_path):
-            success, msg = install_cef_client(gta_path)
-            if success:
-                messagebox.showinfo("CEF Instaliran",
-                    "CEF klijent plugin je automatski instaliran u tvoj GTA folder!")
-            # Don't block if CEF install fails - game can still work
+        gta_exe = os.path.join(self.gta_path, "gta_sa.exe")
+        if not os.path.exists(gta_exe):
+            messagebox.showerror("Greska",
+                f"gta_sa.exe nije pronadjen u:\n{self.gta_path}\n\n"
+                "Izaberi ispravni folder.",
+                parent=self.root)
+            return
 
-        # Set nickname in SA-MP
-        if nickname:
-            try:
-                # Write nickname to sa-mp config
-                samp_cfg = os.path.join(gta_path, "sa-mp.cfg")
-                lines = []
-                if os.path.isfile(samp_cfg):
-                    with open(samp_cfg, 'r') as f:
-                        lines = f.readlines()
+        # Provjeri da li je samp.exe dostupan
+        samp_exe = find_samp_exe(self.gta_path)
+        if not samp_exe:
+            messagebox.showerror("Greska",
+                "samp.exe nije pronadjen!\n\n"
+                "Morate instalirati SA-MP client prvo.\n"
+                "Preuzmite ga sa sa-mp.com",
+                parent=self.root)
+            return
 
-                found = False
-                for i, line in enumerate(lines):
-                    if line.lower().startswith("name"):
-                        lines[i] = f"name {nickname}\n"
-                        found = True
-                        break
-                if not found:
-                    lines.append(f"name {nickname}\n")
+        # Pokreni launcher animaciju
+        self.is_launching = True
+        self.launch_btn.configure(bg=COLOR_ACCENT_GLOW, cursor="watch")
+        self.launch_text.configure(text="POKRECEM...", bg=COLOR_ACCENT_GLOW, cursor="watch")
+        self.launch_status.configure(text="Konektujem se na server...", fg=COLOR_ACCENT)
 
-                with open(samp_cfg, 'w') as f:
-                    f.writelines(lines)
-            except:
-                pass
+        # Pokreni u threadu da ne freezea UI
+        thread = threading.Thread(target=self._do_launch, args=(samp_exe,), daemon=True)
+        thread.start()
 
-        # Launch samp.exe with server connection
+    def _do_launch(self, samp_exe):
         try:
-            os.chdir(gta_path)
-            subprocess.Popen([samp_exe, f"{SERVER_IP}:{SERVER_PORT}"],
-                           cwd=gta_path)
-            messagebox.showinfo("Pokrenuto!",
-                f"Povezivanje na {SERVER_NAME}...\n\n"
-                f"IP: {SERVER_IP}:{SERVER_PORT}\n"
-                f"Nadimak: {nickname if nickname else 'Nije postavljen'}\n\n"
-                f"Uzivaj u igri!")
-        except Exception as e:
-            messagebox.showerror("Greska",
-                f"Nije moguce pokrenuti samp.exe!\n\n{str(e)}")
+            # Pokreni SA-MP sa server IP-om
+            # samp.exe prima IP:PORT kao argument
+            connect_str = f"{SERVER_IP}:{SERVER_PORT}"
 
-    def run(self):
-        """Start the launcher"""
-        self.root.mainloop()
+            self.root.after(0, lambda: self.launch_status.configure(
+                text=f"Pokrecem SA-MP... {connect_str}", fg=COLOR_ACCENT))
+
+            # Pokreni proces
+            subprocess.Popen([samp_exe, connect_str], cwd=self.gta_path)
+
+            # Pricekaj malo i azuriraj UI
+            time.sleep(2)
+
+            self.root.after(0, lambda: self.launch_status.configure(
+                text="Igra pokrenuta! Uzivaj na Unicate Gaming!", fg=COLOR_SUCCESS))
+
+            # Nakon 5 sekundi zatvori launcher
+            time.sleep(5)
+            self.root.after(0, self.root.destroy)
+
+        except Exception as e:
+            self.root.after(0, lambda: self._launch_error(str(e)))
+
+    def _launch_error(self, error_msg):
+        self.is_launching = False
+        self.launch_btn.configure(bg=COLOR_ACCENT, cursor="hand2")
+        self.launch_text.configure(text="LAUNCH", bg=COLOR_ACCENT, cursor="hand2")
+        self.launch_status.configure(text="", fg=COLOR_TEXT_DIM)
+
+        messagebox.showerror("Greska",
+            f"Nije moguce pokrenuti igru!\n\n{error_msg}",
+            parent=self.root)
+
 
 # =============================================================================
 #  MAIN
 # =============================================================================
+def main():
+    app = UnicateGamingLauncher()
+    app.root.mainloop()
+
+
 if __name__ == "__main__":
-    app = UnicateLauncher()
-    app.run()
+    main()
