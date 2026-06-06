@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # =============================================================================
-#  UNICATE GAMING - LAUNCHER V5
+#  UNICATE GAMING LAUNCHER
 #  Full-Screen Gaming Portal | Blue Neon Theme | Custom Logo
 #
 #  Instalacija:
 #    pip install customtkinter pillow requests
 #
 #  Kompajliranje u .exe:
-#    pyinstaller --onefile --windowed --icon=ug_icon.ico --name="UnicateGaming" launcher_v2.py
+#    pyinstaller --onefile --windowed --icon=ug_icon.ico --name="UnicateGaming" UnicateGamingLauncher.py
 # =============================================================================
 
 import customtkinter as ctk
@@ -424,14 +424,20 @@ class BgCanvas(ctk.CTkCanvas):
 class UnicateGamingLauncher:
     def __init__(self):
         self.root=ctk.CTk()
-        self.root.title("UNICATE GAMING - LAUNCHER")
+        self.root.title("Unicate Gaming Launcher")
         self.root.overrideredirect(True)
 
-        # Postavi ikonicu
-        icon_path = os.path.join(LAUNCHER_DIR, "ug_icon.ico")
-        if os.path.exists(icon_path):
+        # Postavi ikonicu - prvo pokusaj .ico, pa .png
+        icon_ico = os.path.join(LAUNCHER_DIR, "ug_icon.ico")
+        icon_png = os.path.join(LAUNCHER_DIR, "ug_logo.png")
+        if os.path.exists(icon_ico):
             try:
-                self.root.iconbitmap(icon_path)
+                self.root.iconbitmap(icon_ico)
+            except: pass
+        elif os.path.exists(icon_png) and HAS_PIL:
+            try:
+                _tmp = Image.open(icon_png)
+                self.root.iconphoto(True, ImageTk.PhotoImage(_tmp))
             except: pass
 
         sw=self.root.winfo_screenwidth(); sh=self.root.winfo_screenheight()
@@ -458,12 +464,8 @@ class UnicateGamingLauncher:
 
     def _load_images(self):
         try:
-            # Glavni logo - prvo traži ug_logo.png (korisnikov upload), pa ostale
+            # Glavni logo
             logo=os.path.join(LAUNCHER_DIR,"ug_logo.png")
-            if not os.path.exists(logo):
-                logo=os.path.join(LAUNCHER_DIR,"ug_logo_pro.png")
-            if not os.path.exists(logo):
-                logo=os.path.join(LAUNCHER_DIR,"logo.png")
             if os.path.exists(logo):
                 img=Image.open(logo)
                 self.imgs['logo_huge']=ctk.CTkImage(img,img,size=(220,220))
