@@ -1,0 +1,1092 @@
+<html>
+<head>
+<title>Unicate Gaming RPG - Launcher</title>
+<HTA:APPLICATION
+  ID="UnicateGamingLauncher"
+  APPLICATIONNAME="Unicate Gaming RPG"
+  BORDER="none"
+  BORDERSTYLE="normal"
+  CAPTION="no"
+  CONTEXTMENU="no"
+  INNERBORDER="no"
+  MAXIMIZEBUTTON="no"
+  MINIMIZEBUTTON="no"
+  SHOWINTASKBAR="yes"
+  SINGLEINSTANCE="yes"
+  SYSMENU="no"
+  VERSION="1.0.0"
+  WINDOWSTATE="normal"
+/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    overflow: hidden;
+    background: #0a0e1a;
+    font-family: 'Rajdhani', 'Segoe UI', Arial, sans-serif;
+    color: #e2e8f0;
+    user-select: none;
+  }
+
+  /* ===== MAIN CONTAINER ===== */
+  .launcher {
+    width: 1100px;
+    height: 680px;
+    display: flex;
+    flex-direction: column;
+    background: #0a0e1a;
+    border: 1px solid #1e3a5f;
+  }
+
+  /* ===== TOP BAR ===== */
+  .topbar {
+    height: 42px;
+    background: #0d1321;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 10px;
+    border-bottom: 1px solid #1a2d4a;
+    flex-shrink: 0;
+  }
+
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .topbar-btn {
+    background: #1a2744;
+    border: 1px solid #234676;
+    color: #8badd4;
+    padding: 5px 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+  }
+
+  .topbar-btn:hover {
+    background: #234676;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
+  .topbar-btn-icon {
+    margin-right: 5px;
+    font-size: 11px;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+  }
+
+  .topbar-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .topbar-username {
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .window-controls {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  .win-btn {
+    width: 36px;
+    height: 30px;
+    background: transparent;
+    border: none;
+    color: #64748b;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .win-btn:hover {
+    background: #1e3a5f;
+    color: #e2e8f0;
+  }
+
+  .win-btn-close:hover {
+    background: #dc2626;
+    color: #fff;
+  }
+
+  /* ===== CONTENT AREA ===== */
+  .content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ===== LEFT SIDEBAR ===== */
+  .sidebar {
+    width: 220px;
+    background: #0d1321;
+    border-right: 1px solid #1a2d4a;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .sidebar-header {
+    padding: 15px 16px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #3b82f6;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .server-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+
+  .server-item:hover {
+    background: #111d33;
+    border-left-color: #3b82f6;
+  }
+
+  .server-item.active {
+    background: #111d33;
+    border-left-color: #3b82f6;
+  }
+
+  .server-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .server-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .server-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #e2e8f0;
+  }
+
+  .server-players {
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .server-status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    margin-right: 4px;
+  }
+
+  .status-online { background: #22c55e; box-shadow: 0 0 4px #22c55e; }
+  .status-offline { background: #ef4444; box-shadow: 0 0 4px #ef4444; }
+  .status-dev { background: #f59e0b; box-shadow: 0 0 4px #f59e0b; }
+
+  .sidebar-divider {
+    height: 1px;
+    background: #1a2d4a;
+    margin: 8px 16px;
+  }
+
+  .sidebar-section-title {
+    padding: 12px 16px 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #475569;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* Sidebar bottom - settings */
+  .sidebar-bottom {
+    margin-top: auto;
+    border-top: 1px solid #1a2d4a;
+    padding: 10px;
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 8px;
+  }
+
+  .settings-label {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .gta-path-display {
+    font-size: 9px;
+    color: #475569;
+    padding: 4px 8px;
+    background: #0a0e1a;
+    border: 1px solid #1a2d4a;
+    margin: 4px 8px 8px;
+    word-break: break-all;
+    max-height: 30px;
+    overflow: hidden;
+  }
+
+  .browse-btn {
+    display: block;
+    margin: 0 8px 8px;
+    padding: 5px 12px;
+    background: #1a2744;
+    border: 1px solid #234676;
+    color: #8badd4;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+
+  .browse-btn:hover {
+    background: #234676;
+    color: #fff;
+  }
+
+  /* ===== MAIN AREA ===== */
+  .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background pattern */
+  .main-bg {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #0f1b33 0%, #0a1628 40%, #0d1f3c 100%);
+    z-index: 0;
+  }
+
+  .main-bg::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(30, 64, 175, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 60% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 40%);
+  }
+
+  .main-bg::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%233b82f6' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Content overlay */
+  .main-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  /* Logo section */
+  .logo-section {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .logo-text-ug {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 72px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 40%, #1d4ed8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    line-height: 1;
+    filter: drop-shadow(0 2px 10px rgba(59, 130, 246, 0.3));
+  }
+
+  .logo-text-sub {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: #3b82f6;
+    letter-spacing: 12px;
+    margin-top: 4px;
+  }
+
+  .logo-text-rpg {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 36px;
+    font-weight: 700;
+    color: #e2e8f0;
+    letter-spacing: 8px;
+    margin-top: 8px;
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Server status display */
+  .server-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 35px;
+    padding: 10px 25px;
+    background: rgba(13, 19, 33, 0.8);
+    border: 1px solid #1a2d4a;
+    border-radius: 4px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .status-value {
+    color: #e2e8f0;
+    font-weight: 700;
+  }
+
+  .status-divider {
+    width: 1px;
+    height: 16px;
+    background: #1a2d4a;
+  }
+
+  /* CONNECT button */
+  .connect-btn-wrapper {
+    margin-bottom: 25px;
+  }
+
+  .connect-btn {
+    width: 280px;
+    height: 58px;
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+    border: 2px solid #60a5fa;
+    color: #fff;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .connect-btn:hover {
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+    box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
+    transform: translateY(-1px);
+  }
+
+  .connect-btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  }
+
+  .connect-btn.connecting {
+    background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+    border-color: #3b82f6;
+    letter-spacing: 4px;
+  }
+
+  .connect-btn::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 40%,
+      rgba(255,255,255,0.05) 50%,
+      transparent 60%
+    );
+    animation: shine 3s infinite;
+  }
+
+  @keyframes shine {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Bottom info */
+  .bottom-info {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+  }
+
+  .info-card {
+    padding: 8px 18px;
+    background: rgba(13, 19, 33, 0.6);
+    border: 1px solid #1a2d4a;
+    border-radius: 3px;
+    text-align: center;
+  }
+
+  .info-card-label {
+    font-size: 9px;
+    color: #475569;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .info-card-value {
+    font-size: 14px;
+    color: #3b82f6;
+    font-weight: 700;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* ===== UPDATE BANNER (right side) ===== */
+  .update-banner {
+    position: absolute;
+    right: 25px;
+    bottom: 20px;
+    width: 240px;
+    background: rgba(13, 19, 33, 0.9);
+    border: 1px solid #1e40af;
+    border-radius: 4px;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .update-banner-header {
+    padding: 8px 12px;
+    background: linear-gradient(90deg, #1e40af, #2563eb);
+    font-size: 10px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .update-banner-body {
+    padding: 10px 12px;
+  }
+
+  .update-item {
+    padding: 5px 0;
+    border-bottom: 1px solid #1a2d4a;
+  }
+
+  .update-item:last-child {
+    border-bottom: none;
+  }
+
+  .update-item-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #60a5fa;
+  }
+
+  .update-item-desc {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .update-date {
+    font-size: 9px;
+    color: #475569;
+    margin-top: 2px;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0e1a; }
+  ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+  /* ===== ERROR OVERLAY ===== */
+  .error-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 14, 26, 0.95);
+    z-index: 10;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .error-overlay.show {
+    display: flex;
+  }
+
+  .error-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #ef4444;
+    margin-bottom: 15px;
+  }
+
+  .error-msg {
+    font-size: 14px;
+    color: #94a3b8;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .error-close-btn {
+    margin-top: 20px;
+    padding: 8px 30px;
+    background: #1e3a5f;
+    border: 1px solid #3b82f6;
+    color: #e2e8f0;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 2px;
+  }
+
+  .error-close-btn:hover {
+    background: #2563eb;
+  }
+</style>
+</head>
+<body>
+
+<div class="launcher" id="mainWindow">
+
+  <!-- ===== TOP BAR ===== -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="topbar-btn" onclick="openLink('https://ug-ogc.com')">
+        <span class="topbar-btn-icon">&#9741;</span> FORUM
+      </button>
+      <button class="topbar-btn" onclick="openLink('https://ug-ogc.com/cp')">
+        <span class="topbar-btn-icon">&#9881;</span> USER CP
+      </button>
+      <button class="topbar-btn" onclick="openLink('https://discord.gg/unicategaming')">
+        <span class="topbar-btn-icon">&#9672;</span> DISCORD
+      </button>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="topbar-avatar">UG</div>
+        <span class="topbar-username">Igrac</span>
+      </div>
+      <div class="window-controls">
+        <button class="win-btn" onclick="minimizeWindow()" title="Minimize">&#8211;</button>
+        <button class="win-btn win-btn-close" onclick="closeWindow()" title="Close">&#10005;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CONTENT ===== -->
+  <div class="content">
+
+    <!-- ===== LEFT SIDEBAR ===== -->
+    <div class="sidebar">
+      <div class="sidebar-header">UNICATE GAMING</div>
+
+      <div class="sidebar-section-title">Serveri u razvoju</div>
+
+      <div class="server-item" onclick="selectServer(this, 'dev1')">
+        <div class="server-icon">UG</div>
+        <div class="server-info">
+          <div class="server-name">Unicate Gaming RP</div>
+          <div class="server-players">
+            <span class="server-status-dot status-dev"></span>U razvoju
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section-title">Trenutno dostupno</div>
+
+      <div class="server-item active" id="serverMain" onclick="selectServer(this, 'main')">
+        <div class="server-icon">UG</div>
+        <div class="server-info">
+          <div class="server-name">Unicate Gaming RPG</div>
+          <div class="server-players" id="playerCount">
+            <span class="server-status-dot status-online" id="statusDot"></span>
+            <span id="playerText">Provjeravam...</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="settings-row">
+          <span class="settings-label">GTA SA Path:</span>
+        </div>
+        <div class="gta-path-display" id="gtaPathDisplay">Pretrazujem...</div>
+        <button class="browse-btn" onclick="browseGTA()">BROWSE GTA SA</button>
+      </div>
+    </div>
+
+    <!-- ===== MAIN AREA ===== -->
+    <div class="main-area">
+      <div class="main-bg"></div>
+
+      <div class="main-content">
+        <!-- Logo -->
+        <div class="logo-section">
+          <div class="logo-text-ug">UG</div>
+          <div class="logo-text-sub">UNICATE GAMING</div>
+          <div class="logo-text-rpg">RPG</div>
+        </div>
+
+        <!-- Server Status Bar -->
+        <div class="server-status-bar">
+          <div class="status-item">
+            <span>STATUS:</span>
+            <span class="status-value" id="srvStatus">PROVJERAVAM</span>
+          </div>
+          <div class="status-divider"></div>
+          <div class="status-item">
+            <span>IGRACI:</span>
+            <span class="status-value" id="srvPlayers">--</span>
+          </div>
+          <div class="status-divider"></div>
+          <div class="status-item">
+            <span>GAMEMODE:</span>
+            <span class="status-value" id="srvMode">--</span>
+          </div>
+        </div>
+
+        <!-- CONNECT Button -->
+        <div class="connect-btn-wrapper">
+          <button class="connect-btn" id="connectBtn" onclick="connectToServer()">CONNECT</button>
+        </div>
+
+        <!-- Bottom Info -->
+        <div class="bottom-info">
+          <div class="info-card">
+            <div class="info-card-label">IP SERVERA</div>
+            <div class="info-card-value">147.135.164.147:7777</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">VERZIJA</div>
+            <div class="info-card-value">1.0.0</div>
+          </div>
+          <div class="info-card">
+            <div class="info-card-label">CEF PLUGIN</div>
+            <div class="info-card-value" id="cefStatus">--</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Banner -->
+      <div class="update-banner">
+        <div class="update-banner-header">
+          <span>NOVOSTI</span>
+          <span>&#9654;</span>
+        </div>
+        <div class="update-banner-body">
+          <div class="update-item">
+            <div class="update-item-title">CEF Update</div>
+            <div class="update-item-desc">Novi Tablet, Inventar i Laptop UI dostupni!</div>
+            <div class="update-date">06.06.2026</div>
+          </div>
+          <div class="update-item">
+            <div class="update-item-title">Launcher Obavezan</div>
+            <div class="update-item-desc">Svi igraci moraju koristiti launcher.</div>
+            <div class="update-date">06.06.2026</div>
+          </div>
+          <div class="update-item">
+            <div class="update-item-title">Bounty Sistem</div>
+            <div class="update-item-desc">Postavljanje nagrada putem tableta.</div>
+            <div class="update-date">05.06.2026</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Overlay -->
+      <div class="error-overlay" id="errorOverlay">
+        <div class="error-title" id="errorTitle">GRESKA</div>
+        <div class="error-msg" id="errorMsg">--</div>
+        <button class="error-close-btn" onclick="hideError()">ZATVORI</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // =========================================================================
+  //  KONFIGURACIJA - PROMIJENI OVE VRIJEDNOSTI!
+  // =========================================================================
+  var SERVER_IP = "147.135.164.147";   // <-- Tvoj server IP
+  var SERVER_PORT = 7777;              // <-- Tvoj server port
+
+  // =========================================================================
+  //  WINDOW RESIZE & POSITION
+  // =========================================================================
+  window.resizeTo(1100, 680);
+  window.moveTo((screen.width - 1100) / 2, (screen.height - 680) / 2);
+
+  // =========================================================================
+  //  DRAG WINDOW
+  // =========================================================================
+  var isDragging = false;
+  var dragX = 0, dragY = 0;
+
+  document.getElementById('mainWindow').onmousedown = function(e) {
+    // Only drag from topbar
+    if (e.target.closest('.topbar') && !e.target.closest('button')) {
+      isDragging = true;
+      dragX = e.screenX - window.screenLeft;
+      dragY = e.screenY - window.screenTop;
+    }
+  };
+
+  document.onmousemove = function(e) {
+    if (isDragging) {
+      window.moveTo(e.screenX - dragX, e.screenY - dragY);
+    }
+  };
+
+  document.onmouseup = function() {
+    isDragging = false;
+  };
+
+  // =========================================================================
+  //  WINDOW CONTROLS
+  // =========================================================================
+  function minimizeWindow() {
+    window.blur();
+  }
+
+  function closeWindow() {
+    window.close();
+  }
+
+  // =========================================================================
+  //  FIND GTA SA INSTALLATION
+  // =========================================================================
+  var gtaPath = "";
+  var fso = new ActiveXObject("Scripting.FileSystemObject");
+  var shell = new ActiveXObject("WScript.Shell");
+
+  function findGTASA() {
+    // 1. Check SA-MP registry key
+    try {
+      var sampPath = shell.RegRead("HKCU\\Software\\SAMP\\gta_sa_exe");
+      if (sampPath && fso.FileExists(sampPath)) {
+        gtaPath = fso.GetParentFolderName(sampPath);
+        updateGTAPathDisplay();
+        return;
+      }
+    } catch(e) {}
+
+    // 2. Check common locations
+    var paths = [
+      "C:\\Program Files (x86)\\Rockstar Games\\GTA San Andreas",
+      "C:\\Program Files\\Rockstar Games\\GTA San Andreas",
+      "C:\\Games\\GTA San Andreas",
+      "C:\\Games\\GTA SA",
+      "D:\\Games\\GTA San Andreas",
+      "D:\\GTA San Andreas",
+      "D:\\Games\\GTA SA",
+      "D:\\GTA SA",
+      "E:\\GTA San Andreas",
+      "E:\\GTA SA"
+    ];
+
+    for (var i = 0; i < paths.length; i++) {
+      var exePath = paths[i] + "\\gta_sa.exe";
+      if (fso.FileExists(exePath)) {
+        gtaPath = paths[i];
+        updateGTAPathDisplay();
+        return;
+      }
+    }
+
+    // Not found
+    gtaPath = "";
+    document.getElementById('gtaPathDisplay').innerHTML = '<span style="color:#ef4444">GTA SA nije pronadjen! Klikni Browse.</span>';
+  }
+
+  function updateGTAPathDisplay() {
+    if (gtaPath) {
+      document.getElementById('gtaPathDisplay').innerHTML = '<span style="color:#22c55e">' + gtaPath + '</span>';
+      // Check CEF plugin
+      checkCEFPlugin();
+    }
+  }
+
+  // =========================================================================
+  //  BROWSE FOR GTA SA
+  // =========================================================================
+  function browseGTA() {
+    var path = "";
+    try {
+      // Use Shell.Application BrowseForFolder
+      var shellApp = new ActiveXObject("Shell.Application");
+      var folder = shellApp.BrowseForFolder(0, "Pronadji GTA San Andreas folder", 0);
+      if (folder) {
+        path = folder.Self.Path;
+      }
+    } catch(e) {
+      // Fallback: simple input
+      path = InputBox("Unesi putanju do GTA San Andreas foldera:", "GTA SA Path", "D:\\GTA San Andreas");
+    }
+
+    if (path) {
+      var exePath = path + "\\gta_sa.exe";
+      if (fso.FileExists(exePath)) {
+        gtaPath = path;
+        updateGTAPathDisplay();
+      } else {
+        showError("Greska", "gta_sa.exe nije pronadjen u tom folderu!\n\nIzaberi folder gdje je instaliran GTA San Andreas.");
+      }
+    }
+  }
+
+  function InputBox(prompt, title, defaultVal) {
+    // Simple input box using VBScript
+    try {
+      var result = shell.Popup(prompt, 0, title, 1);
+      return defaultVal;
+    } catch(e) {
+      return defaultVal;
+    }
+  }
+
+  // =========================================================================
+  //  CHECK CEF PLUGIN
+  // =========================================================================
+  function checkCEFPlugin() {
+    if (!gtaPath) {
+      document.getElementById('cefStatus').innerHTML = '<span style="color:#f59e0b">NIJE</span>';
+      return;
+    }
+    var cefAsi = gtaPath + "\\cef.asi";
+    var cefFolder = gtaPath + "\\CEF";
+    if (fso.FileExists(cefAsi) && fso.FolderExists(cefFolder)) {
+      document.getElementById('cefStatus').innerHTML = '<span style="color:#22c55e">DA</span>';
+    } else {
+      document.getElementById('cefStatus').innerHTML = '<span style="color:#f59e0b">NE</span>';
+    }
+  }
+
+  // =========================================================================
+  //  SERVER STATUS CHECK (via external script)
+  // =========================================================================
+  function checkServerStatus() {
+    // HTA cannot do UDP queries directly, so we show default status
+    // Server status can be checked via a PHP API on your website
+    // For now, show as online
+    try {
+      var xmlHttp = new ActiveXObject("MSXML2.XMLHTTP");
+      xmlHttp.open("GET", "http://" + SERVER_IP + "/status.json", true);
+      xmlHttp.onreadystatechange = function() {
+        if (xmlHttp.readyState == 4) {
+          try {
+            var data = eval("(" + xmlHttp.responseText + ")");
+            updateServerUI(data.online, data.players, data.max_players, data.gamemode);
+          } catch(e) {
+            // Default: show as potentially online
+            updateServerUI(true, 0, 200, "Unicate Gaming RPG");
+          }
+        }
+      };
+      xmlHttp.send(null);
+    } catch(e) {
+      updateServerUI(true, 0, 200, "Unicate Gaming RPG");
+    }
+  }
+
+  function updateServerUI(online, players, max, mode) {
+    if (online) {
+      document.getElementById('srvStatus').innerHTML = '<span style="color:#22c55e">ONLINE</span>';
+      document.getElementById('srvPlayers').textContent = players + ' / ' + max;
+      document.getElementById('srvMode').textContent = mode || 'RPG';
+      document.getElementById('statusDot').className = 'server-status-dot status-online';
+      document.getElementById('playerText').textContent = 'Igraci: ' + players + ' / ' + max;
+    } else {
+      document.getElementById('srvStatus').innerHTML = '<span style="color:#ef4444">OFFLINE</span>';
+      document.getElementById('srvPlayers').textContent = '--';
+      document.getElementById('srvMode').textContent = '--';
+      document.getElementById('statusDot').className = 'server-status-dot status-offline';
+      document.getElementById('playerText').textContent = 'Server offline';
+    }
+  }
+
+  // =========================================================================
+  //  CONNECT TO SERVER
+  // =========================================================================
+  function connectToServer() {
+    var btn = document.getElementById('connectBtn');
+
+    // Check GTA SA path
+    if (!gtaPath) {
+      showError("Greska", "GTA San Andreas nije pronadjen!\n\nKlikni 'BROWSE GTA SA' dugme u lijevom meniju i pronadji gta_sa.exe na svom racunaru.");
+      return;
+    }
+
+    var gtaExe = gtaPath + "\\gta_sa.exe";
+    if (!fso.FileExists(gtaExe)) {
+      showError("Greska", "gta_sa.exe nije pronadjen u:\n" + gtaPath + "\n\nIzaberi ispravni folder.");
+      return;
+    }
+
+    var sampExe = gtaPath + "\\samp.exe";
+    if (!fso.FileExists(sampExe)) {
+      showError("SA-MP nije instaliran", "samp.exe nije pronadjen!\n\nMorate instalirati SA-MP client prvo.\nPreuzmite ga sa sa-mp.com");
+      return;
+    }
+
+    // Animate button
+    btn.textContent = "POKRECEM...";
+    btn.className = "connect-btn connecting";
+
+    // Launch SA-MP
+    try {
+      var connectStr = SERVER_IP + ":" + SERVER_PORT;
+      shell.CurrentDirectory = gtaPath;
+      shell.Run('"' + sampExe + '" ' + connectStr, 1, false);
+
+      // Update button
+      setTimeout(function() {
+        btn.textContent = "POKRENUTO!";
+        setTimeout(function() {
+          btn.textContent = "CONNECT";
+          btn.className = "connect-btn";
+        }, 3000);
+      }, 2000);
+
+    } catch(e) {
+      btn.textContent = "CONNECT";
+      btn.className = "connect-btn";
+      showError("Greska", "Nije moguce pokrenuti igru!\n\n" + e.message);
+    }
+  }
+
+  // =========================================================================
+  //  SERVER SELECT
+  // =========================================================================
+  function selectServer(element, serverId) {
+    var items = document.querySelectorAll('.server-item');
+    for (var i = 0; i < items.length; i++) {
+      items[i].className = 'server-item';
+    }
+    element.className = 'server-item active';
+  }
+
+  // =========================================================================
+  //  OPEN LINK
+  // =========================================================================
+  function openLink(url) {
+    try {
+      shell.Run(url, 1, false);
+    } catch(e) {
+      // Fallback
+      window.open(url);
+    }
+  }
+
+  // =========================================================================
+  //  ERROR DISPLAY
+  // =========================================================================
+  function showError(title, msg) {
+    document.getElementById('errorTitle').textContent = title;
+    document.getElementById('errorMsg').textContent = msg;
+    document.getElementById('errorOverlay').className = 'error-overlay show';
+  }
+
+  function hideError() {
+    document.getElementById('errorOverlay').className = 'error-overlay';
+  }
+
+  // =========================================================================
+  //  INITIALIZATION
+  // =========================================================================
+  findGTASA();
+  checkServerStatus();
+
+  // Refresh status every 30 seconds
+  setInterval(function() {
+    checkServerStatus();
+  }, 30000);
+</script>
+
+</body>
+</html>
