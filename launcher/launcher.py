@@ -38,7 +38,7 @@ except ImportError:
 # =============================================================================
 #  KONFIGURACIJA SERVERA
 # =============================================================================
-SERVER_IP = "147.135.164.147"   # <-- PROMIJENI NA PRAVI IP
+SERVER_IP = "135.125.156.197"   # <-- PRAVI SERVER IP
 SERVER_PORT = 7777              # <-- PROMIJENI NA PRAVI PORT
 SERVER_NAME = "Unicate Gaming"
 WEBSITE_URL = "https://ug-ogc.com"
