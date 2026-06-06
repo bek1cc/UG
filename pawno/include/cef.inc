@@ -1,5 +1,8 @@
-// If building for open.mp without CEF component, use shim instead of natives
-#if defined OPENMP_BUILD
+// open.mp CEF Component (Cef.dll / Cef.so) is now available — use real natives.
+// The no-op shim (cef_openmp.inc) is kept for reference but no longer used.
+// If you need to build WITHOUT the CEF component, define CEF_DISABLE_SHIM
+// before including this file.
+#if defined OPENMP_BUILD && defined CEF_DISABLE_SHIM
     #include <cef_openmp>
 #else
 

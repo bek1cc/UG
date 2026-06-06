@@ -126,6 +126,10 @@ function findGtaPath() {
 //  STATUS CHECK
 // ============================================================
 function getStatus(gtaPath) {
+  const settings = loadSettings();
+  const mode = settings.server_mode || 'production';
+  const isLocal = mode === 'local';
+
   const s = {
     gta_path: gtaPath,
     has_samp: false,
@@ -133,7 +137,8 @@ function getStatus(gtaPath) {
     cef_msg: '-',
     has_asi: false,
     ready: false,
-    missing: []
+    missing: [],
+    server_mode: mode
   };
   if (gtaPath && fs.existsSync(gtaPath)) {
     s.has_samp = fs.existsSync(path.join(gtaPath, 'samp.exe'));
@@ -145,10 +150,17 @@ function getStatus(gtaPath) {
     else if (hasCef) { s.cef_msg = 'Fali cef.asi'; }
     else { s.cef_msg = 'Nije instaliran'; }
     if (!s.has_samp) s.missing.push('client');
-    if (!hasAsi) s.missing.push('cef_asi');
-    if (!hasCef) s.missing.push('cef_runtime');
-    if (!s.has_asi) s.missing.push('asi_loader');
-    s.ready = s.has_samp && s.cef_ok && s.has_asi;
+    // CEF and ASI are only required for production mode
+    // Local test mode only needs samp.exe
+    if (!isLocal) {
+      if (!hasAsi) s.missing.push('cef_asi');
+      if (!hasCef) s.missing.push('cef_runtime');
+      if (!s.has_asi) s.missing.push('asi_loader');
+      s.ready = s.has_samp && s.cef_ok && s.has_asi;
+    } else {
+      // Local mode: ready if samp.exe exists
+      s.ready = s.has_samp;
+    }
   }
   return s;
 }

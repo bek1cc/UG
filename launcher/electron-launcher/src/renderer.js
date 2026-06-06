@@ -88,11 +88,13 @@ function updateServerStatus() {
 }
 
 function updateComponents() {
+  const isLocal = config && config.server_mode === 'local';
+
   const comps = [
     { dot: 'dotSamp', status: 'statusSamp', ok: statusData.has_samp, name: 'SA-MP Client' },
-    { dot: 'dotAsi', status: 'statusAsi', ok: statusData.has_asi, name: 'ASI Loader' },
-    { dot: 'dotCef', status: 'statusCef', ok: statusData.cef_ok, name: 'CEF Plugin' },
-    { dot: 'dotRuntime', status: 'statusRuntime', ok: statusData.gta_path && statusData.cef_ok, name: 'Chromium RT' }
+    { dot: 'dotAsi', status: 'statusAsi', ok: isLocal ? true : statusData.has_asi, name: 'ASI Loader' },
+    { dot: 'dotCef', status: 'statusCef', ok: isLocal ? true : statusData.cef_ok, name: 'CEF Plugin' },
+    { dot: 'dotRuntime', status: 'statusRuntime', ok: isLocal ? true : (statusData.gta_path && statusData.cef_ok), name: 'Chromium RT' }
   ];
 
   comps.forEach(c => {
