@@ -224,14 +224,17 @@ function createWindow() {
   const srcDir = __dirname;
   const indexPath = path.join(srcDir, 'index.html');
   const preloadPath = path.join(srcDir, 'preload.js');
-  const iconPath = path.join(srcDir, 'ug_icon.ico');
+  // Try both .ico and .png for icon
+  const iconIco = path.join(srcDir, 'ug_icon.ico');
+  const iconPng = path.join(srcDir, 'ug_logo.png');
+  let iconPath = null;
+  if (fs.existsSync(iconIco)) iconPath = iconIco;
+  else if (fs.existsSync(iconPng)) iconPath = iconPng;
 
-  // Debug: log paths to console
   console.log('[LAUNCHER] __dirname:', srcDir);
-  console.log('[LAUNCHER] index.html path:', indexPath);
   console.log('[LAUNCHER] index.html exists:', fs.existsSync(indexPath));
-  console.log('[LAUNCHER] preload.js exists:', fs.existsSync(preloadPath));
-  console.log('[LAUNCHER] Files in src/:', fs.readdirSync(srcDir));
+  console.log('[LAUNCHER] icon path:', iconPath);
+  console.log('[LAUNCHER] icon exists:', iconPath ? fs.existsSync(iconPath) : false);
 
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -243,7 +246,7 @@ function createWindow() {
     resizable: true,
     title: 'Unicate Gaming - Launcher',
     backgroundColor: '#0b0f1a',
-    icon: fs.existsSync(iconPath) ? iconPath : undefined,
+    icon: iconPath || undefined,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
