@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.7 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.8 ===\n'); } catch(e) {}
 
-log('Launcher v3.7 starting...');
+log('Launcher v3.8 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.7.0';
+const LAUNCHER_VERSION = '3.8.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -727,37 +727,29 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // LAUNCH via samp:// protocol - same method as browser "Connect" links
-    // This is the most reliable way to connect because SA-MP handles it
-    // exactly the same as manual connection (no password issues)
+    // DIRECT SPAWN - same as running samp.exe manually
+    // Nuclear registry cleanup + direct spawn = exactly like manual connection
+    // Only pass IP and port - nickname comes from registry, NO password argument
     
-    // Method 1: samp:// protocol handler (most reliable, same as browser link)
-    const sampUrl = `samp://${srv.ip}:${srv.port}`;
-    log('Launching via samp:// protocol: ' + sampUrl);
+    // Small delay to ensure registry is fully written before samp.exe reads it
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    try {
-      shell.openExternal(sampUrl);
-      log('Launch OK via samp:// protocol');
-    } catch (protocolErr) {
-      // Fallback: direct spawn if protocol handler not registered
-      log('samp:// protocol failed, falling back to direct spawn: ' + protocolErr.message);
-      const child = spawn(sampExe, [srv.ip, String(srv.port)], {
-        detached: true,
-        stdio: 'ignore',
-        cwd: gtaPath,
-        windowsHide: true
-      });
-      child.unref();
-      log('Launch OK via direct spawn (PID: ' + child.pid + ')');
-    }
+    const child = spawn(sampExe, [srv.ip, String(srv.port)], {
+      detached: true,
+      stdio: 'ignore',
+      cwd: gtaPath,
+      windowsHide: true
+    });
+    child.unref();
     
+    log('Launch OK - direct spawn (PID: ' + child.pid + ')');
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
     if (deletedSet) fixes.push('obrisan gta_sa.set');
     if (removedCompat) fixes.push('iskljucen compat mode');
     const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
     const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname;
-    return { success: true, message: msg };
+    return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
