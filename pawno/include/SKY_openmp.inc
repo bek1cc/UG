@@ -44,9 +44,11 @@ stock SetFakeArmour(playerid, Float:armour)
 }
 
 // SetFakeFacingAngle - Use SetPlayerFacingAngle instead
-stock SetFakeFacingAngle(playerid, Float:angle)
+// Default value matches original SKY plugin: Float:0x7FFFFFFF means "use current angle"
+stock SetFakeFacingAngle(playerid, Float:angle = Float:0x7FFFFFFF)
 {
-    SetPlayerFacingAngle(playerid, angle);
+    if(angle != Float:0x7FFFFFFF)
+        SetPlayerFacingAngle(playerid, angle);
 }
 
 // SetKnifeSync - No equivalent, do nothing
