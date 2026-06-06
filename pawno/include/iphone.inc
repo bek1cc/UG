@@ -753,13 +753,23 @@ stock iPhone_UpdateStatusBar(playerid) {
 // ===========================================================================
 stock iPhone_Open(playerid) {
     if(iPhoneData[playerid][iPhone_Opened]) return;
+
+    // Auto-grant phone ako igrac nema telefon
     if(!iPhoneData[playerid][iPhone_HasPhone]) {
-        SendClientMessage(playerid, 0xFF453AFF, "[IPHONE]{FFFFFF} Nemate telefon!");
-        return;
+        iPhoneData[playerid][iPhone_HasPhone] = true;
+        iPhoneData[playerid][iPhone_Online] = true;
+        if(iPhoneData[playerid][iPhone_Number] == 0) {
+            iPhoneData[playerid][iPhone_Number] = 100000 + random(899999);
+        }
+        iPhoneData[playerid][iPhone_Credit] = 100;
+        new phoneMsg[64];
+        format(phoneMsg, sizeof(phoneMsg), "[IPHONE]{FFFFFF} Dobili ste telefon! Broj: %d", iPhoneData[playerid][iPhone_Number]);
+        SendClientMessage(playerid, 0x30D158FF, phoneMsg);
     }
+
     if(!iPhoneData[playerid][iPhone_Online]) {
-        SendClientMessage(playerid, 0xFF453AFF, "[IPHONE]{FFFFFF} Vas telefon je iskljucen! /togphone");
-        return;
+        iPhoneData[playerid][iPhone_Online] = true;
+        SendClientMessage(playerid, 0x0A84FFFF, "[IPHONE]{FFFFFF} Telefon ukljucen.");
     }
 
     iPhoneData[playerid][iPhone_Opened] = true;
@@ -1667,11 +1677,33 @@ stock iPhone_OnKeyStateChange(playerid, newkeys, oldkeys) {
 //  COMMAND: /phone - Otvaranje/zatvaranje telefona
 // ===========================================================================
 stock iPhone_CommandPhone(playerid) {
-    if(iPhoneData[playerid][iPhone_Opened]) {
-        iPhone_Close(playerid);
-    } else {
-        iPhone_Open(playerid);
-    }
+    // Ako je CEF tablet dostupan, koristi CEF umjesto textdrawova
+    #if defined USE_CEF
+        if(CefTablet[playerid][ct_IsOpen]) {
+            CEF_TabletClose(playerid);
+            SendClientMessage(playerid, 0x54A0FFFF, "[PHONE]{FFFFFF} Tablet zatvoren.");
+        } else {
+            // Auto-grant phone prije otvaranja CEF tableta
+            if(!iPhoneData[playerid][iPhone_HasPhone]) {
+                iPhoneData[playerid][iPhone_HasPhone] = true;
+                iPhoneData[playerid][iPhone_Online] = true;
+                if(iPhoneData[playerid][iPhone_Number] == 0) {
+                    iPhoneData[playerid][iPhone_Number] = 100000 + random(899999);
+                }
+                iPhoneData[playerid][iPhone_Credit] = 100;
+            }
+            if(!iPhoneData[playerid][iPhone_Online]) {
+                iPhoneData[playerid][iPhone_Online] = true;
+            }
+            CEF_TabletOpen(playerid);
+        }
+    #else
+        if(iPhoneData[playerid][iPhone_Opened]) {
+            iPhone_Close(playerid);
+        } else {
+            iPhone_Open(playerid);
+        }
+    #endif
     return 1;
 }
 

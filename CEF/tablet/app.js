@@ -1,6 +1,7 @@
 /* ===========================================================================
-   UG Tablet - CEF JavaScript
+   UG Tablet - CEF JavaScript v2.0
    Koristi pravi samp-cef API: window.cef.emit() / window.cef.subscribe()
+   Dark/Light theme, SVG ikone, modern UI
    =========================================================================== */
 
 // ===========================================================================
@@ -18,6 +19,7 @@ var playerData = {
 
 var bounties = [];
 var currentScreen = 'lockScreen';
+var isDarkTheme = true;
 
 // ===========================================================================
 //  SAMP-CEF API WRAPPER
@@ -29,7 +31,6 @@ function cefIsAvailable() {
 
 function cefEmit(eventName, data) {
     if (cefIsAvailable()) {
-        // Pravi samp-cef API: window.cef.emit(event, data)
         if (typeof data === 'object') {
             window.cef.emit(eventName, JSON.stringify(data));
         } else {
@@ -37,14 +38,12 @@ function cefEmit(eventName, data) {
         }
         console.log('[CEF] Emit: ' + eventName, data);
     } else {
-        // Debug mode - bez CEF plugina
         console.log('[CEF DEBUG] Emit: ' + eventName, data);
     }
 }
 
 function cefSubscribe(eventName, callback) {
     if (cefIsAvailable()) {
-        // Pravi samp-cef API: window.cef.subscribe(event, callback)
         window.cef.subscribe(eventName, callback);
         console.log('[CEF] Subscribed: ' + eventName);
     } else {
@@ -53,15 +52,36 @@ function cefSubscribe(eventName, callback) {
 }
 
 // ===========================================================================
+//  THEME TOGGLE
+// ===========================================================================
+function toggleTheme() {
+    isDarkTheme = !isDarkTheme;
+    var html = document.documentElement;
+    var toggle = document.getElementById('themeToggle');
+    var desc = document.getElementById('themeDesc');
+    var icon = document.getElementById('themeIcon');
+
+    if (isDarkTheme) {
+        html.setAttribute('data-theme', 'dark');
+        toggle.classList.remove('off');
+        desc.textContent = 'Aktivna';
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    } else {
+        html.setAttribute('data-theme', 'light');
+        toggle.classList.add('off');
+        desc.textContent = 'Svijetla tema';
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+    }
+}
+
+// ===========================================================================
 //  SCREEN MANAGEMENT
 // ===========================================================================
 function showScreen(screenId) {
-    // Hide all screens
     var screens = document.querySelectorAll('.screen');
     for (var i = 0; i < screens.length; i++) {
         screens[i].classList.remove('active');
     }
-    // Show target screen
     var target = document.getElementById(screenId);
     if (target) {
         target.classList.add('active');
@@ -71,6 +91,11 @@ function showScreen(screenId) {
 
 function showLogin() {
     showScreen('loginScreen');
+    // Reset PIN dots
+    var dots = document.querySelectorAll('.pin-dot');
+    for (var i = 0; i < dots.length; i++) {
+        dots[i].classList.remove('filled');
+    }
 }
 
 function goHome() {
@@ -94,6 +119,10 @@ function openApp(appName) {
             break;
         case 'sms':
             showScreen('smsApp');
+            break;
+        case 'settings':
+            showScreen('settingsApp');
+            updateSettingsInfo();
             break;
         default:
             showToast(appName + ' - Uskoro!');
@@ -136,6 +165,18 @@ function showLoginMessage(msg, type) {
     }, 3000);
 }
 
+// Update PIN dots visual
+function updatePinDots(length) {
+    var dots = document.querySelectorAll('.pin-dot');
+    for (var i = 0; i < dots.length; i++) {
+        if (i < length) {
+            dots[i].classList.add('filled');
+        } else {
+            dots[i].classList.remove('filled');
+        }
+    }
+}
+
 // ===========================================================================
 //  BOUNTY SYSTEM
 // ===========================================================================
@@ -158,7 +199,6 @@ function placeBounty() {
 
     cefEmit('tablet:bounty:place', { targetName: target, amount: amount });
 
-    // Clear form
     document.getElementById('bountyTarget').value = '';
     document.getElementById('bountyAmount').value = '';
 }
@@ -166,7 +206,6 @@ function placeBounty() {
 function updateBountyList(data) {
     bounties = data.bounties || [];
 
-    // Update stats
     document.getElementById('bountyCount').textContent = bounties.length;
     var total = 0;
     for (var i = 0; i < bounties.length; i++) {
@@ -174,7 +213,6 @@ function updateBountyList(data) {
     }
     document.getElementById('bountyTotal').textContent = '$' + total.toLocaleString();
 
-    // Update list
     var listEl = document.getElementById('bountyList');
     if (bounties.length === 0) {
         listEl.innerHTML = '<div class="bounty-empty">Nema aktivnih nagrada</div>';
@@ -248,6 +286,16 @@ function sendSMS() {
 }
 
 // ===========================================================================
+//  SETTINGS INFO
+// ===========================================================================
+function updateSettingsInfo() {
+    var phoneEl = document.getElementById('settingsPhone');
+    if (phoneEl) phoneEl.textContent = playerData.phone || '---';
+    var moneyEl = document.getElementById('settingsMoney');
+    if (moneyEl) moneyEl.textContent = '$' + (playerData.money || 0).toLocaleString();
+}
+
+// ===========================================================================
 //  TOAST NOTIFICATION
 // ===========================================================================
 function showToast(message) {
@@ -268,20 +316,46 @@ function updateTime() {
     var minutes = now.getMinutes().toString().padStart(2, '0');
     var timeStr = hours + ':' + minutes;
 
-    // Lock screen
     var lockTimeEl = document.getElementById('lockTime');
     if (lockTimeEl) lockTimeEl.textContent = timeStr;
 
-    // Status bar
     var statusTimeEl = document.getElementById('statusTime');
     if (statusTimeEl) statusTimeEl.textContent = timeStr;
 
-    // Lock screen date
     var days = ['Nedjelja', 'Ponedjeljak', 'Utorak', 'Srijeda', 'Cetvrtak', 'Petak', 'Subota'];
     var months = ['Sijecnja', 'Veljace', 'Ozujka', 'Travnja', 'Svibnja', 'Lipnja', 'Srpnja', 'Kolovoza', 'Rujna', 'Listopada', 'Studenog', 'Prosinca'];
     var dateStr = days[now.getDay()] + ', ' + now.getDate() + '. ' + months[now.getMonth()];
     var lockDateEl = document.getElementById('lockDate');
     if (lockDateEl) lockDateEl.textContent = dateStr;
+}
+
+// ===========================================================================
+//  BATTERY UPDATE
+// ===========================================================================
+function updateBattery(percent) {
+    var lockBatteryEl = document.getElementById('lockBattery');
+    var lockBatteryFillEl = document.getElementById('lockBatteryFill');
+    var statusBatteryEl = document.getElementById('statusBattery');
+    var statusBatteryFillEl = document.getElementById('statusBatteryFill');
+
+    var color = percent > 20 ? '#30d158' : '#ff453a';
+
+    if (lockBatteryEl) {
+        lockBatteryEl.textContent = percent + '%';
+        lockBatteryEl.style.color = color;
+    }
+    if (lockBatteryFillEl) {
+        lockBatteryFillEl.style.width = percent + '%';
+        lockBatteryFillEl.style.background = color;
+    }
+    if (statusBatteryEl) {
+        statusBatteryEl.textContent = percent + '%';
+        statusBatteryEl.style.color = color;
+    }
+    if (statusBatteryFillEl) {
+        statusBatteryFillEl.style.width = percent + '%';
+        statusBatteryFillEl.style.background = color;
+    }
 }
 
 // ===========================================================================
@@ -310,9 +384,10 @@ function initSubscriptions() {
             playerData.phone = parsed.phone || 0;
 
             // Update UI
-            document.getElementById('lockBattery').textContent = playerData.battery;
-            document.getElementById('statusBattery').textContent = playerData.battery + '%';
+            updateBattery(playerData.battery);
             document.getElementById('loginUsername').textContent = playerData.username;
+            var welcomeEl = document.getElementById('homeWelcome');
+            if (welcomeEl) welcomeEl.textContent = 'Dobrodosao, ' + playerData.username;
 
             updateTime();
             console.log('[CEF] Init data received:', parsed);
@@ -330,25 +405,14 @@ function initSubscriptions() {
                 showLoginMessage(parsed.message, 'success');
                 setTimeout(function() {
                     showScreen('homeScreen');
+                    var welcomeEl = document.getElementById('homeWelcome');
+                    if (welcomeEl) welcomeEl.textContent = 'Dobrodosao, ' + playerData.username;
                 }, 500);
             } else {
                 showLoginMessage(parsed.message, 'error');
             }
         } catch (e) {
             console.log('[CEF] Login result parse error:', e);
-        }
-    });
-
-    // tablet:login:success - login uspjesan sa bounty podacima
-    cefSubscribe('tablet:login:success', function(data) {
-        try {
-            var parsed = JSON.parse(data);
-            playerData.loggedIn = true;
-            if (parsed.bounties) {
-                updateBountyList({ bounties: parsed.bounties });
-            }
-        } catch (e) {
-            console.log('[CEF] Login success parse error:', e);
         }
     });
 
@@ -377,7 +441,7 @@ function initSubscriptions() {
 //  INITIALIZATION
 // ===========================================================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('[UG TABLET] Initializing...');
+    console.log('[UG TABLET] Initializing v2.0...');
 
     // Setup subscriptions za samp-cef evente
     initSubscriptions();
@@ -389,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show lock screen
     showScreen('lockScreen');
 
-    // PIN input - enter za submit
+    // PIN input handling
     var pinInput = document.getElementById('pinInput');
     if (pinInput) {
         pinInput.addEventListener('keydown', function(e) {
@@ -397,9 +461,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 attemptLogin();
             }
         });
-        // Dozvoli samo brojeve
         pinInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '').slice(0, 4);
+            updatePinDots(this.value.length);
         });
     }
 

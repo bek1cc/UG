@@ -87,9 +87,9 @@ enum BountyData {
     bool:bAnonymous
 }
 
-static BountyList[BOUNTY_MAX][BountyData];
+new BountyList[BOUNTY_MAX][BountyData];
 static BountyCount = 0;
-static BountyCooldown[MAX_PLAYERS];
+new BountyCooldown[MAX_PLAYERS];
 static BountyOnHead[MAX_PLAYERS];
 
 // TD varijable - 53 textdrawova
