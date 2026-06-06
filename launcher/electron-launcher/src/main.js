@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
-const { exec, execFile } = require('child_process');
+const { exec, execFile, spawn } = require('child_process');
 const dgram = require('dgram');
 const AdmZip = require('adm-zip');
 
@@ -445,17 +445,22 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   log('Launching game: ' + sampExe + ' ' + srv.ip + ':' + srv.port + ' nickname=' + nickname + ' mode=' + srv.mode);
 
-  return new Promise((resolve) => {
-    execFile(sampExe, [srv.ip, srv.port.toString(), nickname], { cwd: gtaPath }, (err) => {
-      if (err) {
-        log('Launch FAILED: ' + err.message);
-        resolve({ error: 'Greska pri pokretanju: ' + err.message });
-      } else {
-        log('Launch SUCCESS');
-        resolve({ success: true });
-      }
+  try {
+    // Use spawn with detached: true so samp.exe runs independently
+    // This prevents the launcher from crashing if samp.exe crashes
+    const child = spawn(sampExe, [srv.ip, srv.port.toString(), nickname], {
+      cwd: gtaPath,
+      detached: true,
+      stdio: 'ignore'
     });
-  });
+    child.unref(); // Don't wait for the child process
+    
+    log('Launch SUCCESS (spawned detached)');
+    return { success: true };
+  } catch (err) {
+    log('Launch FAILED: ' + err.message);
+    return { error: 'Greska pri pokretanju: ' + err.message };
+  }
 });
 
 ipcMain.handle('auto-install', async () => {
