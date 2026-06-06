@@ -1,6 +1,19 @@
+// ============================================================
+//  SKY.inc - SKY Plugin Include
+//  When OPENMP_BUILD is defined, uses open.mp compatible shim
+//  Otherwise, uses the original SKY plugin natives
+// ============================================================
+
 #if defined _INC_SKY
     #endinput
 #endif
+
+// If building for open.mp, use the shim instead of natives
+#if defined OPENMP_BUILD
+    #include <SKY_openmp>
+// Otherwise, use the original SKY plugin natives
+#else
+
 #define _INC_SKY
 
 // Make a player appear to spawn for all players but himself
@@ -36,3 +49,5 @@ native TextDrawSetPosition(Text:text, Float:x, Float:y);
 native PlayerTextDrawSetPosition(playerid, PlayerText:text, Float:x, Float:y);
 // Set the string of a TextDraw per-player
 native TextDrawSetStringForPlayer(Text:text, playerid, const string[]);
+
+#endif

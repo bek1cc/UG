@@ -106,8 +106,7 @@
             "crashdetect",
             "streamer",
             "sscanf",
-            "MapAndreas",
-            "SKY"
+            "MapAndreas"
         ],
         "main_scripts": [
             "fg-ogc 1"
