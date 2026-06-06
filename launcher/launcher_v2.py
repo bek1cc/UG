@@ -529,14 +529,14 @@ class UnicateGamingLauncher:
         # Verzija
         vf=ctk.CTkFrame(left,fg_color=BLUE_950,corner_radius=6,height=20)
         vf.pack(side="left",padx=(12,0)); vf.pack_propagate(False)
-        ctk.CTkLabel(vf,text=f"v{LAUNCHER_VERSION}",font=ctk.CTkFont(8,"bold"),
+        ctk.CTkLabel(vf,text=f"v{LAUNCHER_VERSION}",font=ctk.CTkFont(size=8, weight="bold"),
                     text_color=BLUE_300,fg_color="transparent").pack(padx=7)
 
         # Center nav
         center=ctk.CTkFrame(inner,fg_color="transparent")
         center.pack(side="left",expand=True)
         for nm,c in [("SERVER",NEON_SKY),("CEF UI",BLUE_400),("NOVOSTI",NEON_ICE),("DISCORD",BLUE_300)]:
-            lbl=ctk.CTkLabel(center,text=nm,font=ctk.CTkFont(11,"bold"),text_color=c,fg_color="transparent",cursor="hand2")
+            lbl=ctk.CTkLabel(center,text=nm,font=ctk.CTkFont(size=11, weight="bold"),text_color=c,fg_color="transparent",cursor="hand2")
             lbl.pack(side="left",padx=16)
             if nm=="DISCORD": lbl.bind("<Button-1>",lambda e:webbrowser.open(DISCORD_URL))
 
@@ -547,7 +547,7 @@ class UnicateGamingLauncher:
         badge=ctk.CTkFrame(right,fg_color="#060e1e",corner_radius=8,height=26)
         badge.pack(side="left",padx=(0,12)); badge.pack_propagate(False)
         self.dot_nav=PulseDot(badge,5,ORANGE_WARN); self.dot_nav.pack(side="left",padx=(6,3))
-        self.online_nav=ctk.CTkLabel(badge,text="...",font=ctk.CTkFont(9,"bold"),
+        self.online_nav=ctk.CTkLabel(badge,text="...",font=ctk.CTkFont(size=9, weight="bold"),
                                      text_color=T_DIM,fg_color="transparent")
         self.online_nav.pack(side="left",padx=(0,6))
 
@@ -555,7 +555,7 @@ class UnicateGamingLauncher:
                       text_color=T_DIM,font=ctk.CTkFont(11),corner_radius=6,
                       command=self.root.iconify).pack(side="left",padx=2)
         ctk.CTkButton(right,text="✕",width=32,height=26,fg_color="transparent",hover_color="#3b0a0a",
-                      text_color=RED_ERR,font=ctk.CTkFont(11,"bold"),corner_radius=6,
+                      text_color=RED_ERR,font=ctk.CTkFont(size=11, weight="bold"),corner_radius=6,
                       command=self.on_close).pack(side="left",padx=2)
 
     def _build_body(self):
@@ -606,7 +606,7 @@ class UnicateGamingLauncher:
         self.lbl_status=ctk.CTkLabel(sr,text="Provjeravam...",font=ctk.CTkFont(12),
                                      text_color=T_DIM,fg_color="transparent")
         self.lbl_status.pack(side="left")
-        self.lbl_players=ctk.CTkLabel(info,text="",font=ctk.CTkFont(13,"bold"),
+        self.lbl_players=ctk.CTkLabel(info,text="",font=ctk.CTkFont(size=13, weight="bold"),
                                       text_color=T_WHITE,fg_color="transparent",anchor="w")
         self.lbl_players.pack(anchor="w",pady=2)
         self.lbl_mode=ctk.CTkLabel(info,text="",font=ctk.CTkFont(10),
@@ -627,7 +627,7 @@ class UnicateGamingLauncher:
             ci=ctk.CTkFrame(card,fg_color="transparent"); ci.pack(fill="both",expand=True,padx=14,pady=10)
             tf=ctk.CTkFrame(ci,fg_color="transparent"); tf.pack(anchor="w",pady=(0,4))
             ctk.CTkFrame(tf,fg_color=c,width=24,height=3,corner_radius=2).pack(side="left",padx=(0,8))
-            ctk.CTkLabel(tf,text=t,font=ctk.CTkFont(10,"bold"),text_color=c,fg_color="transparent").pack(side="left")
+            ctk.CTkLabel(tf,text=t,font=ctk.CTkFont(size=10, weight="bold"),text_color=c,fg_color="transparent").pack(side="left")
             ctk.CTkLabel(ci,text=d,font=ctk.CTkFont(9),text_color=T_DIM,fg_color="transparent",
                         anchor="w",justify="left").pack(anchor="w")
 
@@ -639,7 +639,7 @@ class UnicateGamingLauncher:
         pi.pack(fill="both",expand=True,padx=22,pady=22)
 
         # Server info
-        ctk.CTkLabel(pi,text="KONEKCIJA",font=ctk.CTkFont(10,"bold"),
+        ctk.CTkLabel(pi,text="KONEKCIJA",font=ctk.CTkFont(size=10, weight="bold"),
                     text_color=NEON_SKY,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,6))
         cc=ctk.CTkFrame(pi,fg_color=BG_INPUT,corner_radius=10,border_width=1,border_color=BLUE_950)
         cc.pack(fill="x",pady=(0,12))
@@ -648,7 +648,7 @@ class UnicateGamingLauncher:
         ctk.CTkLabel(cc,text=f"  {SERVER_NAME}",font=ctk.CTkFont("Consolas",9),
                     text_color=T_DIM,fg_color="transparent",anchor="w").pack(anchor="w",padx=6,pady=(0,7))
 
-        ctk.CTkLabel(pi,text="GTA SAN ANDREAS",font=ctk.CTkFont(10,"bold"),
+        ctk.CTkLabel(pi,text="GTA SAN ANDREAS",font=ctk.CTkFont(size=10, weight="bold"),
                     text_color=BLUE_300,fg_color="transparent",anchor="w").pack(anchor="w",pady=(4,6))
         pc=ctk.CTkFrame(pi,fg_color=BG_INPUT,corner_radius=10,border_width=1,border_color=BLUE_950)
         pc.pack(fill="x",pady=(0,4))
@@ -658,7 +658,7 @@ class UnicateGamingLauncher:
         self.path_lbl.pack(anchor="w",padx=8,pady=7)
 
         ctk.CTkButton(pi,text="BROWSE",width=75,height=26,fg_color="#0f172a",hover_color=BG_HOVER,
-                      text_color=NEON_SKY,font=ctk.CTkFont(9,"bold"),corner_radius=8,
+                      text_color=NEON_SKY,font=ctk.CTkFont(size=9, weight="bold"),corner_radius=8,
                       border_width=1,border_color=BLUE_800,command=self.browse).pack(anchor="w",pady=(0,12))
 
         # Progress
@@ -695,7 +695,7 @@ class UnicateGamingLauncher:
         pi=ctk.CTkFrame(p,fg_color="transparent")
         pi.pack(fill="both",expand=True,padx=18,pady=14)
 
-        ctk.CTkLabel(pi,text="NOVOSTI",font=ctk.CTkFont(11,"bold"),
+        ctk.CTkLabel(pi,text="NOVOSTI",font=ctk.CTkFont(size=11, weight="bold"),
                     text_color=NEON_ICE,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,8))
 
         for t,d,c in [
@@ -707,7 +707,7 @@ class UnicateGamingLauncher:
             inner=ctk.CTkFrame(card,fg_color="transparent"); inner.pack(fill="both",expand=True,padx=10,pady=7)
             ctk.CTkFrame(inner,fg_color=c,width=3,corner_radius=2).pack(side="left",fill="y",padx=(0,8),pady=1)
             tc=ctk.CTkFrame(inner,fg_color="transparent"); tc.pack(side="left",fill="both",expand=True)
-            ctk.CTkLabel(tc,text=t,font=ctk.CTkFont(10,"bold"),text_color=T_WHITE,fg_color="transparent",anchor="w").pack(anchor="w")
+            ctk.CTkLabel(tc,text=t,font=ctk.CTkFont(size=10, weight="bold"),text_color=T_WHITE,fg_color="transparent",anchor="w").pack(anchor="w")
             ctk.CTkLabel(tc,text=d,font=ctk.CTkFont(8),text_color=T_DIM,fg_color="transparent",anchor="w",wraplength=500).pack(anchor="w")
 
     def _build_status(self,parent):
@@ -717,7 +717,7 @@ class UnicateGamingLauncher:
         pi=ctk.CTkFrame(p,fg_color="transparent")
         pi.pack(fill="both",expand=True,padx=18,pady=14)
 
-        ctk.CTkLabel(pi,text="KOMPONENTE",font=ctk.CTkFont(11,"bold"),
+        ctk.CTkLabel(pi,text="KOMPONENTE",font=ctk.CTkFont(size=11, weight="bold"),
                     text_color=BLUE_300,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,8))
 
         comps=[
@@ -737,11 +737,11 @@ class UnicateGamingLauncher:
 
         ctk.CTkFrame(pi,height=1,fg_color=BLUE_950).pack(fill="x",pady=10)
 
-        ctk.CTkLabel(pi,text="BRZE VEZE",font=ctk.CTkFont(10,"bold"),
+        ctk.CTkLabel(pi,text="BRZE VEZE",font=ctk.CTkFont(size=10, weight="bold"),
                     text_color=T_DIM,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,6))
         lf=ctk.CTkFrame(pi,fg_color="transparent"); lf.pack(fill="x")
         for nm,url,c in [("Website",WEBSITE_URL,NEON_SKY),("Discord",DISCORD_URL,BLUE_400)]:
-            NeonButton(lf,text=nm,height=28,width=100,font=ctk.CTkFont(9,"bold"),
+            NeonButton(lf,text=nm,height=28,width=100,font=ctk.CTkFont(size=9, weight="bold"),
                       fg_color="#080e1e",hover_color=c,text_color=c,corner_radius=8,
                       border_width=1,border_color=c,glow=c,
                       command=lambda u=url:webbrowser.open(u)).pack(side="left",padx=(0,6))
