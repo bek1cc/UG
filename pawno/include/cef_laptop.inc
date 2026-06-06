@@ -255,20 +255,22 @@ stock CEF_LpInitSubscriptions() {}
 
 // ===========================================================================
 //  KOMANDE
+//  NAPOMENA: /laptop i /lp komande su vec definisane u fg-ogc.pwn
+//  Ako koristite drugi gamemode, odkomentirajte komande ispod:
 // ===========================================================================
-CMD:laptop(playerid, params[]) {
-    #pragma unused params
-    if(LaptopData[playerid][lp_IsOpen]) {
-        CEF_LaptopClose(playerid);
-    } else {
-        CEF_LaptopOpen(playerid);
-    }
-    return 1;
-}
-
-CMD:lp(playerid, params[]) {
-    return cmd_laptop(playerid, params);
-}
+// CMD:laptop(playerid, params[]) {
+//     #pragma unused params
+//     if(LaptopData[playerid][lp_IsOpen]) {
+//         CEF_LaptopClose(playerid);
+//     } else {
+//         CEF_LaptopOpen(playerid);
+//     }
+//     return 1;
+// }
+//
+// CMD:lp(playerid, params[]) {
+//     return cmd_laptop(playerid, params);
+// }
 
 // ===========================================================================
 //  ON PLAYER DISCONNECT

@@ -46,7 +46,7 @@ enum InvItemData {
 enum InvPlayerData {
     bool:inv_IsOpen,
     inv_BrowserId,
-    inv_TotalWeight
+    Float:inv_TotalWeight
 }
 
 static InvData[MAX_PLAYERS][InvPlayerData];
@@ -202,7 +202,7 @@ stock CEF_InvRemoveItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return 0;
     if(!InvItems[playerid][slot][inv_Exists]) return 0;
 
-    InvData[playerid][inv_TotalWeight] -= InvItems[playerid][slot][inv_Weight];
+    InvData[playerid][inv_TotalWeight] -= Float:InvItems[playerid][slot][inv_Weight];
     if(InvData[playerid][inv_TotalWeight] < 0.0) InvData[playerid][inv_TotalWeight] = 0.0;
 
     InvItems[playerid][slot][inv_Exists] = false;
@@ -277,20 +277,23 @@ stock CEF_InvInitSubscriptions() {}
 
 // ===========================================================================
 //  KOMANDE (zajednicke)
+//  NAPOMENA: /inventory komanda je vec definisana u fg-ogc.pwn
+//  /inv komanda je takodjer vec definisana u fg-ogc.pwn
+//  Ako koristite drugi gamemode, odkomentirajte komande ispod:
 // ===========================================================================
-CMD:inventory(playerid, params[]) {
-    #pragma unused params
-    if(InvData[playerid][inv_IsOpen]) {
-        CEF_InventoryClose(playerid);
-    } else {
-        CEF_InventoryOpen(playerid);
-    }
-    return 1;
-}
-
-CMD:inv(playerid, params[]) {
-    return cmd_inventory(playerid, params);
-}
+// CMD:inventory(playerid, params[]) {
+//     #pragma unused params
+//     if(InvData[playerid][inv_IsOpen]) {
+//         CEF_InventoryClose(playerid);
+//     } else {
+//         CEF_InventoryOpen(playerid);
+//     }
+//     return 1;
+// }
+//
+// CMD:inv(playerid, params[]) {
+//     return cmd_inventory(playerid, params);
+// }
 
 // ===========================================================================
 //  ON PLAYER DISCONNECT
