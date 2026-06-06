@@ -1,12 +1,11 @@
 @echo off
-title Unicate Gaming Launcher V2 - Build EXE
-color 0A
+title UNICATE GAMING - LAUNCHER Build
+color 0B
 echo ============================================
-echo    UNICATE GAMING - Launcher V2 Compiler
+echo    UNICATE GAMING - Launcher Compiler
 echo ============================================
 echo.
-echo Ova skripta ce kompajlirati launcher_v2.py u .exe fajl
-echo tako da igraci ne trebaju imati Python instaliran.
+echo Kompajlira launcher_v2.py u .exe fajl
 echo.
 
 echo [1/4] Provjeravam Python...
@@ -23,13 +22,21 @@ echo [2/4] Instaliram zavisnosti...
 pip install pyinstaller customtkinter pillow requests --quiet
 
 echo.
-echo [3/4] Kopiram logo...
-if not exist "logo.png" (
-    if exist "ug_logo.png" (
-        echo Koristim ug_logo.png kao logo.
+echo [3/4] Provjeravam fajlove...
+if not exist "ug_logo.png" (
+    if exist "ug_logo_pro.png" (
+        echo Koristim ug_logo_pro.png kao logo.
+    ) else if exist "logo.png" (
+        echo Koristim logo.png kao logo.
     ) else (
-        echo UPOZORENJE: Nema logo fajla! Launcher ce raditi bez slike.
+        echo UPOZORENJE: Nema logo fajla!
     )
+) else (
+    echo Logo pronadjen: ug_logo.png
+)
+
+if not exist "ug_icon.ico" (
+    echo UPOZORENJE: Nema ug_icon.ico - .exe nece imati ikonicu!
 )
 
 echo.
@@ -37,12 +44,22 @@ echo [4/4] Kompajliram launcher u .exe...
 echo Ovo moze potrajati 1-3 minute...
 echo.
 
-pyinstaller --onefile --noconsole --name "UnicateGaming" --add-data "logo.png;." --add-data "ug_logo.png;." --distpath "." --workpath "_build" --specpath "_build" --clean launcher_v2.py
+pyinstaller --onefile --noconsole ^
+    --name "UnicateGaming" ^
+    --icon="ug_icon.ico" ^
+    --add-data "ug_logo.png;." ^
+    --add-data "ug_logo_pro.png;." ^
+    --add-data "ug_icon.ico;." ^
+    --add-data "ug_logo_glow.png;." ^
+    --add-data "bg_gta.png;." ^
+    --distpath "." ^
+    --workpath "_build" ^
+    --specpath "_build" ^
+    --clean launcher_v2.py
 
 if %errorlevel% neq 0 (
     echo.
     echo [GRESKA] Kompajliranje nije uspjelo!
-    echo Provjeri da li je Python i PyInstaller instaliran.
     pause
     exit /b 1
 )
@@ -52,17 +69,11 @@ echo ============================================
 echo    USPJEH! Launcher kompajliran!
 echo ============================================
 echo.
-echo .exe fajl se nalazi ovdje:
-echo   %cd%\UnicateGaming.exe
+echo .exe fajl: %cd%\UnicateGaming.exe
 echo.
-echo Za distribuciju igracima trebas:
-echo   1. UnicateGaming.exe
-echo   2. logo.png (u istom folderu kao .exe)
-echo.
-echo Ili mozes kompajlirati sa --onefile da sve bude u jednom .exe
+echo Za distribuciju igracima trebas samo:
+echo   UnicateGaming.exe (sve je u jednom fajlu)
 echo.
 
-rem Cleanup
 if exist "_build" rmdir /s /q "_build"
-
 pause

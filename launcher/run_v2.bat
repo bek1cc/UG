@@ -1,7 +1,7 @@
 @echo off
-title Unicate Gaming Launcher V2 - Pokreni
+title UNICATE GAMING - LAUNCHER
 echo ============================================
-echo   Unicate Gaming Launcher V2
+echo   UNICATE GAMING - Launcher
 echo ============================================
 echo.
 
@@ -25,10 +25,10 @@ if %errorlevel% neq 0 (
 )
 
 echo.
-echo Pokrecem launcher...
+echo Pokrecem UNICATE GAMING - LAUNCHER...
 python launcher_v2.py
 if %errorlevel% neq 0 (
     echo.
-    echo Greska! Provjeri konzolu iznad.
+    echo Greska! Provjeri konzolu.
     pause
 )
