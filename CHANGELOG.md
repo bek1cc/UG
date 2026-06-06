@@ -1,5 +1,18 @@
 # UG Gamemode - Changelog
 
+## [2026-06-06] - iPhone.inc Kompilacija Fix
+
+### Popravljeno
+- **2D enum nizovi unutar enuma** - Pawn ne podržava `array[SIZE][EnumType]` unutar enuma
+  - `iPhone_Contacts`, `iPhone_SMS`, `iPhone_Recent` premješteni u zasebne globalne nizove
+  - `g_iPhoneContacts`, `g_iPhoneSMS`, `g_iPhoneRecent` - odvojene varijable
+- **DWLocations Float tag sa stringovima** - zamijenjeno sa enum-baziranim pristupom `DWLocData`
+  - `iPhone_DWLocations[locIdx][dwX/dwY/dwZ/dwName]` umjesto indeksa `[0]/[1]/[2]/[3]`
+- **Konflikt imena** - `iPhone_IsOpen` bio i enum konstanta i funkcija
+  - Enum polja preimenovana u `iPhone_Opened`, funkcija zadržala ime `iPhone_IsOpen()`
+
+---
+
 ## [2026-06-06] - Bounty Board Tablet Portal UI v3.0
 
 ### Novo

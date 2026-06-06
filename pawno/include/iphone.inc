@@ -126,18 +126,15 @@ enum iPhonePlayerData {
     iPhoneApp:iPhone_CurrentApp,
     iPhone_OpenTime,
     // Contacts
-    iPhone_Contacts[IPHONE_MAX_CONTACTS][iPhoneContactData],
     iPhone_ContactCount,
     // SMS
-    iPhone_SMS[IPHONE_MAX_SMS][iPhoneSMSData],
     iPhone_SMSCount,
     // Recent calls
-    iPhone_Recent[IPHONE_MAX_RECENT][iPhoneRecentCall],
     iPhone_RecentCount,
     // Textdraw IDs
     PlayerText:iPhone_TD[55],
     bool:iPhone_TDCreated,
-    bool:iPhone_IsOpen,
+    bool:iPhone_Opened,
     // Calling
     iPhone_SMSInputNumber,
     iPhone_SMSConvWith,
@@ -151,11 +148,20 @@ enum iPhonePlayerData {
 //  GLOBALNE VARIJABLE
 // ===========================================================================
 static iPhoneData[MAX_PLAYERS][iPhonePlayerData];
+static g_iPhoneContacts[MAX_PLAYERS][IPHONE_MAX_CONTACTS][iPhoneContactData];
+static g_iPhoneSMS[MAX_PLAYERS][IPHONE_MAX_SMS][iPhoneSMSData];
+static g_iPhoneRecent[MAX_PLAYERS][IPHONE_MAX_RECENT][iPhoneRecentCall];
 
 // ===========================================================================
 //  LOKACIJE ZA DARK WEB DOSTAVU
 // ===========================================================================
-static const Float:iPhone_DWLocations[][] = {
+enum DWLocData {
+    Float:dwX,
+    Float:dwY,
+    Float:dwZ,
+    dwName[32]
+}
+static const iPhone_DWLocations[][DWLocData] = {
     {2155.0, -1765.0, 13.5, "Iza benzinske LS"},
     {-72.0, -1130.0, 1.0, "Dokovi SF"},
     {2645.0, -2025.0, 13.5, "Izasposta LS"},
@@ -231,7 +237,7 @@ static const DarkWebItems[][DarkWebItem] = {
 // ===========================================================================
 stock iPhone_GetNumber(playerid) return iPhoneData[playerid][iPhone_Number];
 stock iPhone_GetCredit(playerid) return iPhoneData[playerid][iPhone_Credit];
-stock iPhone_IsOpen(playerid) return iPhoneData[playerid][iPhone_IsOpen];
+stock iPhone_IsOpen(playerid) return iPhoneData[playerid][iPhone_Opened];
 
 stock iPhone_SetNumber(playerid, num) {
     iPhoneData[playerid][iPhone_Number] = num;
@@ -240,7 +246,7 @@ stock iPhone_SetNumber(playerid, num) {
 
 stock iPhone_SetCredit(playerid, credit) {
     iPhoneData[playerid][iPhone_Credit] = credit;
-    if(iPhoneData[playerid][iPhone_IsOpen] && iPhoneData[playerid][iPhone_Screen] == IPHONE_SCREEN_HOME)
+    if(iPhoneData[playerid][iPhone_Opened] && iPhoneData[playerid][iPhone_Screen] == IPHONE_SCREEN_HOME)
         iPhone_UpdateStatusBar(playerid);
 }
 
@@ -271,14 +277,14 @@ stock iPhone_AddSMS(playerid, from, to, text[]) {
     if(idx >= IPHONE_MAX_SMS) {
         // Shift all messages up
         for(new i = 0; i < IPHONE_MAX_SMS - 1; i++) {
-            iPhoneData[playerid][iPhone_SMS][i] = iPhoneData[playerid][iPhone_SMS][i+1];
+            g_iPhoneSMS[playerid][i] = g_iPhoneSMS[playerid][i+1];
         }
         idx = IPHONE_MAX_SMS - 1;
     }
-    iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSFrom] = from;
-    iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSTo] = to;
-    format(iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSText], 128, "%s", text);
-    iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSTime] = gettime();
+    g_iPhoneSMS[playerid][idx][iPhoneSMSFrom] = from;
+    g_iPhoneSMS[playerid][idx][iPhoneSMSTo] = to;
+    format(g_iPhoneSMS[playerid][idx][iPhoneSMSText], 128, "%s", text);
+    g_iPhoneSMS[playerid][idx][iPhoneSMSTime] = gettime();
     if(iPhoneData[playerid][iPhone_SMSCount] < IPHONE_MAX_SMS)
         iPhoneData[playerid][iPhone_SMSCount]++;
 }
@@ -287,13 +293,13 @@ stock iPhone_AddRecentCall(playerid, number, type) {
     new idx = iPhoneData[playerid][iPhone_RecentCount];
     if(idx >= IPHONE_MAX_RECENT) {
         for(new i = 0; i < IPHONE_MAX_RECENT - 1; i++) {
-            iPhoneData[playerid][iPhone_Recent][i] = iPhoneData[playerid][iPhone_Recent][i+1];
+            g_iPhoneRecent[playerid][i] = g_iPhoneRecent[playerid][i+1];
         }
         idx = IPHONE_MAX_RECENT - 1;
     }
-    iPhoneData[playerid][iPhone_Recent][idx][iPhoneRecentNumber] = number;
-    iPhoneData[playerid][iPhone_Recent][idx][iPhoneRecentType] = type;
-    iPhoneData[playerid][iPhone_Recent][idx][iPhoneRecentTime] = gettime();
+    g_iPhoneRecent[playerid][idx][iPhoneRecentNumber] = number;
+    g_iPhoneRecent[playerid][idx][iPhoneRecentType] = type;
+    g_iPhoneRecent[playerid][idx][iPhoneRecentTime] = gettime();
     if(iPhoneData[playerid][iPhone_RecentCount] < IPHONE_MAX_RECENT)
         iPhoneData[playerid][iPhone_RecentCount]++;
 }
@@ -301,15 +307,15 @@ stock iPhone_AddRecentCall(playerid, number, type) {
 stock iPhone_AddContact(playerid, name[], number) {
     if(iPhoneData[playerid][iPhone_ContactCount] >= IPHONE_MAX_CONTACTS) return 0;
     new idx = iPhoneData[playerid][iPhone_ContactCount];
-    format(iPhoneData[playerid][iPhone_Contacts][idx][iPhoneContactName], 24, "%s", name);
-    iPhoneData[playerid][iPhone_Contacts][idx][iPhoneContactNumber] = number;
+    format(g_iPhoneContacts[playerid][idx][iPhoneContactName], 24, "%s", name);
+    g_iPhoneContacts[playerid][idx][iPhoneContactNumber] = number;
     iPhoneData[playerid][iPhone_ContactCount]++;
     return 1;
 }
 
 stock iPhone_FindContactByNumber(playerid, number) {
     for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
-        if(iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactNumber] == number)
+        if(g_iPhoneContacts[playerid][i][iPhoneContactNumber] == number)
             return i;
     }
     return -1;
@@ -727,7 +733,7 @@ stock iPhone_HideAllTDs(playerid) {
 //  STATUS BAR UPDATE
 // ===========================================================================
 stock iPhone_UpdateStatusBar(playerid) {
-    if(!iPhoneData[playerid][iPhone_IsOpen]) return;
+    if(!iPhoneData[playerid][iPhone_Opened]) return;
 
     // Update time
     new timeStr[8], h, m, s;
@@ -745,7 +751,7 @@ stock iPhone_UpdateStatusBar(playerid) {
 //  OTVARANJE / ZATVARANJE TELEFONA
 // ===========================================================================
 stock iPhone_Open(playerid) {
-    if(iPhoneData[playerid][iPhone_IsOpen]) return;
+    if(iPhoneData[playerid][iPhone_Opened]) return;
     if(!iPhoneData[playerid][iPhone_HasPhone]) {
         SendClientMessage(playerid, 0xFF453AFF, "[IPHONE]{FFFFFF} Nemate telefon!");
         return;
@@ -755,7 +761,7 @@ stock iPhone_Open(playerid) {
         return;
     }
 
-    iPhoneData[playerid][iPhone_IsOpen] = true;
+    iPhoneData[playerid][iPhone_Opened] = true;
     iPhoneData[playerid][iPhone_OpenTime] = GetTickCount();
 
     // Create textdraws on demand
@@ -769,9 +775,9 @@ stock iPhone_Open(playerid) {
 }
 
 stock iPhone_Close(playerid) {
-    if(!iPhoneData[playerid][iPhone_IsOpen]) return;
+    if(!iPhoneData[playerid][iPhone_Opened]) return;
 
-    iPhoneData[playerid][iPhone_IsOpen] = false;
+    iPhoneData[playerid][iPhone_Opened] = false;
     iPhoneData[playerid][iPhone_Screen] = IPHONE_SCREEN_LOCK;
     iPhoneData[playerid][iPhone_CurrentApp] = IPHONE_APP_HOME;
 
@@ -798,12 +804,12 @@ stock iPhone_AppPhone(playerid) {
         strcat(listStr, "\n{8E8E93}-- Nedavni pozivi --\n");
         for(new i = iPhoneData[playerid][iPhone_RecentCount] - 1; i >= 0; i--) {
             new line[64], typeStr[16];
-            switch(iPhoneData[playerid][iPhone_Recent][i][iPhoneRecentType]) {
+            switch(g_iPhoneRecent[playerid][i][iPhoneRecentType]) {
                 case 0: typeStr = "{30D158}Out";
                 case 1: typeStr = "{0A84FF}In";
                 case 2: typeStr = "{FF453A}Miss";
             }
-            format(line, sizeof(line), "%s %s\n", typeStr, iPhone_FormatNumber(iPhoneData[playerid][iPhone_Recent][i][iPhoneRecentNumber]));
+            format(line, sizeof(line), "%s %s\n", typeStr, iPhone_FormatNumber(g_iPhoneRecent[playerid][i][iPhoneRecentNumber]));
             strcat(listStr, line);
         }
     }
@@ -829,17 +835,17 @@ stock iPhone_AppSMS(playerid) {
 
         // Show unique conversations (last message from each)
         for(new i = iPhoneData[playerid][iPhone_SMSCount] - 1; i >= 0; i--) {
-            new from = iPhoneData[playerid][iPhone_SMS][i][iPhoneSMSFrom];
+            new from = g_iPhoneSMS[playerid][i][iPhoneSMSFrom];
             new line[128];
             new contactIdx = iPhone_FindContactByNumber(playerid, from);
             if(contactIdx >= 0)
                 format(line, sizeof(line), "%s: {FFFFFF}%s\n",
-                    iPhoneData[playerid][iPhone_Contacts][contactIdx][iPhoneContactName],
-                    iPhoneData[playerid][iPhone_SMS][i][iPhoneSMSText]);
+                    g_iPhoneContacts[playerid][contactIdx][iPhoneContactName],
+                    g_iPhoneSMS[playerid][i][iPhoneSMSText]);
             else
                 format(line, sizeof(line), "%s: {FFFFFF}%s\n",
                     iPhone_FormatNumber(from),
-                    iPhoneData[playerid][iPhone_SMS][i][iPhoneSMSText]);
+                    g_iPhoneSMS[playerid][i][iPhoneSMSText]);
             strcat(listStr, line);
         }
     }
@@ -931,8 +937,8 @@ stock iPhone_AppContacts(playerid) {
     for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
         new line[64];
         format(line, sizeof(line), "%s - %s\n",
-            iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactName],
-            iPhone_FormatNumber(iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactNumber]));
+            g_iPhoneContacts[playerid][i][iPhoneContactName],
+            iPhone_FormatNumber(g_iPhoneContacts[playerid][i][iPhoneContactNumber]));
         strcat(listStr, line);
     }
 
@@ -1071,7 +1077,7 @@ stock iPhone_Call777(playerid) {
 //  CLICK HANDLER - Obrada klikova na textdrawove
 // ===========================================================================
 stock iPhone_OnClickTD(playerid, PlayerText:playertextid) {
-    if(!iPhoneData[playerid][iPhone_IsOpen]) return 0;
+    if(!iPhoneData[playerid][iPhone_Opened]) return 0;
 
     // Home indicator bar (index 6) - always goes home
     if(playertextid == iPhoneData[playerid][iPhone_TD][6]) {
@@ -1116,7 +1122,7 @@ stock iPhone_OnClickTD(playerid, PlayerText:playertextid) {
 //  DIALOG HANDLER - Obrada dialog responsa
 // ===========================================================================
 stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
-    if(!iPhoneData[playerid][iPhone_IsOpen]) return 0;
+    if(!iPhoneData[playerid][iPhone_Opened]) return 0;
 
     switch(dialogid) {
         // ---- PHONE APP ----
@@ -1152,10 +1158,10 @@ stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[
                     new msg[256];
                     format(msg, sizeof(msg),
                         "{FFFFFF}Od: %s\nPoruka: %s\n\nPosalji odgovor?",
-                        iPhone_FormatNumber(iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSFrom]),
-                        iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSText]);
+                        iPhone_FormatNumber(g_iPhoneSMS[playerid][idx][iPhoneSMSFrom]),
+                        g_iPhoneSMS[playerid][idx][iPhoneSMSText]);
 
-                    iPhoneData[playerid][iPhone_SMSConvWith] = iPhoneData[playerid][iPhone_SMS][idx][iPhoneSMSFrom];
+                    iPhoneData[playerid][iPhone_SMSConvWith] = g_iPhoneSMS[playerid][idx][iPhoneSMSFrom];
                     ShowPlayerDialog(playerid, IPHONE_DLG_SMS_CONV, DIALOG_STYLE_MSGBOX,
                         "{0A84FF}iPhone{FFFFFF} - Poruka",
                         msg,
@@ -1186,8 +1192,8 @@ stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[
             if(targetNum == 0) {
                 // Check if it's a contact name
                 for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
-                    if(strfind(iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactName], inputtext, true) == 0) {
-                        targetNum = iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactNumber];
+                    if(strfind(g_iPhoneContacts[playerid][i][iPhoneContactName], inputtext, true) == 0) {
+                        targetNum = g_iPhoneContacts[playerid][i][iPhoneContactNumber];
                         break;
                     }
                 }
@@ -1249,15 +1255,15 @@ stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[
 
             // Pick random delivery location
             new locIdx = random(sizeof(iPhone_DWLocations));
-            new Float:locX = iPhone_DWLocations[locIdx][0];
-            new Float:locY = iPhone_DWLocations[locIdx][1];
-            new Float:locZ = iPhone_DWLocations[locIdx][2];
+            new Float:locX = iPhone_DWLocations[locIdx][dwX];
+            new Float:locY = iPhone_DWLocations[locIdx][dwY];
+            new Float:locZ = iPhone_DWLocations[locIdx][dwZ];
 
             // Set checkpoint for delivery
             SetPlayerCheckpoint(playerid, locX, locY, locZ, 5.0);
 
             new msg[128];
-            format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Dostava na: %s. Imate 120s da pokupite.", iPhone_DWLocations[locIdx][3]);
+            format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Dostava na: %s. Imate 120s da pokupite.", iPhone_DWLocations[locIdx][dwName]);
             SendClientMessage(playerid, 0xFF9F0AFF, msg);
 
             // Set map icon
@@ -1284,11 +1290,11 @@ stock iPhone_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[
                     new msg[128];
                     format(msg, sizeof(msg),
                         "{FFFFFF}Kontakt: %s\nBroj: %s\n\nIzaberite akciju:",
-                        iPhoneData[playerid][iPhone_Contacts][idx][iPhoneContactName],
-                        iPhone_FormatNumber(iPhoneData[playerid][iPhone_Contacts][idx][iPhoneContactNumber]));
+                        g_iPhoneContacts[playerid][idx][iPhoneContactName],
+                        iPhone_FormatNumber(g_iPhoneContacts[playerid][idx][iPhoneContactNumber]));
 
                     // Store selected contact for action
-                    iPhoneData[playerid][iPhone_SMSInputNumber] = iPhoneData[playerid][iPhone_Contacts][idx][iPhoneContactNumber];
+                    iPhoneData[playerid][iPhone_SMSInputNumber] = g_iPhoneContacts[playerid][idx][iPhoneContactNumber];
 
                     ShowPlayerDialog(playerid, IPHONE_DLG_RECENT, DIALOG_STYLE_MSGBOX,
                         "{64D2FF}iPhone{FFFFFF} - Kontakt",
@@ -1592,7 +1598,7 @@ stock iPhone_IncomingSMS(playerid, fromNum, text[]) {
     new contactIdx = iPhone_FindContactByNumber(playerid, fromNum);
     new fromName[32];
     if(contactIdx >= 0)
-        format(fromName, sizeof(fromName), "%s", iPhoneData[playerid][iPhone_Contacts][contactIdx][iPhoneContactName]);
+        format(fromName, sizeof(fromName), "%s", g_iPhoneContacts[playerid][contactIdx][iPhoneContactName]);
     else
         format(fromName, sizeof(fromName), "%s", iPhone_FormatNumber(fromNum));
 
@@ -1621,7 +1627,7 @@ stock iPhone_OnPlayerConnect(playerid) {
     iPhoneData[playerid][iPhone_Online] = true;
     iPhoneData[playerid][iPhone_Screen] = IPHONE_SCREEN_LOCK;
     iPhoneData[playerid][iPhone_CurrentApp] = IPHONE_APP_HOME;
-    iPhoneData[playerid][iPhone_IsOpen] = false;
+    iPhoneData[playerid][iPhone_Opened] = false;
     iPhoneData[playerid][iPhone_TDCreated] = false;
     iPhoneData[playerid][iPhone_ContactCount] = 0;
     iPhoneData[playerid][iPhone_SMSCount] = 0;
@@ -1635,7 +1641,7 @@ stock iPhone_OnPlayerConnect(playerid) {
 }
 
 stock iPhone_OnPlayerDisconnect(playerid) {
-    if(iPhoneData[playerid][iPhone_IsOpen]) {
+    if(iPhoneData[playerid][iPhone_Opened]) {
         iPhone_Close(playerid);
     }
     return 1;
@@ -1647,7 +1653,7 @@ stock iPhone_OnPlayerDisconnect(playerid) {
 stock iPhone_OnKeyStateChange(playerid, newkeys, oldkeys) {
     // ESC key (no) to close phone
     if((newkeys & KEY_NO) && !(oldkeys & KEY_NO)) {
-        if(iPhoneData[playerid][iPhone_IsOpen]) {
+        if(iPhoneData[playerid][iPhone_Opened]) {
             iPhone_Close(playerid);
             return 1;
         }
@@ -1655,7 +1661,7 @@ stock iPhone_OnKeyStateChange(playerid, newkeys, oldkeys) {
 
     // Y key (yes) to open phone - only if not in other interaction
     if((newkeys & KEY_YES) && !(oldkeys & KEY_YES)) {
-        if(!iPhoneData[playerid][iPhone_IsOpen] && iPhoneData[playerid][iPhone_HasPhone]) {
+        if(!iPhoneData[playerid][iPhone_Opened] && iPhoneData[playerid][iPhone_HasPhone]) {
             iPhone_Open(playerid);
             return 1;
         }
@@ -1668,7 +1674,7 @@ stock iPhone_OnKeyStateChange(playerid, newkeys, oldkeys) {
 //  COMMAND: /phone - Otvaranje/zatvaranje telefona
 // ===========================================================================
 stock iPhone_CommandPhone(playerid) {
-    if(iPhoneData[playerid][iPhone_IsOpen]) {
+    if(iPhoneData[playerid][iPhone_Opened]) {
         iPhone_Close(playerid);
     } else {
         iPhone_Open(playerid);
@@ -1691,9 +1697,9 @@ stock iPhone_SaveData(playerid) {
     for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
         new key[32];
         format(key, sizeof(key), "ContactName_%d", i);
-        ini_setString(iniFile, key, iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactName]);
+        ini_setString(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactName]);
         format(key, sizeof(key), "ContactNum_%d", i);
-        ini_setInteger(iniFile, key, iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactNumber]);
+        ini_setInteger(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactNumber]);
     }
 
     ini_closeFile(iniFile);
@@ -1716,9 +1722,9 @@ stock iPhone_LoadData(playerid) {
     for(new i = 0; i < iPhoneData[playerid][iPhone_ContactCount]; i++) {
         new key[32];
         format(key, sizeof(key), "ContactName_%d", i);
-        ini_getString(iniFile, key, iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactName]);
+        ini_getString(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactName]);
         format(key, sizeof(key), "ContactNum_%d", i);
-        ini_getInteger(iniFile, key, iPhoneData[playerid][iPhone_Contacts][i][iPhoneContactNumber]);
+        ini_getInteger(iniFile, key, g_iPhoneContacts[playerid][i][iPhoneContactNumber]);
     }
 
     ini_closeFile(iniFile);
