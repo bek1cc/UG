@@ -8,15 +8,45 @@ const dgram = require('dgram');
 const AdmZip = require('adm-zip');
 
 // ============================================================
+//  ELECTRON COMPATIBILITY FIXES (MUST BE BEFORE app.whenReady)
+// ============================================================
+app.commandLine.appendSwitch('no-sandbox');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+app.disableHardwareAcceleration();
+
+// ============================================================
+//  DEBUG LOG TO FILE
+// ============================================================
+const LOG_FILE = path.join(path.dirname(app.getPath('exe')), 'launcher_debug.log');
+function log(msg) {
+  const ts = new Date().toISOString();
+  const line = `[${ts}] ${msg}\n`;
+  console.log(line.trim());
+  try { fs.appendFileSync(LOG_FILE, line); } catch(e) {}
+}
+
+// Clear old log
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher Debug Log ===\n'); } catch(e) {}
+
+log('Starting Unicate Gaming Launcher v3.0');
+log('Electron: ' + process.versions.electron);
+log('Node: ' + process.versions.node);
+log('Chrome: ' + process.versions.chrome);
+log('Platform: ' + process.platform + ' ' + process.arch);
+log('__dirname: ' + __dirname);
+log('LAUNCHER_DIR: ' + path.dirname(app.getPath('exe')));
+
+// ============================================================
 //  CRASH PROTECTION
 // ============================================================
 process.on('uncaughtException', (err) => {
-  console.error('[UNCAUGHT ERROR]', err.message);
-  console.error(err.stack);
+  log('[UNCAUGHT ERROR] ' + err.message);
+  log(err.stack);
 });
 
 process.on('unhandledRejection', (err) => {
-  console.error('[UNHANDLED REJECTION]', err);
+  log('[UNHANDLED REJECTION] ' + err);
 });
 
 // ============================================================
@@ -47,9 +77,7 @@ const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
 let mainWindow = null;
 
-console.log('[LAUNCHER] Starting Unicate Gaming Launcher v3.0');
-console.log('[LAUNCHER] LAUNCHER_DIR:', LAUNCHER_DIR);
-console.log('[LAUNCHER] __dirname:', __dirname);
+log('LAUNCHER_DIR: ' + LAUNCHER_DIR);
 
 // ============================================================
 //  SETTINGS
@@ -60,7 +88,7 @@ function loadSettings() {
       return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
     }
   } catch (e) {
-    console.error('[LAUNCHER] Error loading settings:', e.message);
+    log('Error loading settings: ' + e.message);
   }
   return {};
 }
@@ -69,7 +97,7 @@ function saveSettings(data) {
   try {
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2));
   } catch (e) {
-    console.error('[LAUNCHER] Error saving settings:', e.message);
+    log('Error saving settings: ' + e.message);
   }
 }
 
@@ -275,9 +303,9 @@ function createWindow() {
     if (fs.existsSync(iconIco)) iconPath = iconIco;
     else if (fs.existsSync(iconPng)) iconPath = iconPng;
 
-    console.log('[LAUNCHER] Creating window...');
-    console.log('[LAUNCHER] index.html:', indexPath, 'exists:', fs.existsSync(indexPath));
-    console.log('[LAUNCHER] preload.js:', preloadPath, 'exists:', fs.existsSync(preloadPath));
+    log('Creating window...');
+    log('index.html: ' + indexPath + ' exists: ' + fs.existsSync(indexPath));
+    log('preload.js: ' + preloadPath + ' exists: ' + fs.existsSync(preloadPath));
 
     mainWindow = new BrowserWindow({
       width: 1280,
@@ -290,44 +318,42 @@ function createWindow() {
       title: 'Unicate Gaming - Launcher',
       backgroundColor: '#0b0f1a',
       icon: iconPath || undefined,
-      show: false, // Don't show until ready
+      show: true,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: preloadPath,
-        sandbox: false // Disable sandbox for Windows compatibility
+        sandbox: false
       }
     });
 
-    // Show window only when renderer is ready (prevents flash/crash)
-    mainWindow.once('ready-to-show', () => {
-      console.log('[LAUNCHER] Window ready, showing...');
-      mainWindow.show();
-    });
-
     // Load the index.html
-    mainWindow.loadFile(indexPath).catch(err => {
-      console.error('[LAUNCHER] Failed to load index.html:', err);
+    log('Loading index.html...');
+    mainWindow.loadFile(indexPath).then(() => {
+      log('index.html loaded successfully');
+    }).catch(err => {
+      log('FAILED to load index.html: ' + err.message);
     });
 
     // Log renderer console messages
     mainWindow.webContents.on('console-message', (event, level, message) => {
-      console.log('[RENDERER]', message);
+      log('[RENDERER] ' + message);
     });
 
     // Log renderer errors
     mainWindow.webContents.on('render-process-gone', (event, details) => {
-      console.error('[LAUNCHER] Renderer process gone:', details);
+      log('Renderer process GONE! reason: ' + details.reason + ' exitCode: ' + details.exitCode);
     });
 
     mainWindow.on('closed', () => {
-      console.log('[LAUNCHER] Window closed');
+      log('Window closed');
       mainWindow = null;
     });
 
-    console.log('[LAUNCHER] Window created successfully');
+    log('Window created successfully');
   } catch (err) {
-    console.error('[LAUNCHER] Error creating window:', err);
+    log('ERROR creating window: ' + err.message);
+    log(err.stack);
   }
 }
 
@@ -430,15 +456,17 @@ ipcMain.handle('close-window', () => {
 // ============================================================
 //  APP EVENTS
 // ============================================================
+log('Waiting for app.whenReady...');
 app.whenReady().then(() => {
-  console.log('[LAUNCHER] App ready, creating window...');
+  log('App ready, creating window...');
   createWindow();
 }).catch(err => {
-  console.error('[LAUNCHER] App ready failed:', err);
+  log('App ready FAILED: ' + err.message);
+  log(err.stack);
 });
 
 app.on('window-all-closed', () => {
-  console.log('[LAUNCHER] All windows closed, quitting...');
+  log('All windows closed, quitting...');
   app.quit();
 });
 
@@ -447,5 +475,5 @@ app.on('activate', () => {
 });
 
 app.on('before-quit', () => {
-  console.log('[LAUNCHER] App about to quit...');
+  log('App about to quit...');
 });
