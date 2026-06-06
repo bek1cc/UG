@@ -1,5 +1,6 @@
 // ===========================================================================
-//  Unicate Gaming Inventory - CEF App (samp-cef API)
+//  Unicate Gaming Inventory - CEF App (omp-cef API)
+//  Uses: cef.emit() / cef.on()
 // ===========================================================================
 
 var inventoryItems = [];
@@ -45,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
 function emitToServer(eventName) {
     var args = Array.prototype.slice.call(arguments, 1);
     try {
-        if (window.cef && window.cef.emit) {
-            window.cef.emit.apply(window.cef, [eventName].concat(args));
+        if (typeof cef !== 'undefined' && cef.emit) {
+            cef.emit.apply(cef, [eventName].concat(args));
         } else {
             console.log('[CEF emit]', eventName, args);
         }
@@ -55,16 +56,16 @@ function emitToServer(eventName) {
 
 function subscribeToEvents() {
     try {
-        if (window.cef && window.cef.subscribe) {
-            window.cef.subscribe('inventory:data', function(json) {
+        if (typeof cef !== 'undefined' && cef.on) {
+            cef.on('inventory:data', function(json) {
                 try { inventoryItems = JSON.parse(json); } catch(e) {}
                 renderInventory();
             });
-            window.cef.subscribe('inventory:update', function(json) {
+            cef.on('inventory:update', function(json) {
                 try { inventoryItems = JSON.parse(json); } catch(e) {}
                 renderInventory();
             });
-            window.cef.subscribe('inventory:notify', function(msg) {
+            cef.on('inventory:notify', function(msg) {
                 showToast(msg);
             });
         } else {

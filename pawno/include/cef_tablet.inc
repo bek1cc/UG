@@ -1,10 +1,10 @@
 // ===========================================================================
-//  CEF TABLET INTEGRACIJA za SA-MP (samp-cef plugin)
+//  CEF TABLET INTEGRACIJA za open.mp (omp-cef plugin)
 //  File: pawno/include/cef_tablet.inc
 //
-//  Koristi pravi samp-cef API:
-//  PAWN: cef_create_browser, cef_emit_event, cef_subscribe
-//  JS:   window.cef.emit(), window.cef.subscribe()
+//  Koristi omp-cef API:
+//  PAWN: CEF_CreateBrowser, CEF_EmitEvent, CEF_RegisterEvent, CEF_AddResource
+//  JS:   cef.emit(), cef.on()
 //
 //  Komande:
 //  /tablet      - otvori/zatvori tablet (CEF ili textdraw fallback)
@@ -15,12 +15,13 @@
 //    #define USE_CEF
 //    #include <cef_tablet>
 //
-//  CEF PLUGIN INSTALACIJA:
-//  1. Preuzmi sa https://github.com/samp-cef/CEF/releases
-//  2. Stavi CEF.dll (Win) ili CEF.so (Linux) u /plugins/
-//  3. Dodaj "CEF" u plugins liniju u server.cfg
+//  OMP-CEF PLUGIN INSTALACIJA:
+//  1. Preuzmi sa https://github.com/aurora-mp/omp-cef/releases
+//  2. Stavi Cef.so u components/ folder (Linux) ili Cef.dll u components/ (Windows)
+//  3. Stavi cef.inc u pawno/include/ ili qawno/include/
 //  4. Definisi USE_CEF PRIJE #include <cef_tablet>
-//  5. Stavi CEF/ folder sa tablet fajlovima u server root
+//  5. CEF fajlove stavi u scriptfiles/cef/tablet/
+//  6. Otvori UDP port server_port + 2 (default: 7779)
 //
 //  BEZ CEF PLUGINA:
 //  - Kod se kompajlira bez gresaka (nativne funkcije se ne pozivaju)
@@ -32,10 +33,10 @@
 // ===========================================================================
 //  KONFIGURACIJA
 // ===========================================================================
-#define CEF_TABLET_URL        "CEF/tablet/index.html"
-#define CEF_TABLET_WIDTH      800
-#define CEF_TABLET_HEIGHT     600
-#define CEF_BROWSER_ID        1
+#define CEF_TABLET_RESOURCE  "cef/tablet"
+#define CEF_TABLET_WIDTH     800.0
+#define CEF_TABLET_HEIGHT    600.0
+#define CEF_BROWSER_ID       1
 
 // ===========================================================================
 //  PLAYER DATA
@@ -46,14 +47,13 @@ enum CefTabletData {
     bool:ct_LoggedIn,
     ct_LoginAttempts,
     ct_PinCode,
-    ct_InitTimer
+    bool:ct_CefReady
 }
 
 static CefTablet[MAX_PLAYERS][CefTabletData];
-static ct_InitData[MAX_PLAYERS][512];
 
 // ===========================================================================
-//  HELPER: GetOnlinePlayers (zajednicko za obje verzije)
+//  HELPER: GetOnlinePlayers
 // ===========================================================================
 stock CEF_GetOnlinePlayers() {
     new count = 0;
@@ -64,23 +64,18 @@ stock CEF_GetOnlinePlayers() {
 }
 
 // ===========================================================================
-//  CEF PLUGIN VERZIJA - koristi pravi samp-cef API
+//  OMP-CEF VERZIJA
 // ===========================================================================
 #if defined USE_CEF
 
-// Samp-CEF native funkcije
-native cef_create_browser(playerid, browserid, const url[], bool:hidden = false, bool:fullscreen = false);
-native cef_destroy_browser(playerid, browserid);
-native cef_hide_browser(playerid, browserid, bool:hide);
-native cef_set_browser_size(playerid, browserid, width, height);
-native cef_set_browser_pos(playerid, browserid, x, y);
-native cef_emit_event(const name[], const data[]);
-native cef_subscribe(const name[], const callback[]);
-native cef_player_has_plugin(playerid);
-#define _cef_natives_defined
+// Omp-CEF native funkcije (iz cef.inc)
+// Ako cef.inc nije vec ukljucen, ukljuci ga ovdje
+#if !defined _INC_cef
+    #include <cef>
+#endif
 
 // ===========================================================================
-//  HELPER: Format bounty data za CEF (samo unutar USE_CEF bloka)
+//  HELPER: Format bounty data za CEF
 // ===========================================================================
 stock CEF_FormatBountyJSON() {
     new json[2048];
@@ -121,48 +116,26 @@ stock CEF_FormatBountyJSON() {
 }
 
 // ===========================================================================
-//  OTVARANJE TABLETA (CEF)
+//  OTVARANJE TABLETA (OMP-CEF)
 // ===========================================================================
 stock CEF_TabletOpen(playerid) {
     if(CefTablet[playerid][ct_IsOpen]) return;
     if(!IsPlayerConnected(playerid)) return;
 
     // Provjeri da li igrac ima CEF plugin na klijentu
-    if(!cef_player_has_plugin(playerid)) {
+    if(!CEF_PlayerHasPlugin(playerid)) {
         SendClientMessage(playerid, 0xFF453AFF, "[TABLET]{FFFFFF} Nemate CEF plugin! Koristite /phone za textdraw telefon.");
         return;
     }
 
-    // Kreiraj CEF browser (hidden=true, prikazemo nakon postavljanja pozicije)
+    // Kreiraj CEF browser
+    // CEF_CreateBrowser(playerid, browserid, url, focused, controls_chat, width, height)
     CefTablet[playerid][ct_BrowserId] = CEF_BROWSER_ID;
-    cef_create_browser(playerid, CefTablet[playerid][ct_BrowserId], CEF_TABLET_URL, true, false);
-
-    // Postavi poziciju i velicinu (centrirano na ekranu)
-    cef_set_browser_pos(playerid, CefTablet[playerid][ct_BrowserId], 160, 40);
-    cef_set_browser_size(playerid, CefTablet[playerid][ct_BrowserId], CEF_TABLET_WIDTH, CEF_TABLET_HEIGHT);
-
-    // Prikaži browser
-    cef_hide_browser(playerid, CefTablet[playerid][ct_BrowserId], false);
-
-    // Pripremi podatke igraca za slanje
-    new playerName[MAX_PLAYER_NAME];
-    GetPlayerName(playerid, playerName, sizeof(playerName));
-
-    format(ct_InitData[playerid], sizeof(ct_InitData[]),
-        "{\"username\":\"%s\",\"battery\":%d,\"money\":%d,\"level\":%d,\"online\":%d,\"phone\":%d}",
-        playerName,
-        Bounty_CalcBattery(playerid),
-        GetPlayerMoney(playerid),
-        GetPlayerScore(playerid),
-        CEF_GetOnlinePlayers(),
-        iPhone_GetNumber(playerid)
-    );
-
-    // Cekaj 1 sekund da se browser ucita, onda posalji podatke
-    CefTablet[playerid][ct_InitTimer] = SetTimerEx("CEF_SendInitData", 1000, false, "i", playerid);
+    CEF_CreateBrowser(playerid, CefTablet[playerid][ct_BrowserId], "http://web/tablet/index.html", true, true, CEF_TABLET_WIDTH, CEF_TABLET_HEIGHT);
 
     CefTablet[playerid][ct_IsOpen] = true;
     CefTablet[playerid][ct_LoggedIn] = false;
+    CefTablet[playerid][ct_CefReady] = false;
 
     // Freeze player dok je tablet otvoren
     TogglePlayerControllable(playerid, false);
@@ -171,34 +144,37 @@ stock CEF_TabletOpen(playerid) {
 }
 
 // ===========================================================================
-//  ZATVARANJE TABLETA (CEF)
+//  ZATVARANJE TABLETA (OMP-CEF)
 // ===========================================================================
 stock CEF_TabletClose(playerid) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
 
-    // Kill timer ako jos radi
-    if(CefTablet[playerid][ct_InitTimer] != 0) {
-        KillTimer(CefTablet[playerid][ct_InitTimer]);
-        CefTablet[playerid][ct_InitTimer] = 0;
-    }
-
-    cef_destroy_browser(playerid, CefTablet[playerid][ct_BrowserId]);
+    CEF_DestroyBrowser(playerid, CefTablet[playerid][ct_BrowserId]);
     CefTablet[playerid][ct_IsOpen] = false;
     CefTablet[playerid][ct_LoggedIn] = false;
+    CefTablet[playerid][ct_CefReady] = false;
 
     TogglePlayerControllable(playerid, true);
 }
 
 // ===========================================================================
-//  SLANJE INICIJALNIH PODATAKA U CEF (timer callback)
+//  SLANJE INICIJALNIH PODATAKA U CEF (poziva se kad je browser spreman)
 // ===========================================================================
-forward CEF_SendInitData(playerid);
-public CEF_SendInitData(playerid) {
+stock CEF_TabletSendInit(playerid) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
-    CefTablet[playerid][ct_InitTimer] = 0;
 
-    // Posalji inicijalne podatke igraca
-    cef_emit_event("tablet:init", ct_InitData[playerid]);
+    new playerName[MAX_PLAYER_NAME];
+    GetPlayerName(playerid, playerName, sizeof(playerName));
+
+    // Koristimo CEF_EmitEvent sa typed argumentima
+    CEF_EmitEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:init",
+        CEF_STR(playerName),
+        CEF_INT(Bounty_CalcBattery(playerid)),
+        CEF_INT(GetPlayerMoney(playerid)),
+        CEF_INT(GetPlayerScore(playerid)),
+        CEF_INT(CEF_GetOnlinePlayers()),
+        CEF_INT(iPhone_GetNumber(playerid))
+    );
 }
 
 // ===========================================================================
@@ -210,7 +186,9 @@ stock CEF_UpdateBountyList(playerid) {
 
     new json[2048];
     json = CEF_FormatBountyJSON();
-    cef_emit_event("tablet:bounty:update", json);
+    CEF_EmitEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:bounty:update",
+        CEF_STR(json)
+    );
 }
 
 // ===========================================================================
@@ -219,9 +197,9 @@ stock CEF_UpdateBountyList(playerid) {
 stock CEF_ShowToast(playerid, message[]) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
 
-    new data[256];
-    format(data, sizeof(data), "{\"message\":\"%s\"}", message);
-    cef_emit_event("tablet:toast", data);
+    CEF_EmitEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:toast",
+        CEF_STR(message)
+    );
 }
 
 // ===========================================================================
@@ -230,28 +208,39 @@ stock CEF_ShowToast(playerid, message[]) {
 stock CEF_SendLoginStatus(playerid, bool:success, message[]) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
 
-    new data[256];
-    format(data, sizeof(data), "{\"success\":%s,\"message\":\"%s\"}", success ? "true" : "false", message);
-    cef_emit_event("tablet:login:result", data);
+    CEF_EmitEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:login:result",
+        CEF_BOOL(success),
+        CEF_STR(message)
+    );
 }
 
 // ===========================================================================
-//  CEF INIT - subscribe na evente iz browsera (samp-cef API)
+//  CEF INIT - Registruj evente i resurse
 // ===========================================================================
 stock CEF_InitSubscriptions() {
-    // Subscribe na evente koje JS salje preko window.cef.emit()
-    cef_subscribe("tablet:login:attempt", "OnTabletLoginAttempt");
-    cef_subscribe("tablet:register:attempt", "OnTabletRegisterAttempt");
-    cef_subscribe("tablet:logout", "OnTabletLogout");
-    cef_subscribe("tablet:bounty:place", "OnTabletBountyPlace");
-    cef_subscribe("tablet:close", "OnTabletClose");
-    cef_subscribe("tablet:phone:call", "OnTabletPhoneCall");
-    cef_subscribe("tablet:phone:sms", "OnTabletPhoneSMS");
-    print("[CEF TABLET] Subscriptions registrovane (samp-cef API).");
+    // Dodaj resurs za download od strane klijenata
+    CEF_AddResource(CEF_TABLET_RESOURCE);
+
+    // Registruj evente koje JS salje preko cef.emit()
+    // Format: CEF_RegisterEvent(eventName, callback, argTypes...)
+    CEF_RegisterEvent("tablet:login:attempt", "OnTabletLoginAttempt", Argument_String);
+    CEF_RegisterEvent("tablet:register:attempt", "OnTabletRegisterAttempt", Argument_String);
+    CEF_RegisterEvent("tablet:logout", "OnTabletLogout");
+    CEF_RegisterEvent("tablet:bounty:place", "OnTabletBountyPlace", Argument_String);
+    CEF_RegisterEvent("tablet:close", "OnTabletClose");
+    CEF_RegisterEvent("tablet:phone:call", "OnTabletPhoneCall", Argument_String);
+    CEF_RegisterEvent("tablet:phone:sms", "OnTabletPhoneSMS", Argument_String);
+    CEF_RegisterEvent("tablet:requestStats", "OnTabletRequestStats");
+    CEF_RegisterEvent("tablet:requestBounties", "OnTabletRequestBounties");
+    CEF_RegisterEvent("tablet:call911", "OnTabletCall911");
+    CEF_RegisterEvent("tablet:callTaxi", "OnTabletCallTaxi");
+    CEF_RegisterEvent("tablet:callMehanicar", "OnTabletCallMehanicar");
+
+    print("[CEF TABLET] Subscriptions registrovane (omp-cef API).");
 }
 
 // ===========================================================================
-//  CEF EVENT CALLBACKS - poziva ih samp-cef kad JS emituje event
+//  CEF EVENT CALLBACKS
 // ===========================================================================
 
 forward OnTabletLoginAttempt(playerid, pin[]);
@@ -260,13 +249,11 @@ public OnTabletLoginAttempt(playerid, pin[]) {
 
     new pinNum = strval(pin);
 
-    // Provjeri da li je igrac registrovan
     if(!Bounty_HasPIN(playerid)) {
         CEF_SendLoginStatus(playerid, false, "Niste registrovani! Koristi REGISTRUJ SE.");
         return;
     }
 
-    // Provjeri PIN
     new savedPin = Bounty_LoadPIN(playerid);
     if(savedPin == pinNum) {
         CefTablet[playerid][ct_LoggedIn] = true;
@@ -276,7 +263,7 @@ public OnTabletLoginAttempt(playerid, pin[]) {
         // Posalji bounty listu nakon login-a
         new json[2048];
         json = CEF_FormatBountyJSON();
-        cef_emit_event("tablet:bounty:update", json);
+        CEF_EmitEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:bounty:update", CEF_STR(json));
     } else {
         CefTablet[playerid][ct_LoginAttempts]++;
         if(CefTablet[playerid][ct_LoginAttempts] >= 3) {
@@ -309,7 +296,6 @@ public OnTabletRegisterAttempt(playerid, pin[]) {
     CefTablet[playerid][ct_LoggedIn] = true;
     CEF_SendLoginStatus(playerid, true, "Uspjesna registracija!");
 
-    // Posalji bounty listu
     CEF_UpdateBountyList(playerid);
 }
 
@@ -333,7 +319,6 @@ public OnTabletBountyPlace(playerid, data[]) {
     new targetName[MAX_PLAYER_NAME];
     new amountStr[16];
 
-    // Simple JSON parsing for {"targetName":"...","amount":...}
     new startIdx = strfind(data, "\"targetName\":\"");
     if(startIdx != -1) {
         startIdx += strlen("\"targetName\":\"");
@@ -352,7 +337,6 @@ public OnTabletBountyPlace(playerid, data[]) {
 
     new amount = strval(amountStr);
 
-    // Nadji target playerid po imenu
     new targetId = INVALID_PLAYER_ID;
     for(new i = 0; i < MAX_PLAYERS; i++) {
         if(IsPlayerConnected(i)) {
@@ -365,7 +349,6 @@ public OnTabletBountyPlace(playerid, data[]) {
         }
     }
 
-    // Validacija
     if(targetId == INVALID_PLAYER_ID) {
         CEF_ShowToast(playerid, "Igrac nije online!");
         return;
@@ -386,7 +369,6 @@ public OnTabletBountyPlace(playerid, data[]) {
         return;
     }
 
-    // Cooldown check
     if((gettime() - BountyCooldown[playerid]) < BOUNTY_COOLDOWN) {
         new remaining = BOUNTY_COOLDOWN - (gettime() - BountyCooldown[playerid]);
         new msg[64];
@@ -395,7 +377,6 @@ public OnTabletBountyPlace(playerid, data[]) {
         return;
     }
 
-    // Place bounty
     GivePlayerMoney(playerid, -amount);
     Bounty_Add(targetId, playerid, amount, false);
     BountyCooldown[playerid] = gettime();
@@ -403,7 +384,6 @@ public OnTabletBountyPlace(playerid, data[]) {
     CEF_ShowToast(playerid, "Nagrada uspjesno postavljena!");
     CEF_UpdateBountyList(playerid);
 
-    // Update svim drugim igracima koji imaju tablet otvoren
     for(new p = 0; p < MAX_PLAYERS; p++) {
         if(p != playerid && CefTablet[p][ct_IsOpen] && CefTablet[p][ct_LoggedIn]) {
             CEF_UpdateBountyList(p);
@@ -414,9 +394,6 @@ public OnTabletBountyPlace(playerid, data[]) {
 forward OnTabletPhoneCall(playerid, number[]);
 public OnTabletPhoneCall(playerid, number[]) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
-    new targetNum = strval(number);
-    #pragma unused targetNum
-    // TODO: Integriraj sa iPhone call sistemom
     new msg[64];
     format(msg, sizeof(msg), "Pozivam %s...", number);
     CEF_ShowToast(playerid, msg);
@@ -425,33 +402,77 @@ public OnTabletPhoneCall(playerid, number[]) {
 forward OnTabletPhoneSMS(playerid, data[]);
 public OnTabletPhoneSMS(playerid, data[]) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
-    // TODO: Integriraj sa iPhone SMS sistemom
     CEF_ShowToast(playerid, "SMS poslan!");
 }
 
+forward OnTabletRequestStats(playerid);
+public OnTabletRequestStats(playerid) {
+    if(!CefTablet[playerid][ct_IsOpen]) return;
+    CEF_TabletSendInit(playerid);
+}
+
+forward OnTabletRequestBounties(playerid);
+public OnTabletRequestBounties(playerid) {
+    if(!CefTablet[playerid][ct_IsOpen]) return;
+    CEF_UpdateBountyList(playerid);
+}
+
+forward OnTabletCall911(playerid);
+public OnTabletCall911(playerid) {
+    CEF_ShowToast(playerid, "Pozivam 911...");
+}
+
+forward OnTabletCallTaxi(playerid);
+public OnTabletCallTaxi(playerid) {
+    CEF_ShowToast(playerid, "Pozivam taxi...");
+}
+
+forward OnTabletCallMehanicar(playerid);
+public OnTabletCallMehanicar(playerid) {
+    CEF_ShowToast(playerid, "Pozivam mehanicara...");
+}
+
 // ===========================================================================
-//  CEF OnGameModeInit - inicijalizacija
+//  OnCefReady - poziva se kad je CEF klijent spreman
+// ===========================================================================
+stock CefTablet_OnCefReady(playerid) {
+    // Ako igrac ima tablet otvoren, posalji init podatke
+    if(CefTablet[playerid][ct_IsOpen]) {
+        CefTablet[playerid][ct_CefReady] = true;
+        CEF_TabletSendInit(playerid);
+    }
+}
+
+// ===========================================================================
+//  OnCefBrowserCreated - poziva se kad je browser kreiran
+// ===========================================================================
+stock CefTablet_OnBrowserCreated(playerid, browserid) {
+    if(browserid == CEF_BROWSER_ID && CefTablet[playerid][ct_IsOpen]) {
+        // Browser je kreiran, fokusiraj ga
+        CEF_FocusBrowser(playerid, browserid, true);
+    }
+}
+
+// ===========================================================================
+//  CEF OnGameModeInit
 // ===========================================================================
 stock CEF_OnGameModeInit() {
     CEF_InitSubscriptions();
-    print("[CEF TABLET] CEF tablet sistem inicijaliziran (samp-cef API).");
+    print("[CEF TABLET] CEF tablet sistem inicijaliziran (omp-cef API).");
 }
 
 #else
 
 // ===========================================================================
 //  FALLBACK VERZIJA - bez CEF plugina
-//  /tablet koristi textdraw telefon (iphone.inc)
 // ===========================================================================
 
 stock CEF_TabletOpen(playerid) {
-    // Fallback: koristi textdraw telefon
     iPhone_Open(playerid);
     SendClientMessage(playerid, 0x54A0FFFF, "[TABLET]{FFFFFF} CEF plugin nije instaliran. Koristite textdraw telefon (/phone).");
 }
 
 stock CEF_TabletClose(playerid) {
-    // Fallback: zatvori textdraw telefon
     iPhone_Close(playerid);
 }
 
@@ -473,18 +494,13 @@ stock CEF_SendLoginStatus(playerid, bool:success, message[]) {
 
 stock CEF_OnGameModeInit() {
     print("[CEF TABLET] CEF plugin NIJE detektovan. Koristi se textdraw fallback.");
-    print("[CEF TABLET] Za CEF podrsku: instaliraj samp-cef plugin i definisi USE_CEF.");
-}
-
-forward CEF_SendInitData(playerid);
-public CEF_SendInitData(playerid) {
-    #pragma unused playerid
+    print("[CEF TABLET] Za CEF podrsku: instaliraj omp-cef plugin i definisi USE_CEF.");
 }
 
 #endif // USE_CEF
 
 // ===========================================================================
-//  ZCMD KOMANDE (zajednicke za obje verzije)
+//  ZCMD KOMANDE
 // ===========================================================================
 CMD:tablet(playerid, params[]) {
     #pragma unused params
@@ -498,7 +514,7 @@ CMD:tablet(playerid, params[]) {
 }
 
 // ===========================================================================
-//  ON PLAYER DISCONNECT - cleanup (zajednicko)
+//  ON PLAYER DISCONNECT
 // ===========================================================================
 stock CefTablet_OnPlayerDisconnect(playerid) {
     if(CefTablet[playerid][ct_IsOpen]) {

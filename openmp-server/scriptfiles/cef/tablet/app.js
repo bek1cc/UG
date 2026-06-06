@@ -1,6 +1,11 @@
 // ===========================================================================
-//  Unicate Gaming Tablet - CEF App (samp-cef API)
-//  Uses: window.cef.emit() / window.cef.subscribe()
+//  Unicate Gaming Tablet - CEF App (omp-cef API)
+//  Uses: cef.emit() / cef.on()
+//
+//  omp-cef JS API:
+//    cef.emit(eventName, arg1, arg2, ...) - salje event ka Pawn-u
+//    cef.on(eventName, callback) - prima event iz Pawn-a
+//    cef.ready(callback) - poziva se kad je CEF spreman
 // ===========================================================================
 
 // ---- Global State ----
@@ -16,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initTabs();
     initTheme();
     subscribeToServerEvents();
-    showToast('Tablet povezan!');
 });
 
 // ---- Clock ----
@@ -89,12 +93,12 @@ document.getElementById('themeToggle').addEventListener('click', function() {
     toggleTheme();
 });
 
-// ---- CEF Communication ----
+// ---- CEF Communication (omp-cef API) ----
 function emitToServer(eventName) {
     var args = Array.prototype.slice.call(arguments, 1);
     try {
-        if (window.cef && window.cef.emit) {
-            window.cef.emit.apply(window.cef, [eventName].concat(args));
+        if (typeof cef !== 'undefined' && cef.emit) {
+            cef.emit.apply(cef, [eventName].concat(args));
         } else {
             console.log('[CEF emit]', eventName, args);
         }
@@ -105,81 +109,71 @@ function emitToServer(eventName) {
 
 function subscribeToServerEvents() {
     try {
-        if (window.cef && window.cef.subscribe) {
-            // Player stats
-            window.cef.subscribe('tablet:playerStats', function(name, money, level, kills) {
-                updatePlayerStats(name, money, level, kills);
+        if (typeof cef !== 'undefined' && cef.on) {
+            // Init data from server (typed args: name, battery, money, level, online, phone)
+            cef.on('tablet:init', function(name, battery, money, level, online, phone) {
+                playerData = {
+                    username: name,
+                    battery: battery,
+                    money: money,
+                    level: level,
+                    online: online,
+                    phone: phone
+                };
+                applyPlayerData(playerData);
+                showToast('Tablet povezan!');
             });
 
             // Bounty list (JSON string)
-            window.cef.subscribe('tablet:bountyList', function(bountyJSON) {
+            cef.on('tablet:bounty:update', function(bountyJSON) {
                 updateBountyList(bountyJSON);
             });
 
-            // Messages (JSON string)
-            window.cef.subscribe('tablet:messages', function(msgJSON) {
-                updateMessages(msgJSON);
-            });
-
             // Toast notifications
-            window.cef.subscribe('tablet:notify', function(message) {
+            cef.on('tablet:toast', function(message) {
                 showToast(message);
             });
 
-            // Bounty placed confirmation
-            window.cef.subscribe('tablet:bountyPlaced', function(target, amount) {
+            // Login result (typed: success, message)
+            cef.on('tablet:login:result', function(success, message) {
+                if (success) {
+                    showToast('Uspjesna prijava!');
+                } else {
+                    showToast(message || 'Greska pri prijavi');
+                }
+            });
+
+            // Bounty placed
+            cef.on('tablet:bountyPlaced', function(target, amount) {
                 showToast('Bounty postavljen na ' + target + ' za $' + amount);
                 requestBounties();
             });
 
+            // Messages (JSON string)
+            cef.on('tablet:messages', function(msgJSON) {
+                updateMessages(msgJSON);
+            });
+
             // Message sent confirmation
-            window.cef.subscribe('tablet:messageSent', function(to) {
+            cef.on('tablet:messageSent', function(to) {
                 showToast('Poruka poslata za ' + to);
                 document.getElementById('msgTo').value = '';
                 document.getElementById('msgText').value = '';
             });
 
-            // Init data from server (JSON)
-            window.cef.subscribe('tablet:init', function(dataJSON) {
-                try {
-                    var data = JSON.parse(dataJSON);
-                    playerData = data;
-                    applyPlayerData(data);
-                } catch(e) {
-                    console.error('Parse init error', e);
-                }
+            // Notify shorthand
+            cef.on('tablet:notify', function(message) {
+                showToast(message);
             });
 
-            // Login result
-            window.cef.subscribe('tablet:login:result', function(dataJSON) {
-                try {
-                    var data = JSON.parse(dataJSON);
-                    if (data.success) {
-                        showToast('Uspjesna prijava!');
-                    } else {
-                        showToast(data.message || 'Greska pri prijavi');
-                    }
-                } catch(e) {}
+            // Player stats (typed)
+            cef.on('tablet:playerStats', function(name, money, level, kills) {
+                updatePlayerStats(name, money, level, kills);
             });
 
-            // Bounty update (JSON)
-            window.cef.subscribe('tablet:bounty:update', function(json) {
-                updateBountyList(json);
-            });
-
-            // Toast
-            window.cef.subscribe('tablet:toast', function(dataJSON) {
-                try {
-                    var data = JSON.parse(dataJSON);
-                    showToast(data.message || dataJSON);
-                } catch(e) {
-                    showToast(dataJSON);
-                }
-            });
-
-            console.log('[CEF] Subscriptions registered');
+            console.log('[CEF omp-cef] Subscriptions registered');
         } else {
-            console.log('[CEF] No cef API - demo mode');
+            console.log('[CEF] No omp-cef API - demo mode');
             loadDemoData();
         }
     } catch (e) {
@@ -204,7 +198,6 @@ function applyPlayerData(data) {
     document.getElementById('profilePhone').textContent = data.phone || '-';
     document.getElementById('profileLevel').textContent = data.level || '-';
 
-    // Battery
     if (data.battery !== undefined) {
         var pct = Math.max(5, Math.min(100, data.battery));
         document.getElementById('batteryText').textContent = pct + '%';
@@ -214,7 +207,6 @@ function applyPlayerData(data) {
         }
     }
 
-    // Online players
     if (data.online !== undefined) {
         document.getElementById('statBounties').textContent = data.online;
     }

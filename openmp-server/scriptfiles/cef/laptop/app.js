@@ -1,5 +1,6 @@
 // ===========================================================================
-//  Unicate Gaming Laptop - CEF App (samp-cef API)
+//  Unicate Gaming Laptop - CEF App (omp-cef API)
+//  Uses: cef.emit() / cef.on()
 //  Realistic laptop OS with apps: Dark Web, Bank, BountyNet, Email, Terminal
 // ===========================================================================
 
@@ -17,23 +18,21 @@ document.addEventListener('DOMContentLoaded', function() {
 function emitToServer(eventName) {
     var args = Array.prototype.slice.call(arguments, 1);
     try {
-        if (window.cef && window.cef.emit) {
-            window.cef.emit.apply(window.cef, [eventName].concat(args));
+        if (typeof cef !== 'undefined' && cef.emit) {
+            cef.emit.apply(cef, [eventName].concat(args));
         }
     } catch(e) { console.error('[CEF emit error]', e); }
 }
 
 function subscribeToEvents() {
     try {
-        if (window.cef && window.cef.subscribe) {
-            window.cef.subscribe('laptop:init', function(json) {
-                try {
-                    var data = JSON.parse(json);
-                    document.getElementById('startUser').textContent = data.username || 'Korisnik';
-                } catch(e) {}
+        if (typeof cef !== 'undefined' && cef.on) {
+            // Init data from server (typed args: username, money, bank)
+            cef.on('laptop:init', function(username, money, bank) {
+                document.getElementById('startUser').textContent = username || 'Korisnik';
             });
-            window.cef.subscribe('laptop:notify', function(msg) { showToast(msg); });
-            window.cef.subscribe('laptop:bankBalance', function(bal) {
+            cef.on('laptop:notify', function(msg) { showToast(msg); });
+            cef.on('laptop:bankBalance', function(bal) {
                 var el = document.getElementById('bankBalance');
                 if (el) el.textContent = '$' + Number(bal).toLocaleString();
             });

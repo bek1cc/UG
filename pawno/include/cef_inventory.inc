@@ -1,5 +1,5 @@
 // ===========================================================================
-//  CEF INVENTORY SISTEM za SA-MP (samp-cef plugin)
+//  CEF INVENTORY SISTEM za open.mp (omp-cef plugin)
 //  File: pawno/include/cef_inventory.inc
 //
 //  Komande:
@@ -16,11 +16,11 @@
 #endif
 #define _cef_inventory_included
 
-#define CEF_INV_URL         "CEF/inventory/index.html"
-#define CEF_INV_WIDTH       600
-#define CEF_INV_HEIGHT      500
-#define CEF_INV_BROWSER_ID  2
-#define MAX_INV_SLOTS       20
+#define CEF_INV_RESOURCE     "cef/inventory"
+#define CEF_INV_WIDTH        600.0
+#define CEF_INV_HEIGHT       500.0
+#define CEF_INV_BROWSER_ID   2
+#define MAX_INV_SLOTS        20
 
 // Item categories
 #define INV_CAT_WEAPON      0
@@ -42,7 +42,7 @@ enum InvItemData {
     inv_ScriptID
 }
 
-// Player inventory data (bez ugnijezdenog niza - Pawn to ne podrzava)
+// Player inventory data
 enum InvPlayerData {
     bool:inv_IsOpen,
     inv_BrowserId,
@@ -50,46 +50,31 @@ enum InvPlayerData {
 }
 
 static InvData[MAX_PLAYERS][InvPlayerData];
-// Zasebni 3D niz za iteme (Pawn ne podrzava 2D enum niz unutar enuma)
 static InvItems[MAX_PLAYERS][MAX_INV_SLOTS][InvItemData];
 
 #if defined USE_CEF
 
-// CEF natives - vec definisane u cef_tablet.inc, guard da ne redefinise
-#if !defined _cef_natives_defined
-native cef_create_browser(playerid, browserid, const url[], bool:hidden = false, bool:fullscreen = false);
-native cef_destroy_browser(playerid, browserid);
-native cef_hide_browser(playerid, browserid, bool:hide);
-native cef_set_browser_size(playerid, browserid, width, height);
-native cef_set_browser_pos(playerid, browserid, x, y);
-native cef_emit_event(const name[], const data[]);
-native cef_subscribe(const name[], const callback[]);
-native cef_player_has_plugin(playerid);
-#define _cef_natives_defined
+// Omp-CEF native funkcije
+#if !defined _INC_cef
+    #include <cef>
 #endif
 
 // ===========================================================================
-//  OTVARANJE INVENTORYJA (CEF)
+//  OTVARANJE INVENTORYJA (OMP-CEF)
 // ===========================================================================
 stock CEF_InventoryOpen(playerid) {
     if(InvData[playerid][inv_IsOpen]) return;
     if(!IsPlayerConnected(playerid)) return;
 
-    if(!cef_player_has_plugin(playerid)) {
+    if(!CEF_PlayerHasPlugin(playerid)) {
         SendClientMessage(playerid, 0xFF453AFF, "[INVENTORY]{FFFFFF} Nemate CEF plugin! Koristite /inv za textdraw.");
         return;
     }
 
     InvData[playerid][inv_BrowserId] = CEF_INV_BROWSER_ID;
-    cef_create_browser(playerid, InvData[playerid][inv_BrowserId], CEF_INV_URL, true, false);
-    cef_set_browser_pos(playerid, InvData[playerid][inv_BrowserId], 180, 50);
-    cef_set_browser_size(playerid, InvData[playerid][inv_BrowserId], CEF_INV_WIDTH, CEF_INV_HEIGHT);
-    cef_hide_browser(playerid, InvData[playerid][inv_BrowserId], false);
+    CEF_CreateBrowser(playerid, InvData[playerid][inv_BrowserId], "http://web/inventory/index.html", true, true, CEF_INV_WIDTH, CEF_INV_HEIGHT);
 
     InvData[playerid][inv_IsOpen] = true;
-
-    // Posalji podatke nakon 1s
-    SetTimerEx("CEF_InvSendData", 1000, false, "i", playerid);
 
     TogglePlayerControllable(playerid, false);
     SendClientMessage(playerid, 0x54A0FFFF, "[INVENTORY]{FFFFFF} CEF Inventar otvoren.");
@@ -100,7 +85,7 @@ stock CEF_InventoryOpen(playerid) {
 // ===========================================================================
 stock CEF_InventoryClose(playerid) {
     if(!InvData[playerid][inv_IsOpen]) return;
-    cef_destroy_browser(playerid, InvData[playerid][inv_BrowserId]);
+    CEF_DestroyBrowser(playerid, InvData[playerid][inv_BrowserId]);
     InvData[playerid][inv_IsOpen] = false;
     TogglePlayerControllable(playerid, true);
 }
@@ -108,12 +93,11 @@ stock CEF_InventoryClose(playerid) {
 // ===========================================================================
 //  SLANJE PODATAKA U CEF
 // ===========================================================================
-forward CEF_InvSendData(playerid);
-public CEF_InvSendData(playerid) {
+stock CEF_InvSendData(playerid) {
     if(!InvData[playerid][inv_IsOpen]) return;
     new json[2048];
     json = CEF_InvFormatJSON(playerid);
-    cef_emit_event("inventory:data", json);
+    CEF_EmitEvent(playerid, InvData[playerid][inv_BrowserId], "inventory:data", CEF_STR(json));
 }
 
 stock CEF_InvFormatJSON(playerid) {
@@ -159,7 +143,6 @@ stock CEF_InvFormatJSON(playerid) {
 //  DODAJ PREDMET U INVENTAR
 // ===========================================================================
 stock CEF_InvAddItem(playerid, name[], category, quantity, Float:weight, ammo = 0, desc[] = "") {
-    // Trazi prazan slot
     new slot = -1;
     for(new i = 0; i < MAX_INV_SLOTS; i++) {
         if(!InvItems[playerid][i][inv_Exists]) { slot = i; break; }
@@ -170,7 +153,6 @@ stock CEF_InvAddItem(playerid, name[], category, quantity, Float:weight, ammo = 
         return -1;
     }
 
-    // Provjeri da li vec ima isti predmet
     for(new i = 0; i < MAX_INV_SLOTS; i++) {
         if(InvItems[playerid][i][inv_Exists] &&
            strcmp(InvItems[playerid][i][inv_Name], name, true) == 0 &&
@@ -214,14 +196,16 @@ stock CEF_InvRemoveItem(playerid, slot) {
 }
 
 // ===========================================================================
-//  SUBSCRIPTIONS
+//  SUBSCRIPTIONS (OMP-CEF)
 // ===========================================================================
 stock CEF_InvInitSubscriptions() {
-    cef_subscribe("inventory:close", "OnInvClose");
-    cef_subscribe("inventory:use", "OnInvUseItem");
-    cef_subscribe("inventory:drop", "OnInvDropItem");
-    cef_subscribe("inventory:give", "OnInvGiveItem");
-    print("[CEF INVENTORY] Subscriptions registrovane.");
+    CEF_AddResource(CEF_INV_RESOURCE);
+
+    CEF_RegisterEvent("inventory:close", "OnInvClose");
+    CEF_RegisterEvent("inventory:use", "OnInvUseItem", Argument_Integer);
+    CEF_RegisterEvent("inventory:drop", "OnInvDropItem", Argument_Integer);
+    CEF_RegisterEvent("inventory:give", "OnInvGiveItem", Argument_Integer);
+    print("[CEF INVENTORY] Subscriptions registrovane (omp-cef API).");
 }
 
 forward OnInvClose(playerid);
@@ -229,21 +213,18 @@ public OnInvClose(playerid) {
     CEF_InventoryClose(playerid);
 }
 
-forward OnInvUseItem(playerid, slotStr[]);
-public OnInvUseItem(playerid, slotStr[]) {
-    new slot = strval(slotStr);
+forward OnInvUseItem(playerid, slot);
+public OnInvUseItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
     if(!InvItems[playerid][slot][inv_Exists]) return;
 
-    // TODO: Implementiraj koristenje predmeta
     new msg[64];
     format(msg, sizeof(msg), "[INVENTORY]{FFFFFF} Koristis: %s", InvItems[playerid][slot][inv_Name]);
     SendClientMessage(playerid, 0x54A0FFFF, msg);
 }
 
-forward OnInvDropItem(playerid, slotStr[]);
-public OnInvDropItem(playerid, slotStr[]) {
-    new slot = strval(slotStr);
+forward OnInvDropItem(playerid, slot);
+public OnInvDropItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
     if(!InvItems[playerid][slot][inv_Exists]) return;
 
@@ -253,13 +234,26 @@ public OnInvDropItem(playerid, slotStr[]) {
     CEF_InvRemoveItem(playerid, slot);
 }
 
-forward OnInvGiveItem(playerid, slotStr[]);
-public OnInvGiveItem(playerid, slotStr[]) {
-    new slot = strval(slotStr);
+forward OnInvGiveItem(playerid, slot);
+public OnInvGiveItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
     if(!InvItems[playerid][slot][inv_Exists]) return;
-    // TODO: Implementiraj davanje predmeta drugom igracu
     SendClientMessage(playerid, 0x54A0FFFF, "[INVENTORY]{FFFFFF} Kome zelis dati predmet? Koristi /giveitem [id]");
+}
+
+// ===========================================================================
+//  OnCefReady / OnCefBrowserCreated za inventory
+// ===========================================================================
+stock CefInv_OnCefReady(playerid) {
+    if(InvData[playerid][inv_IsOpen]) {
+        CEF_InvSendData(playerid);
+    }
+}
+
+stock CefInv_OnBrowserCreated(playerid, browserid) {
+    if(browserid == CEF_INV_BROWSER_ID && InvData[playerid][inv_IsOpen]) {
+        CEF_FocusBrowser(playerid, browserid, true);
+    }
 }
 
 #else
@@ -274,26 +268,6 @@ stock CEF_InvRemoveItem(playerid, slot) { return 0; }
 stock CEF_InvInitSubscriptions() {}
 
 #endif // USE_CEF
-
-// ===========================================================================
-//  KOMANDE (zajednicke)
-//  NAPOMENA: /inventory komanda je vec definisana u fg-ogc.pwn
-//  /inv komanda je takodjer vec definisana u fg-ogc.pwn
-//  Ako koristite drugi gamemode, odkomentirajte komande ispod:
-// ===========================================================================
-// CMD:inventory(playerid, params[]) {
-//     #pragma unused params
-//     if(InvData[playerid][inv_IsOpen]) {
-//         CEF_InventoryClose(playerid);
-//     } else {
-//         CEF_InventoryOpen(playerid);
-//     }
-//     return 1;
-// }
-//
-// CMD:inv(playerid, params[]) {
-//     return cmd_inventory(playerid, params);
-// }
 
 // ===========================================================================
 //  ON PLAYER DISCONNECT
