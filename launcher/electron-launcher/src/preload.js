@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   launchGame: (nickname) => ipcRenderer.invoke('launch-game', nickname),
   autoInstall: () => ipcRenderer.invoke('auto-install'),
   setServerMode: (mode) => ipcRenderer.invoke('set-server-mode', mode),
+  toggleCef: (enabled) => ipcRenderer.invoke('toggle-cef', enabled),
+  getCefState: () => ipcRenderer.invoke('get-cef-state'),
   openUrl: (url) => ipcRenderer.invoke('open-url', url),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   maximizeWindow: () => ipcRenderer.invoke('maximize-window'),

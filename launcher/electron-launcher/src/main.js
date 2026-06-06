@@ -520,14 +520,12 @@ function toggleCefFiles(gtaPath, disable) {
     const disabledPath = path.join(gtaPath, f.disabled);
     try {
       if (disable) {
-        // Rename active files to .disabled
         if (fs.existsSync(normalPath) && !fs.existsSync(disabledPath)) {
           fs.renameSync(normalPath, disabledPath);
           toggled.push(f.name + ' -> ' + f.disabled);
           log('Disabled: ' + f.name);
         }
       } else {
-        // Rename .disabled back to active
         if (fs.existsSync(disabledPath)) {
           fs.renameSync(disabledPath, normalPath);
           toggled.push(f.disabled + ' -> ' + f.name);
@@ -541,6 +539,28 @@ function toggleCefFiles(gtaPath, disable) {
   return toggled;
 }
 
+// Check if CEF files are currently active or disabled
+function getCefState(gtaPath) {
+  if (!gtaPath) return { enabled: false, files: {} };
+  const cefAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
+  const cefAsiDis = fs.existsSync(path.join(gtaPath, 'cef.asi.disabled'));
+  const dsound = fs.existsSync(path.join(gtaPath, 'dsound.dll'));
+  const dsoundDis = fs.existsSync(path.join(gtaPath, 'dsound.dll.disabled'));
+  const dinput = fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
+  const dinputDis = fs.existsSync(path.join(gtaPath, 'dinput8.dll.disabled'));
+  const cefFolder = fs.existsSync(path.join(gtaPath, 'cef'));
+
+  const hasAnyActive = cefAsi || dsound || dinput;
+  const hasAnyDisabled = cefAsiDis || dsoundDis || dinputDis;
+
+  return {
+    enabled: hasAnyActive,
+    has_files: hasAnyActive || hasAnyDisabled,
+    cef_folder: cefFolder,
+    files: { cefAsi, cefAsiDis, dsound, dsoundDis, dinput, dinputDis, cefFolder }
+  };
+}
+
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
@@ -552,25 +572,35 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
 
+  const settings = loadSettings();
   const srv = getActiveServer();
+  const cefEnabled = settings.cef_enabled !== false; // default: true
 
   if (srv.mode === 'production') {
     const status = getStatus(gtaPath);
     if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
-    // Make sure CEF files are enabled for production
-    toggleCefFiles(gtaPath, false);
+    // Production always needs CEF - make sure it's enabled
+    if (!cefEnabled) {
+      toggleCefFiles(gtaPath, false);
+      log('Production mode: re-enabling CEF files');
+    }
   } else {
-    // LOCAL MODE: Disable CEF/ASI to prevent crash
-    log('Local mode: disabling CEF/ASI files to prevent crash...');
-    const toggled = toggleCefFiles(gtaPath, true);
-    if (toggled.length > 0) {
-      log('Disabled files: ' + toggled.join(', '));
+    // Local mode: respect user's CEF toggle setting
+    if (!cefEnabled) {
+      log('Local mode: CEF disabled by user, disabling CEF/ASI files...');
+      toggleCefFiles(gtaPath, true);
     } else {
-      log('No CEF/ASI files to disable (already disabled or not present)');
+      // CEF enabled - make sure files are active
+      const cefState = getCefState(gtaPath);
+      if (!cefState.enabled && cefState.has_files) {
+        log('Local mode: CEF enabled by user, re-enabling CEF/ASI files...');
+        toggleCefFiles(gtaPath, false);
+      }
+      log('Local mode: CEF enabled - all CEF features active (tablet, inventar, TD)');
     }
   }
 
-  log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname);
+  log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname + ' cef=' + cefEnabled);
 
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
@@ -583,14 +613,39 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     child.unref();
     
     log('Launch OK (PID: ' + child.pid + ')');
-    const msg = srv.mode === 'local' 
-      ? 'Lokalni mod: CEF/ASI iskljuceni (kao i treba). Ako zelis natrag za produkciju, idi u Settings i stavi PRODUKCIJA.'
-      : 'SA-MP pokrenut!';
+    const msg = cefEnabled 
+      ? 'SA-MP pokrenut! CEF ukljucen (tablet, inventar, TD rade).'
+      : 'SA-MP pokrenut! CEF iskljucen (osnovni mod, bez CEF UI). Ako crasha, ukljuci CEF toggle u Settings.';
     return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
   }
+});
+
+ipcMain.handle('toggle-cef', (event, enabled) => {
+  const settings = loadSettings();
+  settings.cef_enabled = enabled;
+  saveSettings(settings);
+  const gtaPath = findGtaPath();
+  if (gtaPath) {
+    toggleCefFiles(gtaPath, !enabled);
+  }
+  log('CEF toggle: ' + (enabled ? 'ON' : 'OFF'));
+  return { success: true, cef_enabled: enabled };
+});
+
+ipcMain.handle('get-cef-state', () => {
+  const gtaPath = findGtaPath();
+  const settings = loadSettings();
+  const cefState = getCefState(gtaPath);
+  return {
+    enabled: cefState.enabled,
+    has_files: cefState.has_files,
+    cef_folder: cefState.cef_folder,
+    setting: settings.cef_enabled !== false,
+    files: cefState.files
+  };
 });
 
 ipcMain.handle('auto-install', async () => {

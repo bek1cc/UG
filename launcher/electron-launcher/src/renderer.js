@@ -164,6 +164,35 @@ function updateGtaPath() {
   if (rightPath) { rightPath.textContent = pathText; rightPath.style.color = pathColor; }
 }
 
+function updateCefStatus(cefState) {
+  const statusEl = document.getElementById('cefStatus');
+  const warningEl = document.getElementById('cefWarning');
+  if (!cefState || !statusEl) return;
+
+  if (!cefState.has_files) {
+    statusEl.textContent = 'CEF fajlovi nisu instalirani';
+    statusEl.style.color = 'var(--dim)';
+    if (warningEl) warningEl.style.display = 'none';
+  } else if (cefState.enabled) {
+    const parts = [];
+    if (cefState.files.cefAsi) parts.push('cef.asi');
+    if (cefState.files.dsound) parts.push('dsound.dll');
+    if (cefState.files.dinput) parts.push('dinput8.dll');
+    if (cefState.files.cefFolder) parts.push('cef/');
+    statusEl.textContent = 'CEF UKLJUCEN - ' + parts.join(', ');
+    statusEl.style.color = 'var(--green)';
+    if (warningEl) warningEl.style.display = 'block';
+  } else {
+    const parts = [];
+    if (cefState.files.cefAsiDis) parts.push('cef.asi.disabled');
+    if (cefState.files.dsoundDis) parts.push('dsound.dll.disabled');
+    if (cefState.files.dinputDis) parts.push('dinput8.dll.disabled');
+    statusEl.textContent = 'CEF ISKLJUCEN - ' + (parts.length ? parts.join(', ') : 'nema fajlova');
+    statusEl.style.color = 'var(--orange)';
+    if (warningEl) warningEl.style.display = 'none';
+  }
+}
+
 // ---------- EVENT LISTENERS ----------
 function setupEventListeners() {
   // Window controls
@@ -262,6 +291,25 @@ function setupEventListeners() {
   // Social buttons
   document.getElementById('btnDiscord')?.addEventListener('click', () => API.openUrl(config?.DISCORD_URL || 'https://discord.gg/unicategaming'));
   document.getElementById('btnWebsite')?.addEventListener('click', () => API.openUrl(config?.WEBSITE_URL || 'https://ug-ogc.com'));
+
+  // CEF Toggle
+  const cefToggle = document.getElementById('cefToggle');
+  if (cefToggle) {
+    // Load current CEF state
+    API.getCefState().then(cefState => {
+      cefToggle.checked = cefState.setting;
+      updateCefStatus(cefState);
+    });
+
+    cefToggle.addEventListener('change', async () => {
+      const enabled = cefToggle.checked;
+      const result = await API.toggleCef(enabled);
+      if (result && result.success) {
+        const cefState = await API.getCefState();
+        updateCefStatus(cefState);
+      }
+    });
+  }
 
   // Nickname sync
   document.getElementById('inputNick')?.addEventListener('input', (e) => {
