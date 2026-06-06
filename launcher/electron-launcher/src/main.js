@@ -29,7 +29,7 @@ function log(msg) {
 // Clear old log
 try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher Debug Log ===\n'); } catch(e) {}
 
-log('Starting Unicate Gaming Launcher v3.0');
+log('Starting Unicate Gaming Launcher v3.1');
 log('Electron: ' + process.versions.electron);
 log('Node: ' + process.versions.node);
 log('Chrome: ' + process.versions.chrome);
@@ -52,6 +52,8 @@ process.on('unhandledRejection', (err) => {
 // ============================================================
 //  CONFIG
 // ============================================================
+const SERVER_PASSWORD = 'ug2025secure'; // Server password - only launcher knows this
+
 const SERVERS = {
   production: { ip: '135.125.156.197', port: 7777, name: 'Unicate Gaming RPG' },
   local: { ip: '127.0.0.1', port: 7777, name: 'Unicate Gaming TEST' }
@@ -66,7 +68,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.0.0';
+const LAUNCHER_VERSION = '3.1.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -216,7 +218,7 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
     let downloadedBytes = 0;
     let startTime = Date.now();
 
-    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.0' } }, (response) => {
+    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.1' } }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         const newUrl = response.headers.location;
         response.resume();
@@ -273,11 +275,9 @@ async function autoInstall(gtaPath, missing) {
         });
       });
       const zip = new AdmZip(tmpZip);
-      // Extract ALL files from the ASI Loader zip (contains dinput8.dll and possibly others)
       const entries = zip.getEntries();
       for (const entry of entries) {
         const fileName = entry.entryName.split('/').pop();
-        // Only extract DLL files (dinput8.dll, dsound.dll, etc.)
         if (fileName.toLowerCase().endsWith('.dll') && !entry.isDirectory) {
           log('ASI Loader: extracting ' + fileName);
           fs.writeFileSync(path.join(gtaPath, fileName), entry.getData());
@@ -305,6 +305,90 @@ async function autoInstall(gtaPath, missing) {
     }
   }
   if (mainWindow) mainWindow.webContents.send('install-complete', {});
+}
+
+// ============================================================
+//  SA-MP REGISTRY & CONFIG SETUP
+// ============================================================
+
+/**
+ * Write player name and server to SA-MP Windows Registry before launching.
+ * SA-MP reads HKCU\Software\SAMP for PlayerName when connecting.
+ * Also writes the server password to SA-MP's saved server data.
+ */
+function setupSampRegistry(gtaPath, ip, port, nickname) {
+  try {
+    const { execSync } = require('child_process');
+    
+    // Set PlayerName in SA-MP registry
+    const regCmd1 = `reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`;
+    log('Registry: Setting PlayerName = ' + nickname);
+    execSync(regCmd1, { windowsHide: true });
+    
+    // Set LastServer so SA-MP knows which server to connect to
+    const serverAddr = `${ip}:${port}`;
+    const regCmd2 = `reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${serverAddr}" /f`;
+    log('Registry: Setting LastServer = ' + serverAddr);
+    execSync(regCmd2, { windowsHide: true });
+    
+    // Write the server password to SA-MP saved servers
+    // SA-MP stores per-server passwords in a subkey by IP_Port
+    const serverKey = `${ip}_${port}`;
+    const regCmd3 = `reg add "HKCU\\Software\\SAMP\\${serverKey}" /v "Password" /t REG_SZ /d "${SERVER_PASSWORD}" /f`;
+    log('Registry: Setting server password for ' + serverKey);
+    execSync(regCmd3, { windowsHide: true });
+    
+    // Also write the server password to the SAMP user config file
+    // This ensures the password is picked up when connecting via command line
+    const sampUserDir = path.join(process.env.USERPROFILE || process.env.HOME || 'C:\\Users\\Default', 'Documents', 'GTA San Andreas User Files', 'SAMP');
+    try {
+      if (!fs.existsSync(sampUserDir)) {
+        fs.mkdirSync(sampUserDir, { recursive: true });
+      }
+      // Write samp.set file with connection info (SA-MP reads this)
+      const sampSetPath = path.join(sampUserDir, 'samp.set');
+      const sampSetContent = `${nickname}\n${ip}\n${port}\n${SERVER_PASSWORD}\n`;
+      fs.writeFileSync(sampSetPath, sampSetContent, 'latin1');
+      log('Wrote samp.set: ' + sampSetPath);
+    } catch (e) {
+      log('Warning: Could not write samp.set: ' + e.message);
+    }
+    
+    log('SA-MP registry setup complete');
+    return true;
+  } catch (err) {
+    log('Registry setup error: ' + err.message);
+    // Non-fatal - continue with launch even if registry fails
+    return false;
+  }
+}
+
+/**
+ * Alternative: Write SA-MP config files that store the connection password.
+ * SA-MP client stores server passwords in chat.samp or in the user files directory.
+ */
+function setupSampPasswordFile(gtaPath, ip, port, nickname) {
+  try {
+    // Try to write to the GTA SA user files directory (inside GTA folder)
+    const userDir = path.join(gtaPath, 'SAMP');
+    if (!fs.existsSync(userDir)) {
+      fs.mkdirSync(userDir, { recursive: true });
+    }
+    
+    // Write the connection data to a file SA-MP can read
+    const connData = {
+      ip: ip,
+      port: port,
+      nickname: nickname,
+      password: SERVER_PASSWORD
+    };
+    
+    const connFile = path.join(userDir, 'ug_connect.json');
+    fs.writeFileSync(connFile, JSON.stringify(connData));
+    log('Wrote connection file: ' + connFile);
+  } catch (e) {
+    log('Could not write SAMP password file: ' + e.message);
+  }
 }
 
 // ============================================================
@@ -385,7 +469,6 @@ ipcMain.handle('get-server-info', async () => {
   const result = await querySampServer(srv.ip, srv.port);
   
   // If SAMP query fails on local mode, try TCP connect check as fallback
-  // (open.mp may not respond to SAMP UDP queries on localhost)
   if (!result.online && srv.mode === 'local') {
     const tcpCheck = await new Promise((resolve) => {
       const net = require('net');
@@ -396,7 +479,7 @@ ipcMain.handle('get-server-info', async () => {
       sock.on('timeout', () => { sock.destroy(); resolve(false); });
     });
     if (tcpCheck) {
-      return { online: true, players: 0, max_players: 1000, name: srv.name, gamemode: 'RPG (Local Test)', local_fallback: true };
+      return { online: true, players: 0, max_players: 200, name: srv.name, gamemode: 'RPG (Local Test)', local_fallback: true };
     }
   }
   return result;
@@ -409,7 +492,7 @@ ipcMain.handle('get-status', () => {
 
 ipcMain.handle('get-config', () => {
   const srv = getActiveServer();
-  return { SERVER_IP: srv.ip, SERVER_PORT: srv.port, SERVER_NAME: srv.name, WEBSITE_URL, DISCORD_URL, LAUNCHER_VERSION, server_mode: srv.mode };
+  return { SERVER_IP: srv.ip, SERVER_PORT: srv.port, SERVER_NAME: srv.name, WEBSITE_URL, DISCORD_URL, LAUNCHER_VERSION, server_mode: srv.mode, has_password: true };
 });
 
 ipcMain.handle('set-server-mode', (event, mode) => {
@@ -446,6 +529,14 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const sampExe = path.join(gtaPath, 'samp.exe');
   if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen u ' + gtaPath + '! Instaliraj SA-MP klijent.' };
 
+  // Validate nickname
+  if (!nickname || nickname.length < 3) {
+    nickname = 'Unicate_Player';
+  }
+  // SA-MP nickname rules: only alphanumeric, underscore, and brackets
+  nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
+  if (nickname.length > 20) nickname = nickname.substring(0, 20);
+
   const srv = getActiveServer();
 
   // For local test mode, only samp.exe is needed
@@ -458,19 +549,35 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   log('Launching game: ' + sampExe + ' ' + srv.ip + ':' + srv.port + ' nickname=' + nickname + ' mode=' + srv.mode);
 
   try {
-    // Use spawn with detached: true so samp.exe runs independently
-    // This prevents the launcher from crashing if samp.exe crashes
-    const child = spawn(sampExe, [srv.ip, srv.port.toString(), nickname], {
+    // Step 1: Setup SA-MP registry with nickname and server password
+    log('Step 1: Setting up SA-MP registry...');
+    setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
+    
+    // Step 2: Write password file as backup method
+    log('Step 2: Writing SA-MP password file...');
+    setupSampPasswordFile(gtaPath, srv.ip, srv.port, nickname);
+    
+    // Step 3: Launch samp.exe
+    // SA-MP 0.3.7 accepts: samp.exe <IP> <PORT> <NICKNAME>
+    // The password is read from registry/favorites data
+    log('Step 3: Spawning samp.exe...');
+    
+    const args = [srv.ip, srv.port.toString(), nickname];
+    log('Launch args: ' + JSON.stringify(args));
+    log('Working dir: ' + gtaPath);
+    
+    const child = spawn(sampExe, args, {
       cwd: gtaPath,
       detached: true,
       stdio: 'ignore'
     });
     child.unref(); // Don't wait for the child process
     
-    log('Launch SUCCESS (spawned detached)');
-    return { success: true };
+    log('Launch SUCCESS (spawned detached, PID: ' + child.pid + ')');
+    return { success: true, pid: child.pid };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
+    log(err.stack);
     return { error: 'Greska pri pokretanju: ' + err.message };
   }
 });

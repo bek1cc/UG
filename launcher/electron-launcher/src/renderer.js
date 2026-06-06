@@ -181,19 +181,32 @@ function setupEventListeners() {
     
     // Visual feedback
     btn.classList.add('launching');
-    const origText = btn.querySelector('span').textContent;
-    btn.querySelector('span').textContent = 'POKRECEM...';
+    const origHTML = btn.querySelector('span').textContent;
+    btn.querySelector('span').textContent = 'POKRECEM SA-MP...';
+    btn.style.pointerEvents = 'none';
     
     const result = await API.launchGame(nick);
     
     btn.classList.remove('launching');
-    btn.querySelector('span').textContent = origText;
+    btn.querySelector('span').textContent = origHTML;
+    btn.style.pointerEvents = '';
     
     if (result && result.error) {
       console.error('Launch error:', result.error);
       alert('GRESKA: ' + result.error);
     } else if (result && result.success) {
-      console.log('Game launched successfully');
+      console.log('Game launched successfully (PID: ' + result.pid + ')');
+      // Show brief success notification
+      const hint = document.querySelector('.connect-hint');
+      if (hint) {
+        const origHint = hint.textContent;
+        hint.textContent = 'SA-MP pokrenut! Konektovanje na server...';
+        hint.style.color = 'var(--green)';
+        setTimeout(() => {
+          hint.textContent = origHint;
+          hint.style.color = '';
+        }, 3000);
+      }
     }
   });
 

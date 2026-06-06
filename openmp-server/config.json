@@ -100,7 +100,7 @@
         "on_foot_sync_skip_update_limit": 15,
         "process_update_rate": 50
     },
-    "password": "",
+    "password": "ug2025secure",
     "pawn": {
         "legacy_plugins": [
             "crashdetect",
