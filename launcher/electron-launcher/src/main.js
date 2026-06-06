@@ -70,7 +70,7 @@ const LAUNCHER_VERSION = '3.0.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
-const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.1/dinput8.zip';
+const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
 
 const LAUNCHER_DIR = path.dirname(app.getPath('exe'));
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
@@ -260,10 +260,15 @@ async function autoInstall(gtaPath, missing) {
         });
       });
       const zip = new AdmZip(tmpZip);
-      const entry = zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dinput8.dll'))
-        || zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dsound.dll'));
-      if (entry) {
-        fs.writeFileSync(path.join(gtaPath, entry.entryName.split('/').pop()), entry.getData());
+      // Extract ALL files from the ASI Loader zip (contains dinput8.dll and possibly others)
+      const entries = zip.getEntries();
+      for (const entry of entries) {
+        const fileName = entry.entryName.split('/').pop();
+        // Only extract DLL files (dinput8.dll, dsound.dll, etc.)
+        if (fileName.toLowerCase().endsWith('.dll') && !entry.isDirectory) {
+          log('ASI Loader: extracting ' + fileName);
+          fs.writeFileSync(path.join(gtaPath, fileName), entry.getData());
+        }
       }
       try { fs.unlinkSync(tmpZip); } catch (e) {}
     }
