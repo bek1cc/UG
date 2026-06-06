@@ -29,7 +29,7 @@ const LAUNCHER_VERSION = '3.0.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
-const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v4.76/dsound.zip';
+const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.1/dinput8.zip';
 
 const LAUNCHER_DIR = path.dirname(app.getPath('exe'));
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
@@ -92,7 +92,7 @@ function getStatus(gtaPath) {
     s.has_samp = fs.existsSync(path.join(gtaPath, 'samp.exe'));
     const hasAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
     const hasCef = fs.existsSync(path.join(gtaPath, 'cef'));
-    s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll'));
+    s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
     if (hasAsi && hasCef) { s.cef_ok = true; s.cef_msg = 'CEF OK'; }
     else if (hasAsi) { s.cef_msg = 'Fali cef/ folder'; }
     else if (hasCef) { s.cef_msg = 'Fali cef.asi'; }
@@ -217,9 +217,11 @@ async function autoInstall(gtaPath, missing) {
       });
       // Extract dsound.dll
       const zip = new AdmZip(tmpZip);
-      const entry = zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dsound.dll'));
+      // Try dinput8.dll first (newer), then dsound.dll (older)
+      const entry = zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dinput8.dll')) 
+        || zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dsound.dll'));
       if (entry) {
-        fs.writeFileSync(path.join(gtaPath, 'dsound.dll'), entry.getData());
+        fs.writeFileSync(path.join(gtaPath, entry.entryName.split('/').pop()), entry.getData());
       }
       try { fs.unlinkSync(tmpZip); } catch (e) {}
     }
