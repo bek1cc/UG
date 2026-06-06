@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # =============================================================================
 #  UNICATE GAMING LAUNCHER
-#  Full-Screen Gaming Portal | Blue Neon Theme | Custom Logo
+#  Modern Dark Gaming Portal | Sidebar Layout | Neon Blue Theme
 #
 #  Instalacija:
 #    pip install customtkinter pillow requests
@@ -35,7 +35,7 @@ SERVER_PORT = 7777
 SERVER_NAME = "Unicate Gaming RPG"
 WEBSITE_URL = "https://ug-ogc.com"
 DISCORD_URL = "https://discord.gg/unicategaming"
-LAUNCHER_VERSION = "5.0.0"
+LAUNCHER_VERSION = "2.0.0"
 
 OMP_CEF_ASI_URL = "https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi"
 OMP_CEF_CLIENT_URL = "https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip"
@@ -47,51 +47,40 @@ else:
     LAUNCHER_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # =============================================================================
-#  BLUE NEON PALETTE
+#  COLOR PALETTE
 # =============================================================================
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Blue nijanse - glavna paleta
-BLUE_50 = "#eff6ff"
-BLUE_100 = "#dbeafe"
-BLUE_200 = "#bfdbfe"
-BLUE_300 = "#93c5fd"
-BLUE_400 = "#60a5fa"
-BLUE_500 = "#3b82f6"      # Primary blue
-BLUE_600 = "#2563eb"
-BLUE_700 = "#1d4ed8"
-BLUE_800 = "#1e40af"
-BLUE_900 = "#1e3a8a"
-BLUE_950 = "#172554"
+# Primary
+C_BG         = "#0b0f1a"
+C_BG_SIDE    = "#0d1220"
+C_BG_CARD    = "#111827"
+C_BG_INPUT   = "#0e1528"
+C_BG_HOVER   = "#162040"
+C_BG_ACTIVE  = "#0c2d5e"
 
-# Neon blues
-NEON_SKY = "#00d4ff"       # Svijetli neon blue
-NEON_ELECTRIC = "#0088ff"  # Elektricni blue
-NEON_ICE = "#7dd3fc"       # Ice blue
-NEON_DEEP = "#1e40af"      # Deep neon
+# Accent Blues
+C_BLUE       = "#0099ff"
+C_NEON       = "#00d4ff"
+C_BLUE_DIM   = "#1e40af"
+C_BLUE_DARK  = "#0a1e3d"
+C_BLUE_700   = "#1d4ed8"
 
-# Pozadine
-BG_VOID = "#030712"        # Najtamniji
-BG_SPACE = "#0a0f1e"       # Space tamna
-BG_PANEL = "#0c1222"       # Panel pozadina
-BG_CARD = "#0f172a"        # Kartica pozadina
-BG_INPUT = "#0c1528"       # Input pozadina
-BG_HOVER = "#162040"       # Hover stanje
-
-# Status boje
-GREEN_OK = "#22c55e"
-RED_ERR = "#ef4444"
-ORANGE_WARN = "#f59e0b"
+# Status
+C_GREEN      = "#22c55e"
+C_RED        = "#ef4444"
+C_ORANGE     = "#f59e0b"
+C_PURPLE     = "#a855f7"
 
 # Text
-T_WHITE = "#f8fafc"
-T_LIGHT = "#cbd5e1"
-T_DIM = "#475569"
-T_BLUE = NEON_SKY
+C_WHITE      = "#f8fafc"
+C_LIGHT      = "#cbd5e1"
+C_DIM        = "#64748b"
+C_DARKER     = "#475569"
 
 # =============================================================================
-#  UTILITY - DETEKCIJA / QUERY / SETTINGS
+#  UTILITY FUNCTIONS
 # =============================================================================
 def query_samp_server(ip, port, timeout=3):
     try:
@@ -103,17 +92,14 @@ def query_samp_server(ip, port, timeout=3):
         sock.close()
         if len(data) < 11: return None
         off = 11
-        pwlen = struct.unpack_from('H', data, off)[0]; off += 2
-        off += pwlen
+        pwlen = struct.unpack_from('H', data, off)[0]; off += 2 + pwlen
         players = struct.unpack_from('H', data, off)[0]; off += 2
         maxp = struct.unpack_from('H', data, off)[0]; off += 2
         nlen = struct.unpack_from('I', data, off)[0]; off += 4
         name = data[off:off+nlen].decode('latin-1', errors='replace'); off += nlen
         mlen = struct.unpack_from('I', data, off)[0]; off += 4
-        mode = data[off:off+mlen].decode('latin-1', errors='replace'); off += mlen
-        maplen = struct.unpack_from('I', data, off)[0]; off += 4
-        mapn = data[off:off+maplen].decode('latin-1', errors='replace')
-        return {'players': players, 'max_players': maxp, 'name': name, 'gamemode': mode, 'map': mapn, 'online': True}
+        mode = data[off:off+mlen].decode('latin-1', errors='replace')
+        return {'players': players, 'max_players': maxp, 'name': name, 'gamemode': mode, 'online': True}
     except:
         return {'online': False}
 
@@ -147,10 +133,7 @@ def check_cef(gta_path):
 
 def check_asi_loader(gta_path):
     if not gta_path: return False
-    if os.path.exists(os.path.join(gta_path, "dsound.dll")): return True
-    for f in os.listdir(gta_path):
-        if f.lower().endswith('.asi') and f.lower() != 'cef.asi': return True
-    return False
+    return os.path.exists(os.path.join(gta_path, "dsound.dll"))
 
 def get_status(gta_path):
     s = {'gta_path': gta_path, 'has_samp': bool(find_samp_exe(gta_path)),
@@ -248,633 +231,779 @@ class DownloadManager:
             self.on_error(str(e))
 
 # =============================================================================
-#  PARTICLE SYSTEM
+#  ANIMATED BACKGROUND
 # =============================================================================
-class Particle:
-    __slots__ = ['x','y','vx','vy','size','color','life','max_life','alpha']
-    def __init__(self, x, y, vx, vy, size, color, life):
-        self.x=x; self.y=y; self.vx=vx; self.vy=vy; self.size=size
-        self.color=color; self.life=life; self.max_life=life; self.alpha=1.0
-
-class ParticleSystem:
-    def __init__(self, w, h, n=50):
-        self.w=w; self.h=h; self.n=n; self.particles=[]
-        self.colors=[NEON_SKY, NEON_ELECTRIC, NEON_ICE, BLUE_400, BLUE_300, "#ffffff"]
-
-    def update(self):
-        while len(self.particles) < self.n:
-            self.particles.append(Particle(
-                random.randint(0,self.w), random.randint(0,self.h),
-                random.uniform(-0.2,0.2), random.uniform(-0.6,-0.05),
-                random.uniform(0.5,2.5), random.choice(self.colors),
-                random.randint(120,500)))
-        alive=[]
-        for p in self.particles:
-            p.x+=p.vx; p.y+=p.vy; p.life-=1; p.alpha=max(0,p.life/p.max_life)
-            if p.life>0 and 0<=p.x<=self.w and 0<=p.y<=self.h: alive.append(p)
-        self.particles=alive
-
-# =============================================================================
-#  CUSTOM WIDGETS
-# =============================================================================
-class NeonButton(ctk.CTkButton):
-    def __init__(self, master, glow=NEON_SKY, pulse=False, **kw):
-        self.glow=glow; self._pulse=pulse; self._phase=0; self._running=False
-        super().__init__(master, **kw)
-        self.bind("<Enter>", lambda e: self.configure(fg_color=self.glow, text_color=BG_VOID))
-        self.bind("<Leave>", lambda e: self.configure(fg_color="#0f172a", text_color=self.glow) if not self._running else None)
-
-    def start_pulse(self):
-        self._running=True; self._do_pulse()
-
-    def stop_pulse(self):
-        self._running=False
-
-    def _do_pulse(self):
-        if not self._running: return
-        self._phase+=0.06
-        i=(math.sin(self._phase)+1)/2
-        r1,g1,b1=15,23,42
-        r2=int(self.glow[1:3],16); g2=int(self.glow[3:5],16); b2=int(self.glow[5:7],16)
-        r=int(r1+(r2-r1)*i*0.6); g=int(g1+(g2-g1)*i*0.6); b=int(b1+(b2-b1)*i*0.6)
-        self.configure(fg_color=f"#{r:02x}{g:02x}{b:02x}", text_color=T_WHITE)
-        self.after(50, self._do_pulse)
-
-
-class GlowBar(ctk.CTkCanvas):
-    def __init__(self, master, h=6, **kw):
-        super().__init__(master, height=h, bg=BG_VOID, highlightthickness=0, **kw)
-        self.progress=0; self._anim=0
-
-    def set_progress(self, pct):
-        self.progress=max(0,min(100,pct)); self._tick()
-
-    def _tick(self):
-        if abs(self._anim-self.progress)<0.5: self._anim=self.progress; self._draw(); return
-        self._anim+=(self.progress-self._anim)*0.12; self._draw(); self.after(16,self._tick)
-
-    def _draw(self):
-        self.delete("all"); w=self.winfo_width(); h=self.winfo_height()
-        if w<2: return
-        self.create_rectangle(0,0,w,h,fill="#0a1020",outline="")
-        fw=(self._anim/100)*w
-        if fw>0:
-            self.create_rectangle(0,0,fw+6,h,fill="#0a2a5a",outline="")
-            self.create_rectangle(0,0,fw,h,fill=NEON_ELECTRIC,outline="")
-            self.create_rectangle(max(0,fw-10),0,fw,h,fill=NEON_SKY,outline="")
-
-    def reset(self): self.progress=0; self._anim=0; self._draw()
-
-
-class PulseDot(ctk.CTkCanvas):
-    def __init__(self, master, sz=10, color=GREEN_OK, **kw):
-        super().__init__(master, width=sz+8, height=sz+8, bg=BG_VOID, highlightthickness=0, **kw)
-        self.sz=sz; self.color=color; self._draw()
-
-    def set_color(self, c): self.color=c; self._draw()
-
-    def _draw(self):
-        self.delete("all"); s=self.sz; cx=s//2+4; cy=s//2+4
-        self.create_oval(cx-s//2-3,cy-s//2-3,cx+s//2+3,cy+s//2+3,fill="",outline=self.color,width=1)
-        self.create_oval(cx-s//2,cy-s//2,cx+s//2,cy+s//2,fill=self.color,outline="")
-
-
-class BgCanvas(ctk.CTkCanvas):
-    """Animirana pozadina sa česticama i grid-om"""
+class AnimatedBg(ctk.CTkCanvas):
     def __init__(self, master, **kw):
-        super().__init__(master, bg=BG_VOID, highlightthickness=0, **kw)
-        self.ps=None; self._run=False; self._bg_photo=None
-        self._logo_photo=None; self._logo_alpha_phase=0
+        super().__init__(master, bg=C_BG, highlightthickness=0, **kw)
+        self._run = False
+        self._bg_photo = None
+        self._particles = []
+        self._phase = 0
 
     def set_bg(self, path):
         try:
-            if os.path.exists(path):
-                img=Image.open(path)
-                img=img.resize((self.winfo_screenwidth(),self.winfo_screenheight()),Image.LANCZOS)
-                img=ImageEnhance.Brightness(img).enhance(0.3)
-                img=img.filter(ImageFilter.GaussianBlur(3))
-                # Plavi tint overlay
-                overlay=Image.new('RGBA',img.size,(0,40,120,40))
-                img=img.convert('RGBA'); img=Image.alpha_composite(img,overlay)
-                self._bg_photo=ImageTk.PhotoImage(img.convert('RGB'))
-        except: pass
-
-    def set_watermark(self, path):
-        """Postavi logo kao watermark u pozadinu"""
-        try:
-            if os.path.exists(path):
-                img=Image.open(path).convert('RGBA')
-                img=img.resize((300,300),Image.LANCZOS)
-                # Smanji opacity
-                alpha=img.getchannel('A')
-                alpha=alpha.point(lambda a: int(a*0.08))
-                img.putalpha(alpha)
-                self._logo_watermark=img
+            if os.path.exists(path) and HAS_PIL:
+                img = Image.open(path)
+                img = img.resize((self.winfo_screenwidth(), self.winfo_screenheight()), Image.LANCZOS)
+                img = ImageEnhance.Brightness(img).enhance(0.2)
+                img = img.filter(ImageFilter.GaussianBlur(4))
+                overlay = Image.new('RGBA', img.size, (0, 30, 100, 50))
+                img = img.convert('RGBA'); img = Image.alpha_composite(img, overlay)
+                self._bg_photo = ImageTk.PhotoImage(img.convert('RGB'))
         except: pass
 
     def start(self):
         self.update_idletasks()
-        w=max(self.winfo_width(),1920); h=max(self.winfo_height(),1080)
-        self.ps=ParticleSystem(w,h,45); self._run=True; self._anim()
+        self._run = True; self._anim()
 
-    def stop(self): self._run=False
+    def stop(self): self._run = False
 
     def _anim(self):
         if not self._run: return
         self.delete("all")
-        if self._bg_photo: self.create_image(0,0,image=self._bg_photo,anchor="nw")
-        w=self.winfo_width(); h=self.winfo_height()
-        # Grid
-        if w>100 and h>100:
-            for x in range(0,w,100): self.create_line(x,0,x,h,fill="#060e1e",width=1)
-            for y in range(0,h,100): self.create_line(0,y,w,y,fill="#060e1e",width=1)
-        # Čestice
-        if self.ps:
-            self.ps.update()
-            for p in self.ps.particles:
-                try:
-                    r=int(int(p.color[1:3],16)*p.alpha*0.45)
-                    g=int(int(p.color[3:5],16)*p.alpha*0.45)
-                    b=int(int(p.color[5:7],16)*p.alpha*0.45)
-                    c=f"#{max(0,min(255,r)):02x}{max(0,min(255,g)):02x}{max(0,min(255,b)):02x}"
-                except: c=p.color
-                s=p.size*p.alpha
-                if s>0.3: self.create_oval(p.x-s,p.y-s,p.x+s,p.y+s,fill=c,outline="")
-        # Vodeni žig logo - pulsirajući
-        if hasattr(self,'_logo_watermark'):
-            self._logo_alpha_phase+=0.02
-            a=(math.sin(self._logo_alpha_phase)+1)/2
-            # Samo prikaži ako je dovoljno veliki canvas
-            if w>500 and h>500:
-                cx=w-180; cy=h-180
-                try:
-                    wm=self._logo_watermark.copy()
-                    alpha=wm.getchannel('A')
-                    base_a=int(a*15)+5
-                    alpha=alpha.point(lambda x: min(base_a, x))
-                    wm.putalpha(alpha)
-                    self._wm_tk=ImageTk.PhotoImage(wm)
-                    self.create_image(cx,cy,image=self._wm_tk,anchor="center")
-                except: pass
-        self.after(33,self._anim)
+        w = self.winfo_width(); h = self.winfo_height()
+        if self._bg_photo:
+            self.create_image(0, 0, image=self._bg_photo, anchor="nw")
+        # Subtle grid
+        for x in range(0, max(w, 1920), 80):
+            self.create_line(x, 0, x, h, fill="#060d18", width=1)
+        for y in range(0, max(h, 1080), 80):
+            self.create_line(0, y, w, y, fill="#060d18", width=1)
+        # Particles
+        self._phase += 0.03
+        while len(self._particles) < 30:
+            self._particles.append({
+                'x': random.randint(0, max(w, 1920)),
+                'y': random.randint(0, max(h, 1080)),
+                'vx': random.uniform(-0.15, 0.15),
+                'vy': random.uniform(-0.3, -0.05),
+                's': random.uniform(1, 3),
+                'life': random.randint(200, 600)
+            })
+        alive = []
+        for p in self._particles:
+            p['x'] += p['vx']; p['y'] += p['vy']; p['life'] -= 1
+            if p['life'] > 0 and 0 <= p['x'] <= w and 0 <= p['y'] <= h:
+                a = min(1.0, p['life'] / 300)
+                v = int(40 * a)
+                c = f"#{0:02x}{min(255,80+v):02x}{min(255,160+v):02x}"
+                s = p['s'] * a
+                if s > 0.5:
+                    self.create_oval(p['x']-s, p['y']-s, p['x']+s, p['y']+s, fill=c, outline="")
+                alive.append(p)
+        self._particles = alive
+        self.after(40, self._anim)
+
+# =============================================================================
+#  CUSTOM WIDGETS
+# =============================================================================
+class SidebarButton(ctk.CTkFrame):
+    """Stavka u sidebar navigaciji"""
+    def __init__(self, master, text="", icon="", active=False, command=None, **kw):
+        super().__init__(master, fg_color=C_BG_ACTIVE if active else "transparent",
+                         corner_radius=8, height=38, cursor="hand2", **kw)
+        self._cmd = command
+        self._active = active
+        self._text = text
+        self.pack_propagate(False)
+
+        inner = ctk.CTkFrame(self, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=10)
+
+        color = C_NEON if active else C_DIM
+        if icon:
+            ctk.CTkLabel(inner, text=icon, font=ctk.CTkFont(size=14),
+                        text_color=color, fg_color="transparent").pack(side="left", padx=(0, 10))
+        ctk.CTkLabel(inner, text=text, font=ctk.CTkFont(size=12, weight="bold" if active else "normal"),
+                    text_color=color, fg_color="transparent", anchor="w").pack(side="left")
+
+        self.bind("<Button-1>", lambda e: self._click())
+        for w in [self, inner] + list(inner.winfo_children()):
+            try: w.bind("<Button-1>", lambda e: self._click())
+            except: pass
+
+        self.bind("<Enter>", lambda e: self._hover(True))
+        self.bind("<Leave>", lambda e: self._hover(False))
+
+    def _hover(self, enter):
+        if not self._active:
+            self.configure(fg_color=C_BG_HOVER if enter else "transparent")
+
+    def _click(self):
+        if self._cmd: self._cmd()
+
+    def set_active(self, active):
+        self._active = active
+        self.configure(fg_color=C_BG_ACTIVE if active else "transparent")
+
+
+class GlowButton(ctk.CTkButton):
+    """Dugme sa neon glow efektom"""
+    def __init__(self, master, glow_color=C_BLUE, **kw):
+        self._glow = glow_color
+        self._pulse = kw.pop('pulse', False)
+        self._phase = 0; self._running = False
+        super().__init__(master, **kw)
+        self.bind("<Enter>", lambda e: self.configure(fg_color=self._glow, text_color=C_BG))
+        self.bind("<Leave>", lambda e: self.configure(fg_color=C_BG_CARD, text_color=self._glow) if not self._running else None)
+
+    def start_pulse(self):
+        self._running = True; self._do_pulse()
+
+    def stop_pulse(self): self._running = False
+
+    def _do_pulse(self):
+        if not self._running: return
+        self._phase += 0.05
+        i = (math.sin(self._phase) + 1) / 2
+        r1, g1, b1 = 17, 24, 39
+        r2 = int(self._glow[1:3], 16); g2 = int(self._glow[3:5], 16); b2 = int(self._glow[5:7], 16)
+        r = int(r1 + (r2 - r1) * i * 0.5); g = int(g1 + (g2 - g1) * i * 0.5); b = int(b1 + (b2 - b1) * i * 0.5)
+        self.configure(fg_color=f"#{r:02x}{g:02x}{b:02x}", text_color=C_WHITE)
+        self.after(50, self._do_pulse)
+
+
+class PulseDot(ctk.CTkCanvas):
+    def __init__(self, master, sz=8, color=C_GREEN, **kw):
+        super().__init__(master, width=sz+6, height=sz+6, bg=C_BG, highlightthickness=0, **kw)
+        self.sz = sz; self.color = color; self._draw()
+
+    def set_color(self, c): self.color = c; self._draw()
+
+    def _draw(self):
+        self.delete("all"); s = self.sz; cx = s//2+3; cy = s//2+3
+        self.create_oval(cx-s//2-2, cy-s//2-2, cx+s//2+2, cy+s//2+2, fill="", outline=self.color, width=1)
+        self.create_oval(cx-s//2, cy-s//2, cx+s//2, cy+s//2, fill=self.color, outline="")
+
+
+class ProgressBar(ctk.CTkCanvas):
+    def __init__(self, master, h=4, **kw):
+        super().__init__(master, height=h, bg=C_BG, highlightthickness=0, **kw)
+        self._pct = 0; self._anim = 0
+
+    def set_progress(self, pct):
+        self._pct = max(0, min(100, pct)); self._tick()
+
+    def _tick(self):
+        if abs(self._anim - self._pct) < 0.5: self._anim = self._pct; self._draw(); return
+        self._anim += (self._pct - self._anim) * 0.12; self._draw(); self.after(16, self._tick)
+
+    def _draw(self):
+        self.delete("all"); w = self.winfo_width(); h = self.winfo_height()
+        if w < 2: return
+        self.create_rectangle(0, 0, w, h, fill="#0a1020", outline="")
+        fw = (self._anim / 100) * w
+        if fw > 0:
+            self.create_rectangle(0, 0, fw, h, fill=C_BLUE, outline="")
+            self.create_rectangle(max(0, fw - 8), 0, fw, h, fill=C_NEON, outline="")
+
+    def reset(self): self._pct = 0; self._anim = 0; self._draw()
+
+
+class NewsCard(ctk.CTkFrame):
+    def __init__(self, master, title="", desc="", tag="", tag_color=C_BLUE, **kw):
+        super().__init__(master, fg_color=C_BG_CARD, corner_radius=10,
+                         border_width=1, border_color="#1a2540", **kw)
+        inner = ctk.CTkFrame(self, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=12, pady=10)
+
+        # Tag
+        tf = ctk.CTkFrame(inner, fg_color=tag_color, corner_radius=4, height=20)
+        tf.pack(anchor="w", pady=(0, 6)); tf.pack_propagate(False)
+        ctk.CTkLabel(tf, text=tag, font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color=C_WHITE, fg_color="transparent").pack(padx=8)
+
+        ctk.CTkLabel(inner, text=title, font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=C_WHITE, fg_color="transparent", anchor="w", wraplength=280).pack(anchor="w")
+        ctk.CTkLabel(inner, text=desc, font=ctk.CTkFont(size=10),
+                    text_color=C_DIM, fg_color="transparent", anchor="w", wraplength=280).pack(anchor="w", pady=(2, 0))
+
 
 # =============================================================================
 #  MAIN LAUNCHER
 # =============================================================================
 class UnicateGamingLauncher:
     def __init__(self):
-        self.root=ctk.CTk()
+        self.root = ctk.CTk()
         self.root.title("Unicate Gaming Launcher")
         self.root.overrideredirect(True)
 
-        # Postavi ikonicu - prvo pokusaj .ico, pa .png
+        # Ikona
         icon_ico = os.path.join(LAUNCHER_DIR, "ug_icon.ico")
         icon_png = os.path.join(LAUNCHER_DIR, "ug_logo.png")
         if os.path.exists(icon_ico):
-            try:
-                self.root.iconbitmap(icon_ico)
+            try: self.root.iconbitmap(icon_ico)
             except: pass
         elif os.path.exists(icon_png) and HAS_PIL:
-            try:
-                _tmp = Image.open(icon_png)
-                self.root.iconphoto(True, ImageTk.PhotoImage(_tmp))
+            try: self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(icon_png)))
             except: pass
 
-        sw=self.root.winfo_screenwidth(); sh=self.root.winfo_screenheight()
+        sw = self.root.winfo_screenwidth(); sh = self.root.winfo_screenheight()
         self.root.geometry(f"{sw}x{sh}+0+0")
-        self.root.configure(fg_color=BG_VOID)
+        self.root.configure(fg_color=C_BG)
 
-        settings=load_settings()
-        self.gta_path=settings.get("gta_path",find_gta_sa_path())
-        self.server_info=None; self.is_launching=False; self.is_installing=False
-        self.dl_mgr=None; self.status=get_status(self.gta_path)
+        settings = load_settings()
+        self.gta_path = settings.get("gta_path", find_gta_sa_path())
+        self.nickname = settings.get("nickname", "Unicate_Player")
+        self.server_info = None
+        self.is_launching = False; self.is_installing = False
+        self.dl_mgr = None; self.status = get_status(self.gta_path)
 
-        self.imgs={}
+        self.imgs = {}
         self._load_images()
         self.build_ui()
         self.bg.start()
-        self.launch_btn.start_pulse()
         self.check_server()
         self._sched_server()
 
-        self._drag=None
-        self.root.bind("<ButtonPress-1>",self._drag_start)
-        self.root.bind("<B1-Motion>",self._drag_move)
-        self.root.bind("<Escape>",lambda e:self.on_close())
+        self._drag = None
+        self.root.bind("<ButtonPress-1>", self._drag_start)
+        self.root.bind("<B1-Motion>", self._drag_move)
+        self.root.bind("<Escape>", lambda e: self.on_close())
 
     def _load_images(self):
         try:
-            # Glavni logo
-            logo=os.path.join(LAUNCHER_DIR,"ug_logo.png")
-            if os.path.exists(logo):
-                img=Image.open(logo)
-                self.imgs['logo_huge']=ctk.CTkImage(img,img,size=(220,220))
-                self.imgs['logo_big']=ctk.CTkImage(img,img,size=(150,150))
-                self.imgs['logo_med']=ctk.CTkImage(img,img,size=(80,80))
-                self.imgs['logo_sm']=ctk.CTkImage(img,img,size=(44,44))
-                self.imgs['logo_nav']=ctk.CTkImage(img,img,size=(32,32))
-                # Splash sa glow efektom
-                glow=img.resize((160,160),Image.LANCZOS)
-                glow=glow.filter(ImageFilter.GaussianBlur(12))
-                glow=ImageEnhance.Brightness(glow).enhance(2.0)
-                glow=ImageEnhance.Color(glow).enhance(2.0)
-                self.imgs['logo_glow']=ctk.CTkImage(glow,glow,size=(200,200))
+            logo = os.path.join(LAUNCHER_DIR, "ug_logo.png")
+            if os.path.exists(logo) and HAS_PIL:
+                img = Image.open(logo)
+                self.imgs['logo_big'] = ctk.CTkImage(img, img, size=(120, 120))
+                self.imgs['logo_med'] = ctk.CTkImage(img, img, size=(48, 48))
+                self.imgs['logo_sm'] = ctk.CTkImage(img, img, size=(32, 32))
+                # Glow
+                glow = img.resize((140, 140), Image.LANCZOS)
+                glow = glow.filter(ImageFilter.GaussianBlur(15))
+                glow = ImageEnhance.Brightness(glow).enhance(2.5)
+                self.imgs['logo_glow'] = ctk.CTkImage(glow, glow, size=(160, 160))
 
-            bg=os.path.join(LAUNCHER_DIR,"bg_gta.png")
-            self.imgs['bg_path']=bg if os.path.exists(bg) else None
+            bg = os.path.join(LAUNCHER_DIR, "bg_gta.png")
+            self.imgs['bg_path'] = bg if os.path.exists(bg) else None
         except Exception as e:
             print(f"Img err: {e}")
 
-    def _drag_start(self,e): self._drag=(e.x,e.y)
-    def _drag_move(self,e):
-        if self._drag and self._drag[1]<70:
+    def _drag_start(self, e): self._drag = (e.x, e.y)
+    def _drag_move(self, e):
+        if self._drag and self._drag[1] < 50:
             self.root.geometry(f"+{self.root.winfo_x()+e.x-self._drag[0]}+{self.root.winfo_y()+e.y-self._drag[1]}")
 
-    # ===== BUILD UI =====
+    # ================================================================
+    #  BUILD UI
+    # ================================================================
     def build_ui(self):
-        # Pozadina
-        self.bg=BgCanvas(self.root)
-        self.bg.place(x=0,y=0,relwidth=1,relheight=1)
+        # Background
+        self.bg = AnimatedBg(self.root)
+        self.bg.place(x=0, y=0, relwidth=1, relheight=1)
         if self.imgs.get('bg_path'):
             self.bg.set_bg(self.imgs['bg_path'])
-        # Logo watermark
-        logo_wm=os.path.join(LAUNCHER_DIR,"ug_logo.png")
-        if os.path.exists(logo_wm):
-            self.bg.set_watermark(logo_wm)
 
         # Main container
-        self.main=ctk.CTkFrame(self.root,fg_color="transparent")
-        self.main.place(relx=0.5,rely=0.5,anchor="center",relwidth=0.94,relheight=0.94)
+        main = ctk.CTkFrame(self.root, fg_color="transparent")
+        main.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.96, relheight=0.96)
 
-        self._build_nav()
-        self._build_body()
+        # Top bar
+        self._build_topbar(main)
 
-    def _build_nav(self):
-        nav=ctk.CTkFrame(self.main,height=56,fg_color="#070d1a",corner_radius=14,
-                         border_width=1,border_color=BLUE_950)
-        nav.pack(fill="x",pady=(0,12)); nav.pack_propagate(False)
-        inner=ctk.CTkFrame(nav,fg_color="transparent")
-        inner.pack(fill="both",expand=True,padx=20,pady=6)
+        # Body: sidebar + content + right panel
+        body = ctk.CTkFrame(main, fg_color="transparent")
+        body.pack(fill="both", expand=True, pady=(8, 0))
 
-        # Logo + Title
-        left=ctk.CTkFrame(inner,fg_color="transparent")
-        left.pack(side="left",fill="y")
+        self._build_sidebar(body)
+        self._build_center(body)
+        self._build_right(body)
 
-        if 'logo_nav' in self.imgs:
-            ctk.CTkLabel(left,image=self.imgs['logo_nav'],text="",fg_color="transparent").pack(side="left",padx=(0,8))
+        # Bottom bar
+        self._build_bottom(main)
 
-        ctk.CTkLabel(left,text="UNICATE",font=ctk.CTkFont("Segoe UI",17,"bold"),
-                    text_color=NEON_SKY,fg_color="transparent").pack(side="left")
-        ctk.CTkLabel(left,text=" GAMING",font=ctk.CTkFont("Segoe UI",17,"bold"),
-                    text_color=T_WHITE,fg_color="transparent").pack(side="left")
+    # ----- TOP BAR -----
+    def _build_topbar(self, parent):
+        top = ctk.CTkFrame(parent, height=48, fg_color="#080c18", corner_radius=10,
+                           border_width=1, border_color="#0f1a30")
+        top.pack(fill="x"); top.pack_propagate(False)
+        inner = ctk.CTkFrame(top, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=16, pady=6)
 
-        # Verzija
-        vf=ctk.CTkFrame(left,fg_color=BLUE_950,corner_radius=6,height=20)
-        vf.pack(side="left",padx=(12,0)); vf.pack_propagate(False)
-        ctk.CTkLabel(vf,text=f"v{LAUNCHER_VERSION}",font=ctk.CTkFont(size=8, weight="bold"),
-                    text_color=BLUE_300,fg_color="transparent").pack(padx=7)
+        # Logo + Name
+        left = ctk.CTkFrame(inner, fg_color="transparent")
+        left.pack(side="left", fill="y")
 
-        # Center nav
-        center=ctk.CTkFrame(inner,fg_color="transparent")
-        center.pack(side="left",expand=True)
-        for nm,c in [("SERVER",NEON_SKY),("CEF UI",BLUE_400),("NOVOSTI",NEON_ICE),("DISCORD",BLUE_300)]:
-            lbl=ctk.CTkLabel(center,text=nm,font=ctk.CTkFont(size=11, weight="bold"),text_color=c,fg_color="transparent",cursor="hand2")
-            lbl.pack(side="left",padx=16)
-            if nm=="DISCORD": lbl.bind("<Button-1>",lambda e:webbrowser.open(DISCORD_URL))
+        if 'logo_sm' in self.imgs:
+            ctk.CTkLabel(left, image=self.imgs['logo_sm'], text="", fg_color="transparent").pack(side="left", padx=(0, 10))
 
-        # Right
-        right=ctk.CTkFrame(inner,fg_color="transparent")
-        right.pack(side="right",fill="y")
+        ctk.CTkLabel(left, text="UNICATE", font=ctk.CTkFont(size=15, weight="bold"),
+                    text_color=C_NEON, fg_color="transparent").pack(side="left")
+        ctk.CTkLabel(left, text=" GAMING", font=ctk.CTkFont(size=15, weight="bold"),
+                    text_color=C_WHITE, fg_color="transparent").pack(side="left")
 
-        badge=ctk.CTkFrame(right,fg_color="#060e1e",corner_radius=8,height=26)
-        badge.pack(side="left",padx=(0,12)); badge.pack_propagate(False)
-        self.dot_nav=PulseDot(badge,5,ORANGE_WARN); self.dot_nav.pack(side="left",padx=(6,3))
-        self.online_nav=ctk.CTkLabel(badge,text="...",font=ctk.CTkFont(size=9, weight="bold"),
-                                     text_color=T_DIM,fg_color="transparent")
-        self.online_nav.pack(side="left",padx=(0,6))
+        # Nav menu
+        nav = ctk.CTkFrame(inner, fg_color="transparent")
+        nav.pack(side="left", padx=30)
+        for nm in ["POCETNA", "SERVER", "NOVOSTI", "SHOP"]:
+            ctk.CTkLabel(nav, text=nm, font=ctk.CTkFont(size=11, weight="bold"),
+                        text_color=C_NEON if nm == "POCETNA" else C_DIM,
+                        fg_color="transparent", cursor="hand2").pack(side="left", padx=14)
 
-        ctk.CTkButton(right,text="—",width=32,height=26,fg_color="transparent",hover_color="#0f172a",
-                      text_color=T_DIM,font=ctk.CTkFont(11),corner_radius=6,
-                      command=self.root.iconify).pack(side="left",padx=2)
-        ctk.CTkButton(right,text="✕",width=32,height=26,fg_color="transparent",hover_color="#3b0a0a",
-                      text_color=RED_ERR,font=ctk.CTkFont(size=11, weight="bold"),corner_radius=6,
-                      command=self.on_close).pack(side="left",padx=2)
+        # Right side
+        right = ctk.CTkFrame(inner, fg_color="transparent")
+        right.pack(side="right", fill="y")
 
-    def _build_body(self):
-        body=ctk.CTkFrame(self.main,fg_color="transparent")
-        body.pack(fill="both",expand=True)
-        body.grid_columnconfigure(0,weight=5)
-        body.grid_columnconfigure(1,weight=3)
-        body.grid_rowconfigure(0,weight=5)
-        body.grid_rowconfigure(1,weight=3)
+        # Server status badge
+        badge = ctk.CTkFrame(right, fg_color="#0a0f1e", corner_radius=6, height=26)
+        badge.pack(side="left", padx=(0, 10)); badge.pack_propagate(False)
+        self.dot_top = PulseDot(badge, 6, C_ORANGE); self.dot_top.pack(side="left", padx=(6, 4))
+        self.lbl_top_status = ctk.CTkLabel(badge, text="Provjera...", font=ctk.CTkFont(size=9, weight="bold"),
+                                           text_color=C_DIM, fg_color="transparent")
+        self.lbl_top_status.pack(side="left", padx=(0, 8))
 
-        self._build_hero(body)
-        self._build_launch(body)
-        self._build_news(body)
-        self._build_status(body)
+        # Window controls
+        ctk.CTkButton(right, text="-", width=28, height=24, fg_color="transparent", hover_color=C_BG_HOVER,
+                      text_color=C_DIM, font=ctk.CTkFont(size=12), corner_radius=6,
+                      command=self.root.iconify).pack(side="left", padx=2)
+        ctk.CTkButton(right, text="X", width=28, height=24, fg_color="transparent", hover_color="#2a0a0a",
+                      text_color=C_RED, font=ctk.CTkFont(size=11, weight="bold"), corner_radius=6,
+                      command=self.on_close).pack(side="left", padx=2)
 
-    def _build_hero(self,parent):
-        hero=ctk.CTkFrame(parent,fg_color=BG_PANEL,corner_radius=16,
-                          border_width=1,border_color=BLUE_950)
-        hero.grid(row=0,column=0,sticky="nsew",padx=(0,6),pady=(0,6))
-        hi=ctk.CTkFrame(hero,fg_color="transparent")
-        hi.pack(fill="both",expand=True,padx=28,pady=22)
+    # ----- LEFT SIDEBAR -----
+    def _build_sidebar(self, parent):
+        side = ctk.CTkFrame(parent, width=180, fg_color=C_BG_SIDE, corner_radius=10,
+                            border_width=1, border_color="#0f1a30")
+        side.pack(side="left", fill="y", padx=(0, 8)); side.pack_propagate(False)
 
-        # Logo sekcija
-        top=ctk.CTkFrame(hi,fg_color="transparent")
-        top.pack(fill="x")
+        # Nav items
+        nav_frame = ctk.CTkFrame(side, fg_color="transparent")
+        nav_frame.pack(fill="both", expand=True, padx=8, pady=12)
 
-        if 'logo_big' in self.imgs:
-            # Glow iza loga
-            glow_f=ctk.CTkFrame(top,fg_color="transparent")
-            glow_f.pack(side="left",padx=(0,22))
-            if 'logo_glow' in self.imgs:
-                ctk.CTkLabel(glow_f,image=self.imgs['logo_glow'],text="",
-                            fg_color="transparent").place(relx=0.5,rely=0.5,anchor="center")
-            ctk.CTkLabel(glow_f,image=self.imgs['logo_big'],text="",
-                        fg_color="transparent").place(relx=0.5,rely=0.5,anchor="center")
-            glow_f.configure(width=170,height=170)
-
-        info=ctk.CTkFrame(top,fg_color="transparent")
-        info.pack(side="left",fill="both",expand=True)
-
-        ctk.CTkLabel(info,text="UNICATE GAMING",font=ctk.CTkFont("Segoe UI",38,"bold"),
-                    text_color=T_WHITE,fg_color="transparent",anchor="w").pack(anchor="w")
-        ctk.CTkLabel(info,text="R  P  G     S E R V E R",font=ctk.CTkFont("Segoe UI",13),
-                    text_color=NEON_SKY,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,12))
-
-        sr=ctk.CTkFrame(info,fg_color="transparent"); sr.pack(anchor="w",pady=4)
-        self.dot_status=PulseDot(sr,10,ORANGE_WARN); self.dot_status.pack(side="left",padx=(0,8))
-        self.lbl_status=ctk.CTkLabel(sr,text="Provjeravam...",font=ctk.CTkFont(12),
-                                     text_color=T_DIM,fg_color="transparent")
-        self.lbl_status.pack(side="left")
-        self.lbl_players=ctk.CTkLabel(info,text="",font=ctk.CTkFont(size=13, weight="bold"),
-                                      text_color=T_WHITE,fg_color="transparent",anchor="w")
-        self.lbl_players.pack(anchor="w",pady=2)
-        self.lbl_mode=ctk.CTkLabel(info,text="",font=ctk.CTkFont(10),
-                                   text_color=T_DIM,fg_color="transparent",anchor="w")
-        self.lbl_mode.pack(anchor="w")
+        nav_items = [
+            ("Pocetna", "H", True),
+            ("Server Info", "S", False),
+            ("Player Panel", "P", False),
+            ("Novosti", "N", False),
+            ("Podesavanja", "G", False),
+            ("Addons", "A", False),
+            ("Statistika", "T", False),
+        ]
+        for text, icon, active in nav_items:
+            SidebarButton(nav_frame, text=text, icon=icon, active=active).pack(fill="x", pady=1)
 
         # Separator
-        ctk.CTkFrame(hi,height=1,fg_color=BLUE_950).pack(fill="x",pady=14)
+        ctk.CTkFrame(nav_frame, height=1, fg_color="#1a2540").pack(fill="x", pady=10)
 
-        # CEF Feature kartice
-        cards=ctk.CTkFrame(hi,fg_color="transparent"); cards.pack(fill="both",expand=True)
-        for i,(t,d,c) in enumerate([
-            ("TABLET","Moderni CEF tablet UI\nGPS, poruke, kontakti",NEON_SKY),
-            ("INVENTAR","Drag & drop inventar\nkategorije, detalji",BLUE_400),
-            ("LAPTOP","Dark Web, Banka\nEmail, Terminal",NEON_ELECTRIC)]):
-            card=ctk.CTkFrame(cards,fg_color="#080e1e",corner_radius=12,border_width=1,border_color=c)
-            card.pack(side="left",fill="both",expand=True,padx=(0 if i==0 else 6,0))
-            ci=ctk.CTkFrame(card,fg_color="transparent"); ci.pack(fill="both",expand=True,padx=14,pady=10)
-            tf=ctk.CTkFrame(ci,fg_color="transparent"); tf.pack(anchor="w",pady=(0,4))
-            ctk.CTkFrame(tf,fg_color=c,width=24,height=3,corner_radius=2).pack(side="left",padx=(0,8))
-            ctk.CTkLabel(tf,text=t,font=ctk.CTkFont(size=10, weight="bold"),text_color=c,fg_color="transparent").pack(side="left")
-            ctk.CTkLabel(ci,text=d,font=ctk.CTkFont(9),text_color=T_DIM,fg_color="transparent",
-                        anchor="w",justify="left").pack(anchor="w")
+        # Social links
+        ctk.CTkLabel(nav_frame, text="DRUSTVENE MREZE", font=ctk.CTkFont(size=9, weight="bold"),
+                    text_color=C_DARKER, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 6))
 
-    def _build_launch(self,parent):
-        p=ctk.CTkFrame(parent,fg_color=BG_PANEL,corner_radius=16,
-                        border_width=1,border_color=BLUE_800)
-        p.grid(row=0,column=1,sticky="nsew",padx=(6,0),pady=(0,6))
-        pi=ctk.CTkFrame(p,fg_color="transparent")
-        pi.pack(fill="both",expand=True,padx=22,pady=22)
+        social_frame = ctk.CTkFrame(nav_frame, fg_color="transparent")
+        social_frame.pack(fill="x")
+        socials = [
+            ("Discord", C_BLUE, DISCORD_URL),
+            ("Website", C_NEON, WEBSITE_URL),
+        ]
+        for name, color, url in socials:
+            btn = ctk.CTkButton(social_frame, text=name, height=28, fg_color=C_BG_CARD,
+                               hover_color=C_BG_HOVER, text_color=color,
+                               font=ctk.CTkFont(size=10, weight="bold"), corner_radius=6,
+                               border_width=1, border_color="#1a2540",
+                               command=lambda u=url: webbrowser.open(u))
+            btn.pack(fill="x", pady=2)
 
-        # Server info
-        ctk.CTkLabel(pi,text="KONEKCIJA",font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=NEON_SKY,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,6))
-        cc=ctk.CTkFrame(pi,fg_color=BG_INPUT,corner_radius=10,border_width=1,border_color=BLUE_950)
-        cc.pack(fill="x",pady=(0,12))
-        ctk.CTkLabel(cc,text=f"  {SERVER_IP}:{SERVER_PORT}",font=ctk.CTkFont("Consolas",11),
-                    text_color=NEON_SKY,fg_color="transparent",anchor="w").pack(anchor="w",padx=6,pady=(7,1))
-        ctk.CTkLabel(cc,text=f"  {SERVER_NAME}",font=ctk.CTkFont("Consolas",9),
-                    text_color=T_DIM,fg_color="transparent",anchor="w").pack(anchor="w",padx=6,pady=(0,7))
+    # ----- CENTER CONTENT -----
+    def _build_center(self, parent):
+        center = ctk.CTkFrame(parent, fg_color="transparent")
+        center.pack(side="left", fill="both", expand=True, padx=(0, 8))
 
-        ctk.CTkLabel(pi,text="GTA SAN ANDREAS",font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=BLUE_300,fg_color="transparent",anchor="w").pack(anchor="w",pady=(4,6))
-        pc=ctk.CTkFrame(pi,fg_color=BG_INPUT,corner_radius=10,border_width=1,border_color=BLUE_950)
-        pc.pack(fill="x",pady=(0,4))
-        pt=self.gta_path or "Nije pronadjen!"; ptc=GREEN_OK if self.gta_path else RED_ERR
-        self.path_lbl=ctk.CTkLabel(pc,text=pt,font=ctk.CTkFont("Consolas",9),text_color=ptc,
-                                   fg_color="transparent",anchor="w",wraplength=230)
-        self.path_lbl.pack(anchor="w",padx=8,pady=7)
+        self._build_server_panel(center)
+        self._build_news_panel(center)
 
-        ctk.CTkButton(pi,text="BROWSE",width=75,height=26,fg_color="#0f172a",hover_color=BG_HOVER,
-                      text_color=NEON_SKY,font=ctk.CTkFont(size=9, weight="bold"),corner_radius=8,
-                      border_width=1,border_color=BLUE_800,command=self.browse).pack(anchor="w",pady=(0,12))
+    def _build_server_panel(self, parent):
+        panel = ctk.CTkFrame(parent, fg_color=C_BG_CARD, corner_radius=12,
+                             border_width=1, border_color="#1a2540")
+        panel.pack(fill="x", pady=(0, 8))
+        inner = ctk.CTkFrame(panel, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=20, pady=16)
 
-        # Progress
-        self.pbar=GlowBar(pi,h=5); self.pbar.pack(fill="x",pady=(0,3))
-        self.prog_lbl=ctk.CTkLabel(pi,text="",font=ctk.CTkFont(9),text_color=NEON_SKY,fg_color="transparent",anchor="w")
+        # Left: Logo + info
+        left = ctk.CTkFrame(inner, fg_color="transparent")
+        left.pack(side="left", padx=(0, 20))
+
+        # Logo with glow
+        if 'logo_big' in self.imgs:
+            logo_frame = ctk.CTkFrame(left, fg_color="transparent", width=130, height=130)
+            logo_frame.pack(side="left", padx=(0, 20)); logo_frame.pack_propagate(False)
+            if 'logo_glow' in self.imgs:
+                ctk.CTkLabel(logo_frame, image=self.imgs['logo_glow'], text="",
+                            fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
+            ctk.CTkLabel(logo_frame, image=self.imgs['logo_big'], text="",
+                        fg_color="transparent").place(relx=0.5, rely=0.5, anchor="center")
+
+        info = ctk.CTkFrame(left, fg_color="transparent")
+        info.pack(side="left", fill="both", expand=True)
+
+        ctk.CTkLabel(info, text="UNICATE GAMING", font=ctk.CTkFont(size=26, weight="bold"),
+                    text_color=C_WHITE, fg_color="transparent", anchor="w").pack(anchor="w")
+        ctk.CTkLabel(info, text="SAMP SERVER", font=ctk.CTkFont(size=11),
+                    text_color=C_BLUE, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 8))
+
+        # Server status row
+        sr = ctk.CTkFrame(info, fg_color="transparent"); sr.pack(anchor="w", pady=2)
+        self.dot_status = PulseDot(sr, 8, C_ORANGE); self.dot_status.pack(side="left", padx=(0, 8))
+        self.lbl_status = ctk.CTkLabel(sr, text="Provjeravam...", font=ctk.CTkFont(size=11),
+                                       text_color=C_DIM, fg_color="transparent")
+        self.lbl_status.pack(side="left")
+
+        # Stats grid
+        stats = ctk.CTkFrame(info, fg_color="transparent"); stats.pack(anchor="w", pady=(8, 0))
+        for i, (val, label) in enumerate([("0/1000", "Igraca Online"), ("0", "Rekord"),
+                                           ("Los Santos", "Lokacija"), ("v1.0", "Mod Verzija")]):
+            card = ctk.CTkFrame(stats, fg_color="#0a0f1e", corner_radius=8, width=100, height=50)
+            card.pack(side="left", padx=(0 if i == 0 else 6, 0)); card.pack_propagate(False)
+            ci = ctk.CTkFrame(card, fg_color="transparent"); ci.pack(expand=True)
+            lbl_val = ctk.CTkLabel(ci, text=val, font=ctk.CTkFont(size=13, weight="bold"),
+                                  text_color=C_NEON, fg_color="transparent")
+            lbl_val.pack()
+            ctk.CTkLabel(ci, text=label, font=ctk.CTkFont(size=8),
+                        text_color=C_DIM, fg_color="transparent").pack()
+
+        # Store references for updating
+        self.stat_labels = stats.winfo_children()
+
+        # Right: Connect button area
+        right = ctk.CTkFrame(inner, fg_color="transparent")
+        right.pack(side="right", fill="y")
+
+        self.connect_btn = GlowButton(right, text="PRIKLJUCI SE", width=180, height=52,
+                                      font=ctk.CTkFont(size=16, weight="bold"),
+                                      fg_color=C_BG_CARD, hover_color=C_BLUE,
+                                      text_color=C_NEON, corner_radius=12,
+                                      border_width=2, border_color=C_BLUE,
+                                      glow_color=C_BLUE, pulse=True,
+                                      command=self.launch_game)
+        self.connect_btn.pack(pady=(10, 4))
+
+        ctk.CTkLabel(right, text="LAUNCH SAMP", font=ctk.CTkFont(size=9),
+                    text_color=C_DIM, fg_color="transparent").pack()
+
+    def _build_news_panel(self, parent):
+        panel = ctk.CTkFrame(parent, fg_color=C_BG_CARD, corner_radius=12,
+                             border_width=1, border_color="#1a2540")
+        panel.pack(fill="both", expand=True)
+
+        inner = ctk.CTkFrame(panel, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=16, pady=12)
+
+        ctk.CTkLabel(inner, text="NOVOSTI", font=ctk.CTkFont(size=12, weight="bold"),
+                    text_color=C_NEON, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 8))
+
+        # News cards
+        cards_frame = ctk.CTkFrame(inner, fg_color="transparent")
+        cards_frame.pack(fill="both", expand=True)
+
+        news_data = [
+            ("Dobrodosli na Unicate Gaming!", "Server je otvoren! Pridruzi se nasoj zajednici i uzivaj u RP iskustvu.", "OBAVIJEST", C_BLUE),
+            ("Update v1.0 - Novi sistemi", "CEF tablet, inventar i laptop su sada dostupni. open.mp server sa ugradjenim CEF-om.", "UPDATE", C_PURPLE),
+            ("Happy Hours - Dupli Respekti", "Svaki dan od 18-22h dobijas duplo respekata! Iskoristi priliku.", "EVENT", C_GREEN),
+        ]
+        for title, desc, tag, color in news_data:
+            NewsCard(cards_frame, title=title, desc=desc, tag=tag, tag_color=color).pack(fill="x", pady=2)
+
+    # ----- RIGHT PANEL -----
+    def _build_right(self, parent):
+        right = ctk.CTkFrame(parent, width=240, fg_color=C_BG_CARD, corner_radius=12,
+                             border_width=1, border_color="#1a2540")
+        right.pack(side="right", fill="y"); right.pack_propagate(False)
+
+        inner = ctk.CTkFrame(right, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=14, pady=14)
+
+        # KONEKCIJA
+        ctk.CTkLabel(inner, text="KONEKCIJA", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=C_BLUE, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 6))
+
+        # IP
+        ip_frame = ctk.CTkFrame(inner, fg_color="#0a0f1e", corner_radius=8)
+        ip_frame.pack(fill="x", pady=(0, 4))
+        ctk.CTkLabel(ip_frame, text="IP Adresa", font=ctk.CTkFont(size=8),
+                    text_color=C_DIM, fg_color="transparent", anchor="w").pack(anchor="w", padx=8, pady=(6, 0))
+        ip_row = ctk.CTkFrame(ip_frame, fg_color="transparent"); ip_row.pack(fill="x", padx=8, pady=(0, 6))
+        self.ip_lbl = ctk.CTkLabel(ip_row, text=f"{SERVER_IP}:{SERVER_PORT}", font=ctk.CTkFont("Consolas", size=10, weight="bold"),
+                                   text_color=C_NEON, fg_color="transparent", anchor="w")
+        self.ip_lbl.pack(side="left")
+        ctk.CTkLabel(ip_row, text="Kopiraj", font=ctk.CTkFont(size=8),
+                    text_color=C_DARKER, fg_color="transparent", cursor="hand2").pack(side="right")
+        # Bind copy
+        self.ip_lbl.bind("<Button-1>", lambda e: self._copy_ip())
+
+        # GTA Path
+        path_frame = ctk.CTkFrame(inner, fg_color="#0a0f1e", corner_radius=8)
+        path_frame.pack(fill="x", pady=(0, 4))
+        ctk.CTkLabel(path_frame, text="GTA:SA Putanja", font=ctk.CTkFont(size=8),
+                    text_color=C_DIM, fg_color="transparent", anchor="w").pack(anchor="w", padx=8, pady=(6, 0))
+        path_row = ctk.CTkFrame(path_frame, fg_color="transparent"); path_row.pack(fill="x", padx=8, pady=(0, 6))
+        pt = self.gta_path or "Nije pronadjen!"
+        ptc = C_GREEN if self.gta_path else C_RED
+        self.path_lbl = ctk.CTkLabel(path_row, text=pt, font=ctk.CTkFont("Consolas", size=8),
+                                    text_color=ptc, fg_color="transparent", anchor="w", wraplength=160)
+        self.path_lbl.pack(side="left", fill="x", expand=True)
+        ctk.CTkButton(path_row, text="BROWSE", width=50, height=22, fg_color=C_BLUE_DARK, hover_color=C_BLUE,
+                      text_color=C_NEON, font=ctk.CTkFont(size=8, weight="bold"), corner_radius=6,
+                      command=self.browse).pack(side="right", padx=(4, 0))
+
+        # Nickname
+        nick_frame = ctk.CTkFrame(inner, fg_color="#0a0f1e", corner_radius=8)
+        nick_frame.pack(fill="x", pady=(0, 8))
+        ctk.CTkLabel(nick_frame, text="Nickname", font=ctk.CTkFont(size=8),
+                    text_color=C_DIM, fg_color="transparent", anchor="w").pack(anchor="w", padx=8, pady=(6, 0))
+        nick_row = ctk.CTkFrame(nick_frame, fg_color="transparent"); nick_row.pack(fill="x", padx=8, pady=(0, 6))
+        self.nick_lbl = ctk.CTkLabel(nick_row, text=self.nickname, font=ctk.CTkFont(size=10, weight="bold"),
+                                    text_color=C_WHITE, fg_color="transparent", anchor="w")
+        self.nick_lbl.pack(side="left")
+
+        # Separator
+        ctk.CTkFrame(inner, height=1, fg_color="#1a2540").pack(fill="x", pady=6)
+
+        # KOMPONENTE
+        ctk.CTkLabel(inner, text="KOMPONENTE", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=C_BLUE, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 6))
+
+        comps = [
+            ("SA-MP Client", self.status['has_samp']),
+            ("ASI Loader", self.status['has_asi']),
+            ("CEF Plugin", self.status['cef_ok']),
+            ("Chromium RT", self.gta_path and os.path.exists(os.path.join(self.gta_path, "cef"))),
+        ]
+        self.comp_widgets = []
+        for name, ok in comps:
+            r = ctk.CTkFrame(inner, fg_color="transparent"); r.pack(fill="x", pady=1)
+            d = PulseDot(r, 6, C_GREEN if ok else C_ORANGE); d.pack(side="left", padx=(0, 6))
+            l = ctk.CTkLabel(r, text=name + (" OK" if ok else " X"), font=ctk.CTkFont(size=10),
+                            text_color=C_GREEN if ok else C_ORANGE, fg_color="transparent")
+            l.pack(side="left")
+            self.comp_widgets.append((d, l, name))
+
+        # Progress bar
+        self.pbar = ProgressBar(inner, h=4); self.pbar.pack(fill="x", pady=(8, 2))
+        self.prog_lbl = ctk.CTkLabel(inner, text="", font=ctk.CTkFont(size=9),
+                                    text_color=C_NEON, fg_color="transparent", anchor="w")
         self.prog_lbl.pack(anchor="w")
-        self.prog_det=ctk.CTkLabel(pi,text="",font=ctk.CTkFont(8),text_color=T_DIM,fg_color="transparent",anchor="w")
+        self.prog_det = ctk.CTkLabel(inner, text="", font=ctk.CTkFont(size=8),
+                                    text_color=C_DIM, fg_color="transparent", anchor="w")
         self.prog_det.pack(anchor="w")
 
-        ctk.CTkFrame(pi,fg_color="transparent").pack(fill="both",expand=True)
-
-        # Install
-        self.install_btn=NeonButton(pi,text="AUTO-INSTALACIJA",height=38,
-            font=ctk.CTkFont("Segoe UI",12,"bold"),fg_color="#0f172a",hover_color=BLUE_600,
-            text_color=BLUE_400,corner_radius=10,border_width=1,border_color=BLUE_600,
-            glow=BLUE_500,command=self.auto_install)
+        # Install button
+        self.install_btn = GlowButton(inner, text="AUTO-INSTALACIJA", height=32,
+                                      font=ctk.CTkFont(size=10, weight="bold"),
+                                      fg_color=C_BG_CARD, hover_color=C_BLUE,
+                                      text_color=C_BLUE, corner_radius=8,
+                                      border_width=1, border_color=C_BLUE_700,
+                                      glow_color=C_BLUE,
+                                      command=self.auto_install)
         if not self.status['ready']:
-            self.install_btn.pack(fill="x",pady=(0,6),side="bottom")
+            self.install_btn.pack(fill="x", pady=(8, 0))
 
-        # LAUNCH
-        self.launch_btn=NeonButton(pi,text="LAUNCH",height=62,
-            font=ctk.CTkFont("Segoe UI",22,"bold"),fg_color="#0f172a",hover_color=NEON_SKY,
-            text_color=NEON_SKY,corner_radius=14,border_width=2,border_color=NEON_SKY,
-            glow=NEON_SKY,pulse=True,command=self.launch_game)
-        self.launch_btn.pack(fill="x",pady=(0,4),side="bottom")
+        # Separator
+        ctk.CTkFrame(inner, height=1, fg_color="#1a2540").pack(fill="x", pady=8)
 
-        self.launch_lbl=ctk.CTkLabel(pi,text="",font=ctk.CTkFont(9),text_color=T_DIM,fg_color="transparent")
-        self.launch_lbl.pack(pady=(0,3),side="bottom")
+        # BRZE AKCIJE
+        ctk.CTkLabel(inner, text="BRZE AKCIJE", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=C_BLUE, fg_color="transparent", anchor="w").pack(anchor="w", pady=(0, 6))
 
-    def _build_news(self,parent):
-        p=ctk.CTkFrame(parent,fg_color=BG_PANEL,corner_radius=16,
-                        border_width=1,border_color=BLUE_950)
-        p.grid(row=1,column=0,sticky="nsew",padx=(0,6),pady=(6,0))
-        pi=ctk.CTkFrame(p,fg_color="transparent")
-        pi.pack(fill="both",expand=True,padx=18,pady=14)
-
-        ctk.CTkLabel(pi,text="NOVOSTI",font=ctk.CTkFont(size=11, weight="bold"),
-                    text_color=NEON_ICE,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,8))
-
-        for t,d,c in [
-            ("open.mp Server","Server je sad na open.mp sa ugradjenim CEF-om! Tablet, inventar i laptop rade iz boxa.",NEON_SKY),
-            ("Auto-Instalacija","Launcher skida i instalira sve automatski - CEF, ASI loader, Chromium runtime.",BLUE_400),
-            ("Bounty Sistem","Postavljanje nagrada za igrace putem tableta ili laptopa. /bounty",NEON_ELECTRIC)]:
-            card=ctk.CTkFrame(pi,fg_color="#080e1e",corner_radius=10,border_width=1,border_color=BLUE_950)
-            card.pack(fill="x",pady=2)
-            inner=ctk.CTkFrame(card,fg_color="transparent"); inner.pack(fill="both",expand=True,padx=10,pady=7)
-            ctk.CTkFrame(inner,fg_color=c,width=3,corner_radius=2).pack(side="left",fill="y",padx=(0,8),pady=1)
-            tc=ctk.CTkFrame(inner,fg_color="transparent"); tc.pack(side="left",fill="both",expand=True)
-            ctk.CTkLabel(tc,text=t,font=ctk.CTkFont(size=10, weight="bold"),text_color=T_WHITE,fg_color="transparent",anchor="w").pack(anchor="w")
-            ctk.CTkLabel(tc,text=d,font=ctk.CTkFont(8),text_color=T_DIM,fg_color="transparent",anchor="w",wraplength=500).pack(anchor="w")
-
-    def _build_status(self,parent):
-        p=ctk.CTkFrame(parent,fg_color=BG_PANEL,corner_radius=16,
-                        border_width=1,border_color=BLUE_950)
-        p.grid(row=1,column=1,sticky="nsew",padx=(6,0),pady=(6,0))
-        pi=ctk.CTkFrame(p,fg_color="transparent")
-        pi.pack(fill="both",expand=True,padx=18,pady=14)
-
-        ctk.CTkLabel(pi,text="KOMPONENTE",font=ctk.CTkFont(size=11, weight="bold"),
-                    text_color=BLUE_300,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,8))
-
-        comps=[
-            ("SA-MP Client",self.status['has_samp']),
-            ("ASI Loader",self.status['has_asi']),
-            ("CEF Plugin",self.status['cef_ok']),
-            ("Chromium RT",self.gta_path and os.path.exists(os.path.join(self.gta_path,"cef"))),
+        actions = [
+            ("Ocisti Chat", "F9"),
+            ("Reconnect", "F5"),
+            ("Screenshot", "F8"),
         ]
-        self.comp_widgets=[]
-        for name,ok in comps:
-            r=ctk.CTkFrame(pi,fg_color="transparent"); r.pack(fill="x",pady=2)
-            d=PulseDot(r,7,GREEN_OK if ok else ORANGE_WARN); d.pack(side="left",padx=(0,6))
-            l=ctk.CTkLabel(r,text=name+(" ✓" if ok else " ✗"),font=ctk.CTkFont(10),
-                          text_color=GREEN_OK if ok else ORANGE_WARN,fg_color="transparent")
-            l.pack(side="left")
-            self.comp_widgets.append((d,l,name))
+        for name, key in actions:
+            r = ctk.CTkFrame(inner, fg_color="transparent"); r.pack(fill="x", pady=1)
+            ctk.CTkLabel(r, text=name, font=ctk.CTkFont(size=10),
+                        text_color=C_LIGHT, fg_color="transparent").pack(side="left")
+            ctk.CTkLabel(r, text=key, font=ctk.CTkFont(size=9),
+                        text_color=C_DIM, fg_color="transparent").pack(side="right")
 
-        ctk.CTkFrame(pi,height=1,fg_color=BLUE_950).pack(fill="x",pady=10)
+    # ----- BOTTOM BAR -----
+    def _build_bottom(self, parent):
+        bottom = ctk.CTkFrame(parent, height=44, fg_color="#080c18", corner_radius=10,
+                              border_width=1, border_color="#0f1a30")
+        bottom.pack(fill="x", pady=(8, 0)); bottom.pack_propagate(False)
+        inner = ctk.CTkFrame(bottom, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=16, pady=6)
 
-        ctk.CTkLabel(pi,text="BRZE VEZE",font=ctk.CTkFont(size=10, weight="bold"),
-                    text_color=T_DIM,fg_color="transparent",anchor="w").pack(anchor="w",pady=(0,6))
-        lf=ctk.CTkFrame(pi,fg_color="transparent"); lf.pack(fill="x")
-        for nm,url,c in [("Website",WEBSITE_URL,NEON_SKY),("Discord",DISCORD_URL,BLUE_400)]:
-            NeonButton(lf,text=nm,height=28,width=100,font=ctk.CTkFont(size=9, weight="bold"),
-                      fg_color="#080e1e",hover_color=c,text_color=c,corner_radius=8,
-                      border_width=1,border_color=c,glow=c,
-                      command=lambda u=url:webbrowser.open(u)).pack(side="left",padx=(0,6))
+        # Radio player
+        radio = ctk.CTkFrame(inner, fg_color="transparent")
+        radio.pack(side="left")
+        ctk.CTkLabel(radio, text="Unicate Radio", font=ctk.CTkFont(size=10, weight="bold"),
+                    text_color=C_WHITE, fg_color="transparent").pack(side="left", padx=(0, 4))
+        ctk.CTkLabel(radio, text="Uzivo 24/7", font=ctk.CTkFont(size=9),
+                    text_color=C_DIM, fg_color="transparent").pack(side="left")
 
-    # ===== ACTIONS =====
+        # Fake progress bar
+        bar = ctk.CTkFrame(radio, fg_color="#0a1020", corner_radius=3, width=100, height=4)
+        bar.pack(side="left", padx=10)
+
+        # Play controls
+        for icon in ["<<", "||", ">>"]:
+            ctk.CTkLabel(radio, text=icon, font=ctk.CTkFont(size=10),
+                        text_color=C_DIM, fg_color="transparent", cursor="hand2").pack(side="left", padx=4)
+
+        # Right side info
+        info = ctk.CTkFrame(inner, fg_color="transparent")
+        info.pack(side="right")
+
+        self.lbl_players_bottom = ctk.CTkLabel(info, text="0/1000 igraca", font=ctk.CTkFont(size=9),
+                                               text_color=C_DIM, fg_color="transparent")
+        self.lbl_players_bottom.pack(side="left", padx=(0, 12))
+
+        ctk.CTkLabel(info, text=f"v{LAUNCHER_VERSION}", font=ctk.CTkFont(size=9),
+                    text_color=C_DARKER, fg_color="transparent").pack(side="left", padx=(0, 6))
+        ctk.CTkLabel(info, text="SAMP 0.3.7-R4", font=ctk.CTkFont(size=9),
+                    text_color=C_DARKER, fg_color="transparent").pack(side="left")
+
+    # ================================================================
+    #  ACTIONS
+    # ================================================================
+    def _copy_ip(self):
+        try:
+            self.root.clipboard_clear()
+            self.root.clipboard_append(f"{SERVER_IP}:{SERVER_PORT}")
+        except: pass
+
     def browse(self):
-        e=filedialog.askopenfilename(title="Pronadji gta_sa.exe",
-            filetypes=[("GTA SA","gta_sa.exe"),("All","*.*")])
+        e = filedialog.askopenfilename(title="Pronadji gta_sa.exe",
+            filetypes=[("GTA SA", "gta_sa.exe"), ("All", "*.*")])
         if e:
-            self.gta_path=os.path.dirname(e)
-            self.path_lbl.configure(text=self.gta_path,text_color=GREEN_OK)
-            save_settings(self.gta_path); self._refresh_status()
+            self.gta_path = os.path.dirname(e)
+            self.path_lbl.configure(text=self.gta_path, text_color=C_GREEN)
+            save_settings(self.gta_path, nickname=self.nickname); self._refresh_status()
 
     def _refresh_status(self):
-        self.status=get_status(self.gta_path)
-        comps=[self.status['has_samp'],self.status['has_asi'],self.status['cef_ok'],
-               self.gta_path and os.path.exists(os.path.join(self.gta_path,"cef"))]
-        for (d,l,n),ok in zip(self.comp_widgets,comps):
-            d.set_color(GREEN_OK if ok else ORANGE_WARN)
-            l.configure(text=n+(" ✓" if ok else " ✗"),text_color=GREEN_OK if ok else ORANGE_WARN)
+        self.status = get_status(self.gta_path)
+        comps = [self.status['has_samp'], self.status['has_asi'], self.status['cef_ok'],
+                 self.gta_path and os.path.exists(os.path.join(self.gta_path, "cef"))]
+        for (d, l, n), ok in zip(self.comp_widgets, comps):
+            d.set_color(C_GREEN if ok else C_ORANGE)
+            l.configure(text=n + (" OK" if ok else " X"), text_color=C_GREEN if ok else C_ORANGE)
         if self.status['ready']:
             self.install_btn.pack_forget()
             self.pbar.set_progress(100)
-            self.prog_lbl.configure(text="Sve spremno!",text_color=GREEN_OK)
-        else:
-            self.install_btn.pack(fill="x",pady=(0,6),side="bottom")
+            self.prog_lbl.configure(text="Sve spremno!", text_color=C_GREEN)
 
     def auto_install(self):
         if self.is_installing: return
         if not self.gta_path:
-            messagebox.showerror("Greska","GTA SA nije pronadjen! Klikni Browse.")
+            messagebox.showerror("Greska", "GTA SA nije pronadjen! Klikni Browse.")
             return
-        self.is_installing=True
-        self.install_btn.configure(text="INSTALIRAM...",state="disabled")
-        self.launch_btn.stop_pulse(); self.launch_btn.configure(state="disabled")
+        self.is_installing = True
+        self.install_btn.configure(text="INSTALIRAM...", state="disabled")
+        self.connect_btn.stop_pulse()
+        self.connect_btn.configure(state="disabled")
         self.pbar.reset()
-        self.prog_lbl.configure(text="Zapocinjem...",text_color=NEON_SKY)
-        self.dl_mgr=DownloadManager(
-            on_progress=lambda p,d,t,s: self.root.after(0,lambda:self._prog(p,d,t,s)),
-            on_status=lambda t: self.root.after(0,lambda:self.prog_lbl.configure(text=t,text_color=NEON_SKY)),
-            on_complete=lambda c: self.root.after(0,lambda:self._done()),
-            on_error=lambda e: self.root.after(0,lambda:self._err(e)))
-        threading.Thread(target=self.dl_mgr.install_all,args=(self.gta_path,self.status['missing']),daemon=True).start()
+        self.prog_lbl.configure(text="Zapocinjem...", text_color=C_NEON)
+        self.dl_mgr = DownloadManager(
+            on_progress=lambda p, d, t, s: self.root.after(0, lambda: self._prog(p, d, t, s)),
+            on_status=lambda t: self.root.after(0, lambda: self.prog_lbl.configure(text=t, text_color=C_NEON)),
+            on_complete=lambda c: self.root.after(0, lambda: self._done()),
+            on_error=lambda e: self.root.after(0, lambda: self._err(e)))
+        threading.Thread(target=self.dl_mgr.install_all, args=(self.gta_path, self.status['missing']), daemon=True).start()
 
-    def _prog(self,pct,dl,total,spd):
+    def _prog(self, pct, dl, total, spd):
         self.pbar.set_progress(pct)
-        if total>0: self.prog_det.configure(text=f"{dl:.1f}/{total:.1f} MB | {spd:.0f} KB/s")
-        elif dl>0: self.prog_det.configure(text=f"{dl:.1f} MB")
+        if total > 0: self.prog_det.configure(text=f"{dl:.1f}/{total:.1f} MB | {spd:.0f} KB/s")
+        elif dl > 0: self.prog_det.configure(text=f"{dl:.1f} MB")
 
     def _done(self):
-        self.is_installing=False
-        self.install_btn.configure(text="AUTO-INSTALACIJA",state="normal")
-        self.launch_btn.configure(state="normal"); self.launch_btn.start_pulse()
-        self.prog_lbl.configure(text="Sve instalirano!",text_color=GREEN_OK)
+        self.is_installing = False
+        self.install_btn.configure(text="AUTO-INSTALACIJA", state="normal")
+        self.connect_btn.configure(state="normal"); self.connect_btn.start_pulse()
+        self.prog_lbl.configure(text="Sve instalirano!", text_color=C_GREEN)
         self.pbar.set_progress(100); self._refresh_status()
-        save_settings(self.gta_path,cef_installed=True)
+        save_settings(self.gta_path, nickname=self.nickname, cef_installed=True)
 
-    def _err(self,msg):
-        self.is_installing=False
-        self.install_btn.configure(text="AUTO-INSTALACIJA",state="normal")
-        self.launch_btn.configure(state="normal"); self.launch_btn.start_pulse()
-        self.prog_lbl.configure(text="Greska!",text_color=RED_ERR)
-        messagebox.showerror("Greska",f"Instalacija neuspjesna:\n\n{msg}")
+    def _err(self, msg):
+        self.is_installing = False
+        self.install_btn.configure(text="AUTO-INSTALACIJA", state="normal")
+        self.connect_btn.configure(state="normal"); self.connect_btn.start_pulse()
+        self.prog_lbl.configure(text="Greska!", text_color=C_RED)
+        messagebox.showerror("Greska", f"Instalacija neuspjesna:\n\n{msg}")
 
-    # ===== SERVER =====
+    # ================================================================
+    #  SERVER CHECK
+    # ================================================================
     def check_server(self):
-        threading.Thread(target=self._do_check,daemon=True).start()
+        threading.Thread(target=self._do_check, daemon=True).start()
 
     def _do_check(self):
-        info=query_samp_server(SERVER_IP,SERVER_PORT)
-        self.server_info=info; self.root.after(0,self._update_status,info)
+        info = query_samp_server(SERVER_IP, SERVER_PORT)
+        self.server_info = info; self.root.after(0, self._update_status, info)
 
-    def _update_status(self,info):
+    def _update_status(self, info):
         if info and info.get('online'):
-            self.dot_status.set_color(GREEN_OK); self.dot_nav.set_color(GREEN_OK)
-            self.lbl_status.configure(text=f"Online | {info.get('name',SERVER_NAME)}",text_color=GREEN_OK)
-            self.lbl_players.configure(text=f"Igraci: {info['players']}/{info['max_players']}")
-            self.lbl_mode.configure(text=f"Gamemode: {info.get('gamemode','N/A')}")
-            self.online_nav.configure(text=f"{info['players']}/{info['max_players']}",text_color=GREEN_OK)
+            self.dot_status.set_color(C_GREEN); self.dot_top.set_color(C_GREEN)
+            self.lbl_status.configure(text=f"Online | {info.get('name', SERVER_NAME)}", text_color=C_GREEN)
+            self.lbl_top_status.configure(text=f"{info['players']}/{info['max_players']}", text_color=C_GREEN)
+            self.lbl_players_bottom.configure(text=f"{info['players']}/{info['max_players']} igraca")
+            # Update stat cards
+            try:
+                for i, child in enumerate(self.stat_labels):
+                    for w in child.winfo_children():
+                        if i == 0:
+                            try: w.configure(text=f"{info['players']}/{info['max_players']}")
+                            except: pass
+                        elif i == 1:
+                            try: w.configure(text=str(info.get('players', 0)))
+                            except: pass
+            except: pass
         else:
-            self.dot_status.set_color(RED_ERR); self.dot_nav.set_color(RED_ERR)
-            self.lbl_status.configure(text="Server Offline",text_color=RED_ERR)
-            self.lbl_players.configure(text="Nije dostupan")
-            self.lbl_mode.configure(text="")
-            self.online_nav.configure(text="Offline",text_color=RED_ERR)
+            self.dot_status.set_color(C_RED); self.dot_top.set_color(C_RED)
+            self.lbl_status.configure(text="Server Offline", text_color=C_RED)
+            self.lbl_top_status.configure(text="Offline", text_color=C_RED)
+            self.lbl_players_bottom.configure(text="0/1000 igraca")
 
     def _sched_server(self):
-        self.check_server(); self.root.after(30000,self._sched_server)
+        self.check_server(); self.root.after(30000, self._sched_server)
 
-    # ===== LAUNCH =====
+    # ================================================================
+    #  LAUNCH
+    # ================================================================
     def launch_game(self):
         if self.is_launching or self.is_installing: return
         if not self.gta_path:
-            messagebox.showerror("Greska","GTA SA nije pronadjen! Klikni Browse."); return
-        if not os.path.exists(os.path.join(self.gta_path,"gta_sa.exe")):
-            messagebox.showerror("Greska",f"gta_sa.exe nije pronadjen u:\n{self.gta_path}"); return
-        samp=find_samp_exe(self.gta_path)
+            messagebox.showerror("Greska", "GTA SA nije pronadjen! Klikni Browse."); return
+        if not os.path.exists(os.path.join(self.gta_path, "gta_sa.exe")):
+            messagebox.showerror("Greska", f"gta_sa.exe nije pronadjen u:\n{self.gta_path}"); return
+        samp = find_samp_exe(self.gta_path)
         if not samp:
-            messagebox.showerror("Greska","SA-MP client nije pronadjen! Instaliraj SA-MP 0.3.7-R4."); return
-        ok,msg=check_cef(self.gta_path)
+            messagebox.showerror("Greska", "SA-MP client nije pronadjen! Instaliraj SA-MP 0.3.7-R4."); return
+        ok, msg = check_cef(self.gta_path)
         if not ok:
-            if messagebox.askyesno("CEF",f"CEF nije instaliran!\n\n{msg}\n\nBez CEF-a necete moci koristiti Tablet/Inventar/Laptop.\n\nPokrenuti AUTO-INSTALACIJU?"):
+            if messagebox.askyesno("CEF", f"CEF nije instaliran!\n\n{msg}\n\nBez CEF-a necete moci koristiti Tablet/Inventar/Laptop.\n\nPokrenuti AUTO-INSTALACIJU?"):
                 self.auto_install(); return
-        self.is_launching=True
-        self.launch_btn.stop_pulse()
-        self.launch_btn.configure(text="POKRECEM...",fg_color=NEON_SKY,text_color=BG_VOID,state="disabled")
-        self.launch_lbl.configure(text="Konektujem se...",text_color=NEON_SKY)
-        threading.Thread(target=self._do_launch,args=(samp,),daemon=True).start()
+        self.is_launching = True
+        self.connect_btn.stop_pulse()
+        self.connect_btn.configure(text="POKRECEM...", fg_color=C_NEON, text_color=C_BG, state="disabled")
+        threading.Thread(target=self._do_launch, args=(samp,), daemon=True).start()
 
-    def _do_launch(self,exe):
+    def _do_launch(self, exe):
         try:
-            self.root.after(0,lambda:self.launch_lbl.configure(text=f"Pokrecem {SERVER_IP}:{SERVER_PORT}...",text_color=NEON_SKY))
-            subprocess.Popen([exe,f"{SERVER_IP}:{SERVER_PORT}"],cwd=self.gta_path)
+            self.root.after(0, lambda: self.connect_btn.configure(text="KONEKTUJEM..."))
+            subprocess.Popen([exe, f"{SERVER_IP}:{SERVER_PORT}"], cwd=self.gta_path)
             time.sleep(2)
-            self.root.after(0,lambda:self.launch_lbl.configure(text="Igra pokrenuta! Uzivaj!",text_color=GREEN_OK))
-            time.sleep(5); self.root.after(0,self.root.destroy)
+            self.root.after(0, lambda: self.connect_btn.configure(text="IGRA POKRENUTA!", fg_color=C_GREEN, text_color=C_BG))
+            time.sleep(5); self.root.after(0, self.root.destroy)
         except Exception as e:
-            self.root.after(0,lambda:self._launch_err(str(e)))
+            self.root.after(0, lambda: self._launch_err(str(e)))
 
-    def _launch_err(self,msg):
-        self.is_launching=False
-        self.launch_btn.configure(text="LAUNCH",fg_color="#0f172a",text_color=NEON_SKY,state="normal")
-        self.launch_btn.start_pulse()
-        self.launch_lbl.configure(text=""); messagebox.showerror("Greska",f"Nije moguce pokrenuti igru!\n\n{msg}")
+    def _launch_err(self, msg):
+        self.is_launching = False
+        self.connect_btn.configure(text="PRIKLJUCI SE", fg_color=C_BG_CARD, text_color=C_NEON, state="normal")
+        self.connect_btn.start_pulse()
+        messagebox.showerror("Greska", f"Launch neuspjesan:\n\n{msg}")
 
+    # ================================================================
+    #  CLOSE
+    # ================================================================
     def on_close(self):
         if self.dl_mgr: self.dl_mgr.cancel()
         self.bg.stop()
-        if self.gta_path: save_settings(self.gta_path)
+        if self.gta_path: save_settings(self.gta_path, nickname=self.nickname)
         self.root.destroy(); sys.exit(0)
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     UnicateGamingLauncher().root.mainloop()
