@@ -137,22 +137,32 @@ function querySampServer(ip, port) {
 // ============================================================
 //  DOWNLOAD WITH PROGRESS
 // ============================================================
-function downloadFile(url, dest, onProgress) {
+function downloadFile(url, dest, onProgress, maxRedirects = 10) {
   return new Promise((resolve, reject) => {
-    const file = fs.createWriteStream(dest);
+    if (maxRedirects <= 0) { reject(new Error('Too many redirects')); return; }
+
     const mod = url.startsWith('https') ? https : http;
     let totalBytes = 0;
     let downloadedBytes = 0;
     let startTime = Date.now();
 
-    mod.get(url, { timeout: 30000 }, (response) => {
-      // Handle redirects
+    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.0' } }, (response) => {
+      // Handle redirects (GitHub uses 302 redirects)
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
-        file.close();
-        fs.unlinkSync(dest);
-        return downloadFile(response.headers.location, dest, onProgress).then(resolve).catch(reject);
+        const newUrl = response.headers.location;
+        // Consume response to free memory
+        response.resume();
+        return downloadFile(newUrl, dest, onProgress, maxRedirects - 1).then(resolve).catch(reject);
       }
+
+      if (response.statusCode !== 200) {
+        response.resume();
+        return reject(new Error(`HTTP ${response.statusCode} for ${url}`));
+      }
+
+      const file = fs.createWriteStream(dest);
       totalBytes = parseInt(response.headers['content-length'] || '0', 10);
+
       response.pipe(file);
       response.on('data', (chunk) => {
         downloadedBytes += chunk.length;
@@ -161,13 +171,23 @@ function downloadFile(url, dest, onProgress) {
         const speed = elapsed > 0 ? (downloadedBytes / 1024) / elapsed : 0;
         if (onProgress) onProgress(pct, downloadedBytes, totalBytes, speed);
       });
+
       file.on('finish', () => {
         file.close();
+        // Verify the file was actually written
+        if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
+          try { fs.unlinkSync(dest); } catch (e) {}
+          return reject(new Error('Downloaded file is empty'));
+        }
         resolve(dest);
       });
+
+      file.on('error', (err) => {
+        file.close();
+        try { fs.unlinkSync(dest); } catch (e) {}
+        reject(err);
+      });
     }).on('error', (err) => {
-      file.close();
-      try { fs.unlinkSync(dest); } catch (e) {}
       reject(err);
     });
   });
