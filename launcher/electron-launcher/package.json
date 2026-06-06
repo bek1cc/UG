@@ -42,7 +42,7 @@
     "adm-zip": "^0.5.17"
   },
   "devDependencies": {
-    "electron": "^35.0.0",
+    "electron": "28.3.3",
     "electron-builder": "^26.0.0"
   }
 }
