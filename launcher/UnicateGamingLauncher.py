@@ -664,7 +664,7 @@ class UnicateGamingLauncher:
                       border_width=1,border_color=BLUE_800,command=self.browse).pack(anchor="w",pady=(0,12))
 
         # Progress
-        self.pbar=GlowBar(pi,height=5); self.pbar.pack(fill="x",pady=(0,3))
+        self.pbar=GlowBar(pi,h=5); self.pbar.pack(fill="x",pady=(0,3))
         self.prog_lbl=ctk.CTkLabel(pi,text="",font=ctk.CTkFont(9),text_color=NEON_SKY,fg_color="transparent",anchor="w")
         self.prog_lbl.pack(anchor="w")
         self.prog_det=ctk.CTkLabel(pi,text="",font=ctk.CTkFont(8),text_color=T_DIM,fg_color="transparent",anchor="w")
