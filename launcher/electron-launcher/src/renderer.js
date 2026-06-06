@@ -174,10 +174,24 @@ function setupEventListeners() {
 
   // Connect button
   document.getElementById('btnConnect')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnConnect');
     const nick = document.getElementById('inputNick')?.value || 'Unicate_Player';
+    
+    // Visual feedback
+    btn.classList.add('launching');
+    const origText = btn.querySelector('span').textContent;
+    btn.querySelector('span').textContent = 'POKRECEM...';
+    
     const result = await API.launchGame(nick);
+    
+    btn.classList.remove('launching');
+    btn.querySelector('span').textContent = origText;
+    
     if (result && result.error) {
-      alert(result.error);
+      console.error('Launch error:', result.error);
+      alert('GRESKA: ' + result.error);
+    } else if (result && result.success) {
+      console.log('Game launched successfully');
     }
   });
 

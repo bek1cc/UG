@@ -112,6 +112,7 @@ function findGtaPath() {
   const common = [
     'C:\\Program Files (x86)\\Rockstar Games\\GTA San Andreas',
     'D:\\GTA San Andreas', 'D:\\GTA SA', 'D:\\Games\\GTA SA',
+    'D:\\SAMP TEST SERVER',
     'E:\\GTA San Andreas', 'E:\\GTA SA',
     'C:\\GTA San Andreas', 'C:\\GTA SA'
   ];
@@ -369,7 +370,24 @@ ipcMain.handle('get-version', () => LAUNCHER_VERSION);
 
 ipcMain.handle('get-server-info', async () => {
   const srv = getActiveServer();
-  return await querySampServer(srv.ip, srv.port);
+  const result = await querySampServer(srv.ip, srv.port);
+  
+  // If SAMP query fails on local mode, try TCP connect check as fallback
+  // (open.mp may not respond to SAMP UDP queries on localhost)
+  if (!result.online && srv.mode === 'local') {
+    const tcpCheck = await new Promise((resolve) => {
+      const net = require('net');
+      const sock = net.createConnection(srv.port, srv.ip);
+      sock.setTimeout(2000);
+      sock.on('connect', () => { sock.destroy(); resolve(true); });
+      sock.on('error', () => { sock.destroy(); resolve(false); });
+      sock.on('timeout', () => { sock.destroy(); resolve(false); });
+    });
+    if (tcpCheck) {
+      return { online: true, players: 0, max_players: 1000, name: srv.name, gamemode: 'RPG (Local Test)', local_fallback: true };
+    }
+  }
+  return result;
 });
 
 ipcMain.handle('get-status', () => {
@@ -411,16 +429,31 @@ ipcMain.handle('browse-gta', async () => {
 
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
-  if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
-  const status = getStatus(gtaPath);
-  if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
+  if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
   const sampExe = path.join(gtaPath, 'samp.exe');
+  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen u ' + gtaPath + '! Instaliraj SA-MP klijent.' };
+
+  const srv = getActiveServer();
+
+  // For local test mode, only samp.exe is needed
+  // For production mode, check all components
+  if (srv.mode === 'production') {
+    const status = getStatus(gtaPath);
+    if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju u Podesavanja.' };
+  }
+
+  log('Launching game: ' + sampExe + ' ' + srv.ip + ':' + srv.port + ' nickname=' + nickname + ' mode=' + srv.mode);
+
   return new Promise((resolve) => {
-    const srv = getActiveServer();
     execFile(sampExe, [srv.ip, srv.port.toString(), nickname], { cwd: gtaPath }, (err) => {
-      if (err) resolve({ error: 'Greska pri pokretanju: ' + err.message });
-      else resolve({ success: true });
+      if (err) {
+        log('Launch FAILED: ' + err.message);
+        resolve({ error: 'Greska pri pokretanju: ' + err.message });
+      } else {
+        log('Launch SUCCESS');
+        resolve({ success: true });
+      }
     });
   });
 });

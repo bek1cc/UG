@@ -1,33 +1,50 @@
 @echo off
 title Build for Open.mp - Unicate Gaming
 echo ============================================
-echo   Compiling fg-ogc.amx for OPEN.MP
+echo   Compiling for OPEN.MP
 echo ============================================
 echo.
 
-:: Delete old amx first so we know if recompilation succeeded
-if exist "gamemodes\fg-ogc.amx" del "gamemodes\fg-ogc.amx"
-if exist "openmp-server\gamemodes\fg-ogc.amx" del "openmp-server\gamemodes\fg-ogc.amx"
+:: ============================================
+::  Choose what to build
+:: ============================================
+echo 1. fg-ogc (full gamemode)
+echo 2. test_openmp (minimal test gamemode)
+echo.
+set /p CHOICE="Izaberi (1 ili 2): "
 
-:: Compile with OPENMP_BUILD flag defined
-:: This replaces SKY plugin natives with open.mp compatible stubs
-:: Note: pawncc uses sym=val syntax for defines (NOT -D like C compilers)
-::       -i for include path, -o for output base name, -;+ for semicolon required
-::       -o sets the output FILE PATH (without .amx extension)
-pawno\pawncc.exe gamemodes\fg-ogc.pwn OPENMP_BUILD=1 -ipawno\include -oopenmp-server\gamemodes\fg-ogc -;+
+if "%CHOICE%"=="1" (
+    set GAMEMODE=fg-ogc
+    set EXTRA_FLAGS=OPENMP_BUILD=1
+) else if "%CHOICE%"=="2" (
+    set GAMEMODE=test_openmp
+    set EXTRA_FLAGS=
+) else (
+    echo [GRESKA] Nevazeci izbor!
+    pause
+    exit /b 1
+)
 
 echo.
-if exist "openmp-server\gamemodes\fg-ogc.amx" (
-    echo [OK] fg-ogc.amx compiled for open.mp!
-    echo [OK] Saved to: openmp-server\gamemodes\fg-ogc.amx
+echo Compiling %GAMEMODE%.pwn ...
+echo.
+
+:: Delete old amx first
+if exist "openmp-server\gamemodes\%GAMEMODE%.amx" del "openmp-server\gamemodes\%GAMEMODE%.amx"
+if exist "gamemodes\%GAMEMODE%.amx" del "gamemodes\%GAMEMODE%.amx"
+
+:: Compile
+pawno\pawncc.exe gamemodes\%GAMEMODE%.pwn %EXTRA_FLAGS% -ipawno\include -oopenmp-server\gamemodes\%GAMEMODE% -;+
+
+echo.
+if exist "openmp-server\gamemodes\%GAMEMODE%.amx" (
+    echo [OK] %GAMEMODE%.amx compiled for open.mp!
+    echo [OK] Saved to: openmp-server\gamemodes\%GAMEMODE%.amx
 ) else (
-    echo [GRESKA] Kompajliranje nije uspjelo! fg-ogc.amx nije kreiran.
-    echo.
-    echo Provjeravam da li je .amx zavrsio u gamemodes\ folderu...
-    if exist "gamemodes\fg-ogc.amx" (
-        echo [INFO] Pronadjen u gamemodes\fg-ogc.amx - kopiram u openmp-server...
-        copy /Y "gamemodes\fg-ogc.amx" "openmp-server\gamemodes\fg-ogc.amx"
-        echo [OK] Kopirano u openmp-server\gamemodes\fg-ogc.amx
+    echo [GRESKA] Kompajliranje nije uspjelo!
+    if exist "gamemodes\%GAMEMODE%.amx" (
+        echo [INFO] Pronadjen u gamemodes\ - kopiram...
+        copy /Y "gamemodes\%GAMEMODE%.amx" "openmp-server\gamemodes\%GAMEMODE%.amx"
     )
 )
 echo.
