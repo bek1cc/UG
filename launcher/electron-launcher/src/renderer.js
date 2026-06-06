@@ -12,34 +12,39 @@ let currentPage = 'home';
 
 // ---------- INIT ----------
 async function init() {
+  // Load config and status first (fast), then server info (slow - network)
   try {
     config = await API.getConfig();
-    serverInfo = await API.getServerInfo();
     statusData = await API.getStatus();
   } catch (e) {
     console.error('Init error:', e);
     config = {
-      SERVER_IP: '135.125.156.197',
-      SERVER_PORT: 7777,
+      SERVER_IP: '135.125.156.197', SERVER_PORT: 7777,
       SERVER_NAME: 'Unicate Gaming RPG',
       WEBSITE_URL: 'https://ug-ogc.com',
       DISCORD_URL: 'https://discord.gg/unicategaming',
-      LAUNCHER_VERSION: '3.0.0'
+      LAUNCHER_VERSION: '3.3.0'
     };
-    serverInfo = { online: false };
-    statusData = { gta_path: null, has_samp: false, cef_ok: false, has_asi: false, ready: false, missing: ['client', 'cef_asi', 'cef_runtime', 'asi_loader'] };
+    statusData = { gta_path: null, has_samp: false, cef_ok: false, has_asi: false, ready: false, missing: ['client'] };
   }
 
+  // Update UI immediately with cached data
   updateUI();
-  initParticles();
   setupEventListeners();
   setupInstallListeners();
+  initParticles();
 
-  // Refresh server info every 15 seconds
+  // Server query is slow - do it in background, update UI when ready
+  API.getServerInfo().then(info => {
+    serverInfo = info;
+    updateServerStatus();
+  });
+
+  // Refresh server info every 20 seconds
   setInterval(async () => {
     serverInfo = await API.getServerInfo();
     updateServerStatus();
-  }, 15000);
+  }, 20000);
 }
 
 // ---------- UPDATE UI ----------
@@ -386,28 +391,29 @@ function initParticles() {
     }
   }
 
-  // Create particles
-  for (let i = 0; i < 50; i++) {
+  // Create particles (reduced from 50 to 30 for performance)
+  for (let i = 0; i < 30; i++) {
     particles.push(new Particle());
   }
 
-  // Draw grid
+  // Draw grid (cached - only redraw on resize)
+  let gridCanvas = null;
   function drawGrid() {
-    ctx.strokeStyle = 'rgba(6, 13, 24, 0.5)';
-    ctx.lineWidth = 0.5;
-
-    for (let x = 0; x < canvas.width; x += 80) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvas.height);
-      ctx.stroke();
+    if (!gridCanvas || gridCanvas.width !== canvas.width || gridCanvas.height !== canvas.height) {
+      gridCanvas = document.createElement('canvas');
+      gridCanvas.width = canvas.width;
+      gridCanvas.height = canvas.height;
+      const gctx = gridCanvas.getContext('2d');
+      gctx.strokeStyle = 'rgba(6, 13, 24, 0.5)';
+      gctx.lineWidth = 0.5;
+      for (let x = 0; x < canvas.width; x += 80) {
+        gctx.beginPath(); gctx.moveTo(x, 0); gctx.lineTo(x, canvas.height); gctx.stroke();
+      }
+      for (let y = 0; y < canvas.height; y += 80) {
+        gctx.beginPath(); gctx.moveTo(0, y); gctx.lineTo(canvas.width, y); gctx.stroke();
+      }
     }
-    for (let y = 0; y < canvas.height; y += 80) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvas.width, y);
-      ctx.stroke();
-    }
+    ctx.drawImage(gridCanvas, 0, 0);
   }
 
   function animate() {

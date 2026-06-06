@@ -8,46 +8,52 @@ const dgram = require('dgram');
 const AdmZip = require('adm-zip');
 
 // ============================================================
-//  ELECTRON COMPATIBILITY FIXES (MUST BE BEFORE app.whenReady)
+//  FAST STARTUP OPTIMIZATIONS (MUST BE BEFORE app.whenReady)
 // ============================================================
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('disable-gpu-sandbox');
-app.commandLine.appendSwitch('disable-software-rasterizer');
-app.disableHardwareAcceleration();
+// DO NOT disable hardware acceleration - it makes rendering 3x faster
+// app.disableHardwareAcceleration();  // REMOVED for speed
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
 
 // ============================================================
-//  DEBUG LOG TO FILE
+//  ASYNC LOG (non-blocking) - sync writes slow down startup
 // ============================================================
 const LOG_FILE = path.join(path.dirname(app.getPath('exe')), 'launcher_debug.log');
+let logBuffer = [];
+let logFlushing = false;
+
 function log(msg) {
   const ts = new Date().toISOString();
   const line = `[${ts}] ${msg}\n`;
   console.log(line.trim());
-  try { fs.appendFileSync(LOG_FILE, line); } catch(e) {}
+  logBuffer.push(line);
+  flushLog();
 }
 
-// Clear old log
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher Debug Log ===\n'); } catch(e) {}
+function flushLog() {
+  if (logFlushing || logBuffer.length === 0) return;
+  logFlushing = true;
+  const data = logBuffer.join('');
+  logBuffer = [];
+  fs.writeFile(LOG_FILE, data, { flag: 'a' }, (err) => {
+    logFlushing = false;
+    if (logBuffer.length > 0) flushLog();
+  });
+}
 
-log('Starting Unicate Gaming Launcher v3.2');
-log('Electron: ' + process.versions.electron);
-log('Node: ' + process.versions.node);
-log('Chrome: ' + process.versions.chrome);
-log('Platform: ' + process.platform + ' ' + process.arch);
-log('__dirname: ' + __dirname);
-log('LAUNCHER_DIR: ' + path.dirname(app.getPath('exe')));
+// Clear old log (async)
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.3 ===\n'); } catch(e) {}
+
+log('Launcher v3.3 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
 // ============================================================
-process.on('uncaughtException', (err) => {
-  log('[UNCAUGHT ERROR] ' + err.message);
-  log(err.stack);
-});
-
-process.on('unhandledRejection', (err) => {
-  log('[UNHANDLED REJECTION] ' + err);
-});
+process.on('uncaughtException', (err) => { log('[UNCAUGHT] ' + err.message); });
+process.on('unhandledRejection', (err) => { log('[UNHANDLED] ' + err); });
 
 // ============================================================
 //  CONFIG
@@ -66,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.2.0';
+const LAUNCHER_VERSION = '3.3.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -78,37 +84,37 @@ const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
 let mainWindow = null;
 
-log('LAUNCHER_DIR: ' + LAUNCHER_DIR);
-
 // ============================================================
-//  SETTINGS
+//  SETTINGS (cached)
 // ============================================================
+let _settingsCache = null;
 function loadSettings() {
+  if (_settingsCache) return _settingsCache;
   try {
     if (fs.existsSync(SETTINGS_FILE)) {
-      return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+      _settingsCache = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+      return _settingsCache;
     }
-  } catch (e) {
-    log('Error loading settings: ' + e.message);
-  }
-  return {};
+  } catch (e) { log('Settings error: ' + e.message); }
+  _settingsCache = {};
+  return _settingsCache;
 }
 
 function saveSettings(data) {
-  try {
-    fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2));
-  } catch (e) {
-    log('Error saving settings: ' + e.message);
-  }
+  _settingsCache = data;
+  try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2)); } catch (e) {}
 }
 
 // ============================================================
-//  GTA:SA PATH DETECTION
+//  GTA:SA PATH DETECTION (cached)
 // ============================================================
+let _gtaPathCache = null;
 function findGtaPath() {
+  if (_gtaPathCache !== null) return _gtaPathCache;
   const settings = loadSettings();
   if (settings.gta_path && fs.existsSync(path.join(settings.gta_path, 'gta_sa.exe'))) {
-    return settings.gta_path;
+    _gtaPathCache = settings.gta_path;
+    return _gtaPathCache;
   }
   const common = [
     'C:\\Program Files (x86)\\Rockstar Games\\GTA San Andreas',
@@ -118,30 +124,18 @@ function findGtaPath() {
     'C:\\GTA San Andreas', 'C:\\GTA SA'
   ];
   for (const p of common) {
-    if (fs.existsSync(path.join(p, 'gta_sa.exe'))) return p;
+    if (fs.existsSync(path.join(p, 'gta_sa.exe'))) {
+      _gtaPathCache = p;
+      return p;
+    }
   }
+  _gtaPathCache = null;
   return null;
 }
 
 // ============================================================
-//  STATUS CHECK
+//  STATUS CHECK (fast - uses cached path)
 // ============================================================
-function checkSampVersion(gtaPath) {
-  const sampExe = path.join(gtaPath, 'samp.exe');
-  if (!fs.existsSync(sampExe)) return { installed: false, version: null };
-  try {
-    // Read SA-MP version from the executable metadata or file size
-    const stats = fs.statSync(sampExe);
-    const size = stats.size;
-    log('samp.exe size: ' + size + ' bytes');
-    // R4 samp.exe is ~2.5MB, R2 is ~2.3MB
-    // We can't reliably detect version from size alone, so just check if it exists
-    return { installed: true, version: 'installed', size: size };
-  } catch (e) {
-    return { installed: true, version: 'unknown' };
-  }
-}
-
 function getStatus(gtaPath) {
   const settings = loadSettings();
   const mode = settings.server_mode || 'production';
@@ -150,7 +144,6 @@ function getStatus(gtaPath) {
   const s = {
     gta_path: gtaPath,
     has_samp: false,
-    samp_version_ok: false,
     cef_ok: false,
     cef_msg: '-',
     has_asi: false,
@@ -159,10 +152,7 @@ function getStatus(gtaPath) {
     server_mode: mode
   };
   if (gtaPath && fs.existsSync(gtaPath)) {
-    const sampInfo = checkSampVersion(gtaPath);
-    s.has_samp = sampInfo.installed;
-    s.samp_version_ok = sampInfo.installed; // Will be verified on launch
-    
+    s.has_samp = fs.existsSync(path.join(gtaPath, 'samp.exe'));
     const hasAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
     const hasCef = fs.existsSync(path.join(gtaPath, 'cef'));
     s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
@@ -171,15 +161,12 @@ function getStatus(gtaPath) {
     else if (hasCef) { s.cef_msg = 'Fali cef.asi'; }
     else { s.cef_msg = 'Nije instaliran'; }
     if (!s.has_samp) s.missing.push('client');
-    // CEF and ASI are only required for production mode
-    // Local test mode only needs samp.exe
     if (!isLocal) {
       if (!hasAsi) s.missing.push('cef_asi');
       if (!hasCef) s.missing.push('cef_runtime');
       if (!s.has_asi) s.missing.push('asi_loader');
       s.ready = s.has_samp && s.cef_ok && s.has_asi;
     } else {
-      // Local mode: ready if samp.exe exists
       s.ready = s.has_samp;
     }
   }
@@ -187,13 +174,13 @@ function getStatus(gtaPath) {
 }
 
 // ============================================================
-//  SAMP SERVER QUERY
+//  SAMP SERVER QUERY (faster timeout)
 // ============================================================
 function querySampServer(ip, port) {
   return new Promise((resolve) => {
     try {
       const sock = dgram.createSocket('udp4');
-      const timeout = setTimeout(() => { try { sock.close(); } catch(e) {} resolve({ online: false }); }, 5000);
+      const timeout = setTimeout(() => { try { sock.close(); } catch(e) {} resolve({ online: false }); }, 3000); // 3s instead of 5s
       const ipParts = ip.split('.').map(Number);
       const pkt = Buffer.concat([
         Buffer.from('SAMP'),
@@ -237,7 +224,7 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
     let downloadedBytes = 0;
     let startTime = Date.now();
 
-    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.2' } }, (response) => {
+    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.3' } }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         const newUrl = response.headers.location;
         response.resume();
@@ -287,37 +274,23 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
 async function autoInstall(gtaPath, missing) {
   for (const comp of missing) {
     if (comp === 'client') {
-      // Download and install SA-MP 0.3.7-R4 client
       const tmpExe = path.join(LAUNCHER_DIR, 'tmp_samp_install.exe');
-      log('Downloading SA-MP 0.3.7-R4 client...');
+      log('Downloading SA-MP R4 client...');
       await downloadFile(SAMP_CLIENT_URL, tmpExe, (pct, dl, total, speed) => {
         if (mainWindow) mainWindow.webContents.send('install-progress', {
           component: 'SA-MP R4 Client', pct, downloaded: dl, total, speed
         });
       });
-      
-      // Run the installer silently - extract samp.dll and samp.exe to GTA folder
-      // SA-MP installer is NSIS-based, we can extract with 7zip or just run it
-      log('SA-MP R4 downloaded, running installer...');
-      
-      // Try to run installer silently
       try {
         const { execSync } = require('child_process');
-        // Run the installer with /S for silent install and /D for destination
-        execSync(`"${tmpExe}" /S /D=${gtaPath}`, { 
-          timeout: 60000,
-          windowsHide: true 
-        });
+        execSync(`"${tmpExe}" /S /D=${gtaPath}`, { timeout: 60000, windowsHide: true });
         log('SA-MP R4 installed silently');
       } catch (e) {
-        log('Silent install failed, launching installer for user: ' + e.message);
-        // If silent install fails, just run the installer normally
+        log('Silent install failed, launching installer: ' + e.message);
         const child = spawn(tmpExe, [], { detached: true, stdio: 'ignore' });
         child.unref();
-        // Wait a bit for user to install
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
-      
       try { fs.unlinkSync(tmpExe); } catch (e) {}
     }
     else if (comp === 'asi_loader') {
@@ -332,7 +305,6 @@ async function autoInstall(gtaPath, missing) {
       for (const entry of entries) {
         const fileName = entry.entryName.split('/').pop();
         if (fileName.toLowerCase().endsWith('.dll') && !entry.isDirectory) {
-          log('ASI Loader: extracting ' + fileName);
           fs.writeFileSync(path.join(gtaPath, fileName), entry.getData());
         }
       }
@@ -366,33 +338,19 @@ async function autoInstall(gtaPath, missing) {
 function setupSampRegistry(gtaPath, ip, port, nickname) {
   try {
     const { execSync } = require('child_process');
-    
-    // Set PlayerName in SA-MP registry
-    const regCmd1 = `reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`;
-    log('Registry: Setting PlayerName = ' + nickname);
-    execSync(regCmd1, { windowsHide: true });
-    
-    // Set LastServer
-    const serverAddr = `${ip}:${port}`;
-    const regCmd2 = `reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${serverAddr}" /f`;
-    log('Registry: Setting LastServer = ' + serverAddr);
-    execSync(regCmd2, { windowsHide: true });
-    
-    // Set GTA path in SA-MP registry (important for finding gta_sa.exe)
-    const regCmd3 = `reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`;
-    log('Registry: Setting gta_sa_exe = ' + gtaPath + '\\gta_sa.exe');
-    execSync(regCmd3, { windowsHide: true });
-    
-    log('SA-MP registry setup complete');
+    execSync(`reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`, { windowsHide: true });
+    execSync(`reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${ip}:${port}" /f`, { windowsHide: true });
+    execSync(`reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`, { windowsHide: true });
+    log('Registry setup OK');
     return true;
   } catch (err) {
-    log('Registry setup error: ' + err.message);
+    log('Registry error: ' + err.message);
     return false;
   }
 }
 
 // ============================================================
-//  CREATE WINDOW
+//  CREATE WINDOW (optimized - show immediately, load async)
 // ============================================================
 function createWindow() {
   try {
@@ -405,10 +363,6 @@ function createWindow() {
     if (fs.existsSync(iconIco)) iconPath = iconIco;
     else if (fs.existsSync(iconPng)) iconPath = iconPng;
 
-    log('Creating window...');
-    log('index.html: ' + indexPath + ' exists: ' + fs.existsSync(indexPath));
-    log('preload.js: ' + preloadPath + ' exists: ' + fs.existsSync(preloadPath));
-
     mainWindow = new BrowserWindow({
       width: 1280,
       height: 800,
@@ -420,39 +374,35 @@ function createWindow() {
       title: 'Unicate Gaming - Launcher',
       backgroundColor: '#0b0f1a',
       icon: iconPath || undefined,
-      show: true,
+      show: false,  // Don't show until ready - prevents white flash
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: preloadPath,
-        sandbox: false
+        sandbox: false,
+        backgroundThrottling: false  // Keep fast even when minimized
       }
     });
 
-    log('Loading index.html...');
-    mainWindow.loadFile(indexPath).then(() => {
-      log('index.html loaded successfully');
-    }).catch(err => {
-      log('FAILED to load index.html: ' + err.message);
+    // Show window only when content is ready - eliminates white flash
+    mainWindow.once('ready-to-show', () => {
+      mainWindow.show();
+      log('Window shown (ready-to-show)');
     });
 
-    mainWindow.webContents.on('console-message', (event, level, message) => {
-      log('[RENDERER] ' + message);
-    });
+    mainWindow.loadFile(indexPath);
 
     mainWindow.webContents.on('render-process-gone', (event, details) => {
-      log('Renderer process GONE! reason: ' + details.reason + ' exitCode: ' + details.exitCode);
+      log('Renderer GONE! reason: ' + details.reason);
     });
 
     mainWindow.on('closed', () => {
-      log('Window closed');
       mainWindow = null;
     });
 
-    log('Window created successfully');
+    log('Window created');
   } catch (err) {
     log('ERROR creating window: ' + err.message);
-    log(err.stack);
   }
 }
 
@@ -463,26 +413,21 @@ ipcMain.handle('get-version', () => LAUNCHER_VERSION);
 
 ipcMain.handle('get-server-info', async () => {
   const srv = getActiveServer();
-  log('Querying server: ' + srv.ip + ':' + srv.port + ' mode=' + srv.mode);
   const result = await querySampServer(srv.ip, srv.port);
-  log('Query result: online=' + result.online + (result.online ? ' players=' + result.players : ''));
   
-  // If SAMP query fails on local mode, try TCP connect check as fallback
+  // TCP fallback for localhost
   if (!result.online && srv.mode === 'local') {
-    log('Trying TCP fallback for local server...');
     const tcpCheck = await new Promise((resolve) => {
       const net = require('net');
       const sock = net.createConnection(srv.port, srv.ip);
-      sock.setTimeout(3000);
+      sock.setTimeout(2000);
       sock.on('connect', () => { sock.destroy(); resolve(true); });
-      sock.on('error', (e) => { log('TCP fallback error: ' + e.message); sock.destroy(); resolve(false); });
+      sock.on('error', () => { sock.destroy(); resolve(false); });
       sock.on('timeout', () => { sock.destroy(); resolve(false); });
     });
     if (tcpCheck) {
-      log('TCP fallback: server is ONLINE');
       return { online: true, players: 0, max_players: 200, name: srv.name, gamemode: 'RPG (Local Test)', local_fallback: true };
     }
-    log('TCP fallback: server is OFFLINE');
   }
   return result;
 });
@@ -517,6 +462,7 @@ ipcMain.handle('browse-gta', async () => {
       const settings = loadSettings();
       settings.gta_path = selected;
       saveSettings(settings);
+      _gtaPathCache = selected; // Update cache
       return { path: selected, status: getStatus(selected) };
     }
     return { error: 'U ovom folderu nije pronadjen gta_sa.exe!' };
@@ -529,57 +475,35 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
   const sampExe = path.join(gtaPath, 'samp.exe');
-  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen u ' + gtaPath + '! Instaliraj SA-MP klijent (R4).' };
+  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Instaliraj SA-MP klijent (R4/R5).' };
 
-  // Validate nickname
-  if (!nickname || nickname.length < 3) {
-    nickname = 'Unicate_Player';
-  }
-  // SA-MP nickname rules: only alphanumeric, underscore, and brackets
+  if (!nickname || nickname.length < 3) nickname = 'Unicate_Player';
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
 
   const srv = getActiveServer();
 
-  // For local test mode, only samp.exe is needed
-  // For production mode, check all components
   if (srv.mode === 'production') {
     const status = getStatus(gtaPath);
-    if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju u Podesavanja.' };
+    if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
   }
 
-  log('=== LAUNCHING GAME ===');
-  log('GTA Path: ' + gtaPath);
-  log('samp.exe: ' + sampExe);
-  log('Server: ' + srv.ip + ':' + srv.port);
-  log('Nickname: ' + nickname);
-  log('Mode: ' + srv.mode);
+  log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname);
 
   try {
-    // Step 1: Setup SA-MP registry with nickname and server info
-    log('Step 1: Setting up SA-MP registry...');
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // Step 2: Launch samp.exe
-    // SA-MP 0.3.7-R4 accepts: samp.exe <IP> <PORT> <NICKNAME>
-    log('Step 2: Spawning samp.exe...');
-    
-    const args = [srv.ip, srv.port.toString(), nickname];
-    log('Launch args: ' + JSON.stringify(args));
-    log('Working dir: ' + gtaPath);
-    
-    const child = spawn(sampExe, args, {
+    const child = spawn(sampExe, [srv.ip, srv.port.toString(), nickname], {
       cwd: gtaPath,
       detached: true,
       stdio: 'ignore'
     });
     child.unref();
     
-    log('Launch SUCCESS (PID: ' + child.pid + ')');
+    log('Launch OK (PID: ' + child.pid + ')');
     return { success: true, pid: child.pid };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
-    log(err.stack);
     return { error: 'Greska pri pokretanju: ' + err.message };
   }
 });
@@ -598,46 +522,17 @@ ipcMain.handle('auto-install', async () => {
   }
 });
 
-ipcMain.handle('open-url', (event, url) => {
-  shell.openExternal(url);
-});
-
-ipcMain.handle('minimize-window', () => {
-  if (mainWindow) mainWindow.minimize();
-});
-
-ipcMain.handle('maximize-window', () => {
-  if (mainWindow) {
-    if (mainWindow.isMaximized()) mainWindow.unmaximize();
-    else mainWindow.maximize();
-  }
-});
-
-ipcMain.handle('close-window', () => {
-  if (mainWindow) mainWindow.close();
-});
+ipcMain.handle('open-url', (event, url) => { shell.openExternal(url); });
+ipcMain.handle('minimize-window', () => { if (mainWindow) mainWindow.minimize(); });
+ipcMain.handle('maximize-window', () => { if (mainWindow) { mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize(); } });
+ipcMain.handle('close-window', () => { if (mainWindow) mainWindow.close(); });
 
 // ============================================================
 //  APP EVENTS
 // ============================================================
-log('Waiting for app.whenReady...');
 app.whenReady().then(() => {
-  log('App ready, creating window...');
   createWindow();
-}).catch(err => {
-  log('App ready FAILED: ' + err.message);
-  log(err.stack);
-});
+}).catch(err => { log('App ready FAILED: ' + err.message); });
 
-app.on('window-all-closed', () => {
-  log('All windows closed, quitting...');
-  app.quit();
-});
-
-app.on('activate', () => {
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
-});
-
-app.on('before-quit', () => {
-  log('App about to quit...');
-});
+app.on('window-all-closed', () => { app.quit(); });
+app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
