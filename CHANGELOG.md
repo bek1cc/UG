@@ -1,5 +1,35 @@
 # UG Gamemode - Changelog
 
+## [2026-06-06] - Bounty Board Tablet Portal UI v3.0
+
+### Novo
+- **Kompletni redizajn Bounty Board-a** sa modernim TABLET PORTAL UI-jem
+  - **Login Portal** sa "UNICATE GAMING" brandingom, plave nijanse, 3D detalji
+  - **Baterija** - prikazuje postotak baterije tableta (vizualni efekat)
+  - **Registracija** - igrači postavljaju 4-cifreni PIN kod za pristup tabletu
+  - **Prijava** - unos PIN koda za ulazak, 3 pogrešna pokušaja = zaključavanje
+  - **PIN se čuva** u fajlu `Tablet/%s.ini` (perzistentno između sesija)
+  - **Main ekran** - BOUNTY BOARD, PROFIL, PODEŠAVANJA ikone
+  - **Bounty Board ekran** - lista svih aktivnih nagrada sa "NARUČI UBOJSTVO" dugmetom
+  - **ESC zatvara** tablet (OnPlayerClickTextDraw callback dodan)
+  - **Signal/Vrijeme** indikatori u status baru
+  - Plave nijanse pozadine sa sjajnim ivicama (3D efekt)
+
+### Komande
+- `/bounty [ID] [Iznos]` - naruči ubojstvo (izvan tableta)
+- `/bounties` - otvori tablet portal
+- `/bountyme` - provjeri da li imaš nagradu na sebi
+
+### Tok rada
+1. Igrač kuca `/bounties` → Otvara se portal sa "UNICATE GAMING" logom
+2. Ako nije registrovan → Klikne "REGISTRUJ SE" → Postavi 4-cifreni PIN
+3. Ako je registrovan → Klikne "PRIJAVI SE" ili lozinku polje → Unese PIN
+4. Uspješna prijava → Main ekran sa ikonama
+5. Klikne BOUNTY BOARD → Lista svih nagrada + "NARUČI UBOJSTVO" dugme
+6. ESC ili "ODJAVI SE" → Zatvara tablet
+
+---
+
 ## [2026-06-06] - Bounty Board Sistem v1.0
 
 ### Novo
