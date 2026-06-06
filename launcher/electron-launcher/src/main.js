@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.6 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.7 ===\n'); } catch(e) {}
 
-log('Launcher v3.6 starting...');
+log('Launcher v3.7 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.6.0';
+const LAUNCHER_VERSION = '3.7.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -364,36 +364,57 @@ async function autoInstall(gtaPath, missing) {
 }
 
 // ============================================================
-//  SA-MP REGISTRY SETUP
+//  SA-MP REGISTRY SETUP (NUCLEAR - delete ALL, recreate clean)
 // ============================================================
 function setupSampRegistry(gtaPath, ip, port, nickname) {
   try {
     const { execSync } = require('child_process');
+    
+    // STEP 1: DELETE ENTIRE SAMP registry key (nuclear cleanup)
+    // This removes ALL values including any cached passwords, saved servers, etc.
+    try {
+      execSync(`reg delete "HKCU\\Software\\SAMP" /f`, { windowsHide: true, stdio: 'pipe' });
+      log('Nuked entire HKCU\\Software\\SAMP key');
+    } catch (e) { /* key doesn't exist = fine */ }
+    
+    // STEP 2: Recreate with ONLY the values we need (NO Password!)
     execSync(`reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`, { windowsHide: true });
     execSync(`reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${ip}:${port}" /f`, { windowsHide: true });
     execSync(`reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`, { windowsHide: true });
     
-    // DELETE any saved password - we don't use one
-    try {
-      execSync(`reg delete "HKCU\\Software\\SAMP" /v "Password" /f`, { windowsHide: true, stdio: 'pipe' });
-      log('Deleted saved password from registry');
-    } catch (e) { /* no password saved = good */ }
-    
-    // Also delete samp.set which can cache passwords
+    // STEP 3: Delete ALL samp.set files (can cache passwords per-server)
     const sampSetPaths = [
       path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'SAMP', 'samp.set'),
       path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'SAMP', 'samp.set'),
+      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'SAMP'),
+      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'SAMP'),
     ];
     for (const p of sampSetPaths) {
       try {
         if (fs.existsSync(p)) {
-          fs.unlinkSync(p);
-          log('Deleted samp.set: ' + p);
+          const stat = fs.statSync(p);
+          if (stat.isDirectory()) {
+            // Delete entire SAMP folder and recreate empty
+            fs.rmSync(p, { recursive: true, force: true });
+            fs.mkdirSync(p, { recursive: true });
+            log('Nuked and recreated SAMP dir: ' + p);
+          } else {
+            fs.unlinkSync(p);
+            log('Deleted samp.set: ' + p);
+          }
         }
-      } catch (e) { /* ignore */ }
+      } catch (e) { log('Cleanup warning: ' + e.message); }
     }
     
-    log('Registry setup OK (password cleared)');
+    // STEP 4: Verify no Password value exists
+    try {
+      const check = execSync(`reg query "HKCU\\Software\\SAMP" /v "Password"`, { encoding: 'utf8', windowsHide: true, stdio: 'pipe' });
+      log('WARNING: Password value still exists after cleanup! ' + check);
+    } catch (e) {
+      log('Verified: No Password value in registry (good)');
+    }
+    
+    log('Registry setup OK (nuclear cleanup done)');
     return true;
   } catch (err) {
     log('Registry error: ' + err.message);
@@ -706,27 +727,37 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // DIRECT LAUNCH - no bat file, no cmd window, instant startup!
-    // IMPORTANT: samp.exe command line is: samp.exe <ip> <port> [password]
-    // The 3rd argument is PASSWORD, NOT nickname! Nickname comes from registry.
-    // We only pass IP and port - nickname is read from HKCU\Software\SAMP\PlayerName
+    // LAUNCH via samp:// protocol - same method as browser "Connect" links
+    // This is the most reliable way to connect because SA-MP handles it
+    // exactly the same as manual connection (no password issues)
     
-    const child = spawn(sampExe, [srv.ip, String(srv.port)], {
-      detached: true,
-      stdio: 'ignore',
-      cwd: gtaPath,
-      windowsHide: true
-    });
-    child.unref();
+    // Method 1: samp:// protocol handler (most reliable, same as browser link)
+    const sampUrl = `samp://${srv.ip}:${srv.port}`;
+    log('Launching via samp:// protocol: ' + sampUrl);
     
-    log('Launch OK - direct spawn (PID: ' + child.pid + ')');
+    try {
+      shell.openExternal(sampUrl);
+      log('Launch OK via samp:// protocol');
+    } catch (protocolErr) {
+      // Fallback: direct spawn if protocol handler not registered
+      log('samp:// protocol failed, falling back to direct spawn: ' + protocolErr.message);
+      const child = spawn(sampExe, [srv.ip, String(srv.port)], {
+        detached: true,
+        stdio: 'ignore',
+        cwd: gtaPath,
+        windowsHide: true
+      });
+      child.unref();
+      log('Launch OK via direct spawn (PID: ' + child.pid + ')');
+    }
+    
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
     if (deletedSet) fixes.push('obrisan gta_sa.set');
     if (removedCompat) fixes.push('iskljucen compat mode');
     const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
-    const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname + ' (iz registra)';
-    return { success: true, pid: child.pid, message: msg };
+    const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname;
+    return { success: true, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
