@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicate Gaming - Laptop</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="laptop-container">
+        <!-- Laptop Frame Top -->
+        <div class="laptop-frame-top">
+            <div class="webcam"></div>
+        </div>
+
+        <!-- Screen Area -->
+        <div class="laptop-screen">
+            <!-- OS Top Bar -->
+            <div class="os-bar">
+                <div class="os-left">
+                    <span class="os-logo">UG</span>
+                    <span class="os-menu" onclick="toggleStartMenu()">&#9776;</span>
+                </div>
+                <div class="os-center">
+                    <span class="os-time" id="osClock">00:00</span>
+                </div>
+                <div class="os-right">
+                    <span class="os-net" title="Mreza">&#9679; UG-Net</span>
+                    <span class="os-battery" id="osBattery">100%</span>
+                    <span class="os-theme" onclick="toggleTheme()">&#9789;</span>
+                </div>
+            </div>
+
+            <!-- Desktop -->
+            <div class="desktop">
+                <!-- Desktop Icons -->
+                <div class="desktop-icons">
+                    <div class="desktop-icon" ondblclick="openApp('darkweb')">
+                        <span class="icon-img">&#9760;</span>
+                        <span class="icon-label">Dark Web</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('bank')">
+                        <span class="icon-img">&#128176;</span>
+                        <span class="icon-label">Banka</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('bountynet')">
+                        <span class="icon-img">&#9876;</span>
+                        <span class="icon-label">BountyNet</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('email')">
+                        <span class="icon-img">&#9993;</span>
+                        <span class="icon-label">Email</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('files')">
+                        <span class="icon-img">&#128193;</span>
+                        <span class="icon-label">Fajlovi</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('terminal')">
+                        <span class="icon-img">&gt;_</span>
+                        <span class="icon-label">Terminal</span>
+                    </div>
+                    <div class="desktop-icon" ondblclick="openApp('settings')">
+                        <span class="icon-img">&#9881;</span>
+                        <span class="icon-label">Podesavanja</span>
+                    </div>
+                </div>
+
+                <!-- App Window (hidden by default) -->
+                <div class="app-window" id="appWindow" style="display: none;">
+                    <div class="window-titlebar">
+                        <div class="window-controls">
+                            <span class="win-btn close" onclick="closeApp()">&#10005;</span>
+                            <span class="win-btn minimize">&#8211;</span>
+                            <span class="win-btn maximize">&#9723;</span>
+                        </div>
+                        <span class="window-title" id="windowTitle">Aplikacija</span>
+                    </div>
+                    <div class="window-content" id="windowContent">
+                        <!-- App content loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Taskbar -->
+            <div class="taskbar">
+                <div class="taskbar-left">
+                    <button class="task-btn" onclick="toggleStartMenu()">&#9776;</button>
+                </div>
+                <div class="taskbar-center" id="taskbarApps">
+                    <!-- Running app indicators -->
+                </div>
+                <div class="taskbar-right">
+                    <span class="task-time" id="taskClock">00:00</span>
+                </div>
+            </div>
+
+            <!-- Start Menu (hidden) -->
+            <div class="start-menu" id="startMenu" style="display: none;">
+                <div class="start-header">
+                    <div class="start-avatar">?</div>
+                    <span class="start-user" id="startUser">Korisnik</span>
+                </div>
+                <div class="start-items">
+                    <div class="start-item" onclick="openApp('darkweb'); toggleStartMenu();">&#9760; Dark Web</div>
+                    <div class="start-item" onclick="openApp('bank'); toggleStartMenu();">&#128176; Banka</div>
+                    <div class="start-item" onclick="openApp('bountynet'); toggleStartMenu();">&#9876; BountyNet</div>
+                    <div class="start-item" onclick="openApp('email'); toggleStartMenu();">&#9993; Email</div>
+                    <div class="start-item" onclick="openApp('terminal'); toggleStartMenu();">&gt;_ Terminal</div>
+                    <div class="start-item" onclick="openApp('settings'); toggleStartMenu();">&#9881; Podesavanja</div>
+                    <div class="start-separator"></div>
+                    <div class="start-item shutdown" onclick="closeLaptop()">&#9211; Iskljuci</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Laptop Frame Bottom (keyboard area) -->
+        <div class="laptop-frame-bottom">
+            <div class="keyboard-strip">
+                <div class="trackpad"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="app.js"></script>
+</body>
+</html>

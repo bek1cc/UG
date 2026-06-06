@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicate Gaming - Inventar</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="inventory-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <span class="back-btn" onclick="closeInventory()">&#8592;</span>
+            </div>
+            <div class="header-title">INVENTAR</div>
+            <div class="header-right">
+                <span class="weight-badge" id="weightBadge">0/20 kg</span>
+            </div>
+        </div>
+
+        <!-- Player Info Bar -->
+        <div class="player-bar">
+            <div class="player-avatar" id="invAvatar">?</div>
+            <div class="player-info">
+                <span class="player-name" id="invPlayerName">Igrac</span>
+                <span class="player-phone" id="invPlayerPhone">Tel: ---</span>
+            </div>
+            <div class="player-money" id="invMoney">$0</div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs">
+            <button class="cat-tab active" data-cat="all" onclick="filterCategory('all')">&#9733; Sve</button>
+            <button class="cat-tab" data-cat="weapon" onclick="filterCategory('weapon')">&#9876; Oruzje</button>
+            <button class="cat-tab" data-cat="item" onclick="filterCategory('item')">&#128230; Predmeti</button>
+            <button class="cat-tab" data-cat="key" onclick="filterCategory('key')">&#128273; Kljucevi</button>
+        </div>
+
+        <!-- Inventory Grid -->
+        <div class="inventory-grid" id="inventoryGrid">
+            <!-- Items populated by JS -->
+        </div>
+
+        <!-- Item Detail Panel (hidden by default) -->
+        <div class="detail-panel" id="detailPanel" style="display: none;">
+            <div class="detail-header">
+                <span class="detail-icon" id="detailIcon">&#9876;</span>
+                <div class="detail-title">
+                    <h3 id="detailName">Naziv</h3>
+                    <span class="detail-type" id="detailType">Oruzje</span>
+                </div>
+                <span class="detail-close" onclick="closeDetail()">&#10005;</span>
+            </div>
+            <div class="detail-body">
+                <p id="detailDesc">Opis predmeta</p>
+                <div class="detail-stats" id="detailStats"></div>
+            </div>
+            <div class="detail-actions" id="detailActions">
+                <!-- Action buttons populated by JS -->
+            </div>
+        </div>
+
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <button class="bottom-btn" onclick="closeInventory()">&#10005; Zatvori</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <script src="app.js"></script>
+</body>
+</html>
