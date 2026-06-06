@@ -21,54 +21,108 @@ echo [OK] Node.js pronadjen:
 node --version
 echo.
 
-:: Fix Electron if it failed to install
-if exist "node_modules\electron" (
-    if not exist "node_modules\electron\dist\electron.exe" (
-        echo [FIX] Electron binary nedostaje, reinstaliram...
-        rmdir /s /q "node_modules\electron" 2>nul
-        call npm install electron --save-dev
+:: Set Electron mirror for faster/more reliable download
+set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+set ELECTRON_CUSTOM_DIR={{ version }}
+
+:: Step 1: If node_modules doesn't exist, do fresh install
+if not exist "node_modules" (
+    echo [INFO] Instaliram zavisnosti (prvi put)...
+    call npm install
+    if %ERRORLEVEL% NEQ 0 (
+        echo.
+        echo [GRESKA] npm install nije uspeo!
+        echo Pokusavam sa default mirror-om...
+        set ELECTRON_MIRROR=
+        rmdir /s /q "node_modules" 2>nul
+        call npm install
         if %ERRORLEVEL% NEQ 0 (
-            echo [GRESKA] Ne mogu instalirati Electron!
+            echo [GRESKA] Ne mogu instalirati zavisnosti!
             echo Pokusaj rucno u CMD:
             echo   cd /d "%~dp0"
-            echo   rmdir /s /q node_modules\electron
-            echo   npm install electron --save-dev
+            echo   npm install
             echo.
             pause
             exit /b 1
         )
-        echo [OK] Electron reinstaliran!
-        echo.
-    )
-)
-
-:: Install all dependencies if needed
-if not exist "node_modules" (
-    echo [INFO] Instaliram zavisnosti...
-    call npm install
-    if %ERRORLEVEL% NEQ 0 (
-        echo [GRESKA] npm install nije uspeo!
-        pause
-        exit /b 1
     )
     echo [OK] Zavisnosti instalirane!
     echo.
 )
 
-:: Verify Electron binary exists before launching
-if not exist "node_modules\electron\dist\electron.exe" (
-    echo [FIX] Electron binary i dalje nedostaje, pokusavam ponovo...
-    rmdir /s /q "node_modules\electron" 2>nul
-    call npm install electron --save-dev
-    if %ERRORLEVEL% NEQ 0 (
-        echo [GRESKA] Electron se ne moze instalirati!
-        echo Mozda antivirus blokira download. Iskljuci antivirus i pokusaj ponovo.
+:: Step 2: Verify Electron binary exists
+if exist "node_modules\electron\dist\electron.exe" (
+    echo [OK] Electron binary pronadjen!
+    echo.
+    goto :launch
+)
+
+:: Step 3: Electron binary missing - try to fix
+echo [FIX] Electron binary nedostaje, pokusavam popravku...
+echo.
+
+:: Method 1: Delete electron folder and reinstall with mirror
+echo [1/3] Pokusavam sa npmmirror...
+rmdir /s /q "node_modules\electron" 2>nul
+set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+set ELECTRON_CUSTOM_DIR={{ version }}
+call npm install electron --save-dev --force
+if exist "node_modules\electron\dist\electron.exe" (
+    echo [OK] Electron instaliran sa npmmirror!
+    echo.
+    goto :launch
+)
+
+:: Method 2: Try GitHub releases directly
+echo [2/3] Pokusavam sa GitHub releases...
+rmdir /s /q "node_modules\electron" 2>nul
+set ELECTRON_MIRROR=
+set ELECTRON_CUSTOM_DIR=
+call npm install electron --save-dev --force
+if exist "node_modules\electron\dist\electron.exe" (
+    echo [OK] Electron instaliran sa GitHub!
+    echo.
+    goto :launch
+)
+
+:: Method 3: Run electron's install script manually
+echo [3/3] Pokusavam rucnu instalaciju Electron binary-ja...
+if exist "node_modules\electron" (
+    cd node_modules\electron
+    node install.js
+    cd ..\..
+    if exist "node_modules\electron\dist\electron.exe" (
+        echo [OK] Electron binary rucno instaliran!
         echo.
-        pause
-        exit /b 1
+        goto :launch
     )
 )
 
+:: All methods failed
+echo.
+echo ============================================
+echo [GRESKA] Electron se ne moze instalirati!
+echo ============================================
+echo.
+echo Moguci razlozi:
+echo   1. Antivirus blokira download - iskljuci ga privremeno
+echo   2. Firewall blokira pristup - dozvoli node.exe u firewall-u
+echo   3. Nema internet konekcije
+echo.
+echo Rucno resenje - pokreni u CMD kao Administrator:
+echo   cd /d "%~dp0"
+echo   rmdir /s /q node_modules
+echo   set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
+echo   npm install
+echo.
+echo Ako ni to ne radi, pokusaj bez mirror-a:
+echo   set ELECTRON_MIRROR=
+echo   npm install
+echo.
+pause
+exit /b 1
+
+:launch
 echo [OK] Pokrecem launcher...
 echo.
 call npx electron .
