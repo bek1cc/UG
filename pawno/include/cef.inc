@@ -1,5 +1,10 @@
+// If building for open.mp without CEF component, use shim instead of natives
+#if defined OPENMP_BUILD
+    #include <cef_openmp>
+#else
+
 #if defined _INC_cef
-	#endinput
+        #endinput
 #endif
 #define _INC_cef
 
@@ -302,7 +307,7 @@ native CEF_SetBrowserAudioMode(playerid, browserid, E_CEF_AUDIO_MODE:mode);
  * This function allows to define how a sound's volume attenuates over distance,
  * giving precise control over the audio experience for each world browser.
  *
- * @param playerid     			The ID of the player for whom the audio settings will be changed.
+ * @param playerid                      The ID of the player for whom the audio settings will be changed.
  * @param browserid             The ID of the browser to affect.
  * @param max_distance          The maximum distance (in meters) at which the sound can be heard.
  *                              Beyond this distance, the sound will be completely silent.
@@ -358,7 +363,7 @@ native CEF_ClearChat(playerid);
  * When disabled, the player will not be able to open the chat input
  * (e.g. with the "T" or "F6" key).
  *
- * This function only affects the chat input box — it does not hide
+ * This function only affects the chat input box Â— it does not hide
  * the chat messages already displayed on screen.
  *
  * @param playerid      The ID of the player whose chat input state will be changed.
@@ -497,3 +502,5 @@ forward OnCefChatInputState(playerid, bool:open);
  * @param network_id    The network ID of the entity.
  */
 // TODO: forward OnCefEntityClicked(playerid, entity_type, network_id);
+
+#endif // OPENMP_BUILD

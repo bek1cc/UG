@@ -95,9 +95,7 @@
         "main_scripts": [
             "fg-ogc 1"
         ],
-        "side_scripts": [
-            "anims"
-        ]
+        "side_scripts": []
     },
     "rcon": {
         "allow_teleport": false,
