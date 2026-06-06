@@ -1,5 +1,43 @@
 # UG Gamemode - Changelog
 
+## [2026-06-06] - CEF Tablet Portal UI v4.0
+
+### Novo
+- **CEF (Chromium Embedded Framework) Tablet UI** - moderni HTML/CSS/JS interfejs za tablet
+  - Kompletna zamjena textdraw sistema sa web baziranim UI-jem
+  - **Portal/Lock Screen** sa "UNICATE GAMING" brandingom, particle efekti, glow animacije
+  - **Login sistem** sa PIN kodom (registracija + prijava)
+  - **Home Screen** sa 6 app ikona: Bounty Board, Profil, Podešavanja, Trgovina, Mapa, Oglasi
+  - **Bounty Board App** sa listom nagrada, paginacijom, modal za naručivanje ubojstva
+  - **Status Bar** sa satom, baterijom (postotak!), signalom UG 4G
+  - **Toast notifikacije** za feedback korisniku
+  - **Glassmorphism** i **3D efekti** - sjajne ivice, pozadinski glow, blur efekti
+
+### Fajlovi
+- `CEF/tablet/index.html` - Glavni HTML sa svim screenovima
+- `CEF/tablet/style.css` - Moderan CSS sa plavom paletom, animacijama, glassmorphism
+- `CEF/tablet/app.js` - JavaScript kontroler za interakciju i PAWN komunikaciju
+- `pawno/include/cef_tablet.inc` - PAWN integracija (Pawn.CEF plugin potreban)
+
+### Zavisnosti
+- **Pawn.CEF plugin** - mora biti instaliran na serveru (`plugins/cef` u server.cfg)
+- Font Awesome 6.5 - za ikone (loaduje se sa CDN-a)
+- Google Fonts Inter + JetBrains Mono
+
+### Komande
+- `/tablet` - otvori/zatvori CEF tablet
+- `/bounties` - otvori tablet na bounty stranici
+
+### Web Preview
+- Live preview dostupan u browseru za testiranje UI-ja bez pokretanja servera
+
+### Napomene
+- Ovo je PARALELNO sa postojećim textdraw sistemom (`bounty.inc`)
+- Textdraw verzija i dalje radi ako CEF plugin nije instaliran
+- Za potpuni prelaz na CEF, potrebno instalirati Pawn.CEF plugin
+
+---
+
 ## [2026-06-06] - iPhone.inc Kompilacija Fix
 
 ### Popravljeno

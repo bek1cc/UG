@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UG Tablet - CEF Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- TABLET FRAME -->
+    <div id="tablet-frame">
+        <!-- STATUS BAR -->
+        <div id="status-bar">
+            <div class="status-left">
+                <i class="fas fa-signal"></i> <span id="signal-text">UG 4G</span>
+            </div>
+            <div class="status-center">
+                <span id="clock">00:00</span>
+            </div>
+            <div class="status-right">
+                <div id="battery-container">
+                    <div id="battery-fill"></div>
+                </div>
+                <span id="battery-pct">87%</span>
+                <i class="fas fa-wifi"></i>
+            </div>
+        </div>
+
+        <!-- ========== SCREEN: LOCK / PORTAL ========== -->
+        <div id="screen-portal" class="screen active">
+            <div class="portal-bg">
+                <div class="portal-particles" id="particles"></div>
+                <div class="portal-content">
+                    <div class="logo-glow">
+                        <i class="fas fa-shield-halved logo-icon"></i>
+                    </div>
+                    <h1 class="portal-title">UNICATE GAMING</h1>
+                    <p class="portal-subtitle">SECURE PORTAL v2.0</p>
+                    <div class="portal-divider">
+                        <span></span><i class="fas fa-lock"></i><span></span>
+                    </div>
+
+                    <div class="login-form">
+                        <div class="input-group">
+                            <label><i class="fas fa-user"></i> KORISNIK</label>
+                            <div class="input-field" id="username-field">
+                                <span id="username-display">Beka_Tiruriru</span>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label><i class="fas fa-key"></i> LOZINKA</label>
+                            <div class="input-field" id="password-field" onclick="onPasswordClick()">
+                                <span id="password-display">****</span>
+                                <i class="fas fa-eye-slash toggle-pw"></i>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-glow" onclick="onLogin()">
+                            <i class="fas fa-right-to-bracket"></i> PRIJAVI SE
+                        </button>
+                        <button class="btn btn-secondary" onclick="onRegister()">
+                            <i class="fas fa-user-plus"></i> REGISTRUJ SE
+                        </button>
+                    </div>
+
+                    <p class="portal-footer">
+                        <i class="fas fa-fingerprint"></i> Sigurna veza &bull; Enkripcija AES-256
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== SCREEN: MAIN HOME ========== -->
+        <div id="screen-home" class="screen">
+            <div class="home-bg">
+                <!-- Header -->
+                <div class="home-header">
+                    <div class="header-left">
+                        <i class="fas fa-tablet-screen-button"></i>
+                        <span>UG TABLET</span>
+                    </div>
+                    <div class="header-right">
+                        <span id="welcome-user">Dobrodosao, Beka</span>
+                    </div>
+                </div>
+
+                <!-- App Grid -->
+                <div class="app-grid">
+                    <!-- BOUNTY BOARD -->
+                    <div class="app-icon" onclick="openApp('bounty')">
+                        <div class="icon-bg bounty-icon">
+                            <i class="fas fa-crosshairs"></i>
+                        </div>
+                        <span class="app-label">BOUNTY BOARD</span>
+                        <span class="app-badge" id="bounty-count">3</span>
+                    </div>
+
+                    <!-- PROFIL -->
+                    <div class="app-icon" onclick="openApp('profile')">
+                        <div class="icon-bg profile-icon">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <span class="app-label">PROFIL</span>
+                    </div>
+
+                    <!-- PODESAVANJA -->
+                    <div class="app-icon" onclick="openApp('settings')">
+                        <div class="icon-bg settings-icon">
+                            <i class="fas fa-gear"></i>
+                        </div>
+                        <span class="app-label">PODESAVANJA</span>
+                    </div>
+
+                    <!-- TRGOVINA -->
+                    <div class="app-icon" onclick="openApp('shop')">
+                        <div class="icon-bg shop-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <span class="app-label">TRGOVINA</span>
+                    </div>
+
+                    <!-- MAPA -->
+                    <div class="app-icon" onclick="openApp('map')">
+                        <div class="icon-bg map-icon">
+                            <i class="fas fa-map-location-dot"></i>
+                        </div>
+                        <span class="app-label">MAPA</span>
+                    </div>
+
+                    <!-- OGLASI -->
+                    <div class="app-icon" onclick="openApp('ads')">
+                        <div class="icon-bg ads-icon">
+                            <i class="fas fa-newspaper"></i>
+                        </div>
+                        <span class="app-label">OGLASI</span>
+                    </div>
+                </div>
+
+                <!-- Quick Info Bar -->
+                <div class="quick-info">
+                    <div class="info-card">
+                        <i class="fas fa-dollar-sign"></i>
+                        <span id="player-money">$125,000</span>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-star"></i>
+                        <span>Level <span id="player-level">15</span></span>
+                    </div>
+                    <div class="info-card">
+                        <i class="fas fa-users"></i>
+                        <span id="online-players">47/200</span>
+                    </div>
+                </div>
+
+                <!-- Logout -->
+                <button class="btn btn-logout" onclick="onLogout()">
+                    <i class="fas fa-right-from-bracket"></i> ODJAVI SE
+                </button>
+
+                <p class="home-footer">UNICATE GAMING - Secure Network</p>
+            </div>
+        </div>
+
+        <!-- ========== SCREEN: BOUNTY BOARD ========== -->
+        <div id="screen-bounty" class="screen">
+            <div class="bounty-bg">
+                <!-- Bounty Header -->
+                <div class="bounty-header">
+                    <button class="back-btn" onclick="goHome()">
+                        <i class="fas fa-arrow-left"></i> NATRAG
+                    </button>
+                    <h2><i class="fas fa-crosshairs"></i> BOUNTY BOARD</h2>
+                    <div class="bounty-total">
+                        <span>Aktivnih: </span><span id="active-bounties">3</span>
+                    </div>
+                </div>
+
+                <!-- Place Bounty Button -->
+                <button class="btn btn-bounty-place" onclick="showPlaceBounty()">
+                    <i class="fas fa-bullseye"></i> NARUCI UBOJSTVO
+                </button>
+
+                <!-- Bounty List -->
+                <div id="bounty-list" class="bounty-list">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination">
+                    <button class="page-btn" onclick="prevPage()"><i class="fas fa-chevron-left"></i></button>
+                    <span id="page-info">1 / 1</span>
+                    <button class="page-btn" onclick="nextPage()"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== MODAL: PLACE BOUNTY ========== -->
+        <div id="modal-place-bounty" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-crosshairs"></i> Naruci ubojstvo</h3>
+                    <button class="close-modal" onclick="closePlaceBounty()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> ID Igraca</label>
+                        <input type="number" id="bounty-target-id" placeholder="Unesi ID..." min="0" max="200">
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-dollar-sign"></i> Iznos nagrade</label>
+                        <input type="number" id="bounty-amount" placeholder="$1,000 - $500,000" min="1000" max="500000">
+                    </div>
+                    <div class="bounty-rules">
+                        <p><i class="fas fa-info-circle"></i> Minimum: $1,000 | Maksimum: $500,000</p>
+                        <p><i class="fas fa-clock"></i> Cooldown: 5 minuta izmedju narudzbi</p>
+                        <p><i class="fas fa-coins"></i> Novac se skida sa racuna</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" onclick="closePlaceBounty()">ODUSTANI</button>
+                    <button class="btn btn-bounty-confirm" onclick="confirmPlaceBounty()">
+                        <i class="fas fa-skull-crossbones"></i> POTVRDI
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== MODAL: BOUNTY DETAIL ========== -->
+        <div id="modal-bounty-detail" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-file-alt"></i> Detalji nagrade</h3>
+                    <button class="close-modal" onclick="closeBountyDetail()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body" id="bounty-detail-body">
+                    <!-- Populated by JS -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="closeBountyDetail()">ZATVORI</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== NOTIFICATION TOAST ========== -->
+        <div id="toast" class="toast">
+            <i class="fas fa-bell"></i>
+            <span id="toast-text"></span>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+D:\Unicate Gaming\pawno\include\YSI\y_debug.inc(395) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(319) : warning 214: possibly a "const" array argument was intended: "pattern"
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(393) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(437) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(522) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(658) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(792) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(832) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(958) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_amx.inc(966) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(248) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(268) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(266) : warning 214: possibly a "const" array argument was intended: "line"
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(289) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(287) : warning 214: possibly a "const" array argument was intended: "haystack"
+D:\Unicate Gaming\pawno\include\YSI\y_utils.inc(540) : warning 214: possibly a "const" array argument was intended: "string"
+D:\Unicate Gaming\pawno\include\YSI\y_malloc.inc(881) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_malloc.inc(886) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(198) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(227) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(228) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(239) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(249) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(255) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(225) : warning 214: possibly a "const" array argument was intended: "name"
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(274) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(316) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(449) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(480) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(512) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(545) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(582) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(613) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(656) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(705) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(748) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(793) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(836) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(880) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(924) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(963) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1007) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1052) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1096) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1141) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1184) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1227) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1270) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1313) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1356) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1401) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1444) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1488) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1532) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1577) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1622) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1667) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1713) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1757) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1805) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1849) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1892) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1937) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(1982) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2027) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2070) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2114) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2158) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2202) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2246) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2293) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2338) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2385) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2436) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2484) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2532) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2580) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2628) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2679) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2727) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2775) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2821) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2865) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2909) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(2961) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3020) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3075) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3118) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3172) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3223) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3267) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3311) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3355) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3399) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3443) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_hooks/impl.inc(3487) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(271) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(429) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(431) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(452) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(454) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(460) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(462) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(468) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(470) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(475) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(479) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(513) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(526) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(684) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(725) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(752) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(766) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(791) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(794) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(797) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(818) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(821) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(855) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(858) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_inline.inc(887) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(367) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(371) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(374) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(376) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(380) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(365) : warning 214: possibly a "const" array argument was intended: "source"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(397) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(402) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(410) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(413) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(417) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(395) : warning 214: possibly a "const" array argument was intended: "source"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(450) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(467) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(496) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(511) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(531) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(537) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(540) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(553) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(557) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(579) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(448) : warning 214: possibly a "const" array argument was intended: "filter"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(448) : warning 214: possibly a "const" array argument was intended: "remoteFormat"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(448) : warning 214: possibly a "const" array argument was intended: "fname"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(699) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(701) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(695) : warning 214: possibly a "const" array argument was intended: "filename"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(745) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(766) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(764) : warning 214: possibly a "const" array argument was intended: "tag"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(959) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(957) : warning 214: possibly a "const" array argument was intended: "data"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1053) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1051) : warning 214: possibly a "const" array argument was intended: "name"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1072) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1070) : warning 214: possibly a "const" array argument was intended: "name"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1162) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1160) : warning 214: possibly a "const" array argument was intended: "name"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1190) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1188) : warning 214: possibly a "const" array argument was intended: "name"
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1223) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_ini.inc(1323) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_iterate.inc(545) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_iterate.inc(582) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_iterate.inc(698) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(88) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(90) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(99) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(105) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(117) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(153) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(162) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(168) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(171) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(173) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(183) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(203) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(206) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(208) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(218) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(238) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(243) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(268) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(315) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(322) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(377) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(388) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(410) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\YSI\y_timers/impl.inc(420) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\progress2.inc(157) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\mSelection.inc(325) : warning 214: possibly a "const" array argument was intended: "items_array"
+D:\Unicate Gaming\pawno\include\dini.inc(31) : warning 214: possibly a "const" array argument was intended: "filename"
+D:\Unicate Gaming\pawno\include\dini.inc(39) : warning 214: possibly a "const" array argument was intended: "filename"
+D:\Unicate Gaming\pawno\include\dini.inc(187) : warning 214: possibly a "const" array argument was intended: "key"
+D:\Unicate Gaming\pawno\include\dini.inc(187) : warning 214: possibly a "const" array argument was intended: "filename"
+D:\Unicate Gaming\pawno\include\dini.inc(249) : warning 214: possibly a "const" array argument was intended: "newname"
+D:\Unicate Gaming\pawno\include\dini.inc(249) : warning 214: possibly a "const" array argument was intended: "oldname"
+D:\Unicate Gaming\pawno\include\inventoryMenu.inc(133) : warning 214: possibly a "const" array argument was intended: "items"
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2245) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2348) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2380) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2383) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2416) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2441) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2472) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2479) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2596) : warning 218: old style prototypes used with optional semicolumns
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2884) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2938) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2958) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(2980) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3084) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3085) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3099) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3190) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3203) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3241) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3268) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3316) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3317) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3331) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(3358) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(4426) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(4439) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(4449) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(5388) : warning 215: expression has no effect
+D:\Unicate Gaming\pawno\include\weapon-config.inc(5415) : warning 215: expression has no effect
+..\gamemodes\fg-ogc.pwn(5840) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(5841) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(5847) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(7298) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(7299) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(8119) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(11159) : warning 214: possibly a "const" array argument was intended: "FV"
+..\gamemodes\fg-ogc.pwn(11159) : warning 214: possibly a "const" array argument was intended: "CP"
+..\gamemodes\fg-ogc.pwn(11346) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(11352) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(15547) : warning 214: possibly a "const" array argument was intended: "gde"
+..\gamemodes\fg-ogc.pwn(15747) : warning 214: possibly a "const" array argument was intended: "newname"
+..\gamemodes\fg-ogc.pwn(15747) : warning 214: possibly a "const" array argument was intended: "oldname"
+..\gamemodes\fg-ogc.pwn(15978) : warning 214: possibly a "const" array argument was intended: "line"
+..\gamemodes\fg-ogc.pwn(15989) : warning 214: possibly a "const" array argument was intended: "line"
+..\gamemodes\fg-ogc.pwn(15999) : warning 214: possibly a "const" array argument was intended: "text"
+..\gamemodes\fg-ogc.pwn(16423) : warning 214: possibly a "const" array argument was intended: "reason"
+..\gamemodes\fg-ogc.pwn(17181) : warning 214: possibly a "const" array argument was intended: "ime"
+..\gamemodes\fg-ogc.pwn(18424) : warning 214: possibly a "const" array argument was intended: "message"
+..\gamemodes\fg-ogc.pwn(18620) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18628) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18636) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18644) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18652) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18660) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18677) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18694) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18701) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(18710) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19244) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19259) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19266) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19274) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19283) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(19923) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(19923) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(19939) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(19939) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(20263) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(20263) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(20283) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(20283) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(21018) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(21018) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(21026) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(21026) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(22874) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(22878) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(23893) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(23893) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(23905) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(23905) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(25415) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(25415) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(25619) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(25619) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(28578) : warning 214: possibly a "const" array argument was intended: "name"
+..\gamemodes\fg-ogc.pwn(28807) : warning 214: possibly a "const" array argument was intended: "item"
+..\gamemodes\fg-ogc.pwn(33427) : warning 214: possibly a "const" array argument was intended: "string"
+..\gamemodes\fg-ogc.pwn(34778) : warning 204: symbol is assigned a value that is never used: "freeze"
+..\gamemodes\fg-ogc.pwn(39320) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(39321) : warning 217: loose indentation
+..\gamemodes\fg-ogc.pwn(57096) : warning 214: possibly a "const" array argument was intended: "playername"
+..\gamemodes\fg-ogc.pwn(57426) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57426) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57441) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57441) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57499) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57499) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57534) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57564) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57606) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57637) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57637) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(57645) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(58235) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(88827) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(88900) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(88927) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(88962) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(88986) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89041) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89060) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89066) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89350) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89350) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89441) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89469) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89481) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89586) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89636) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89686) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89747) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89755) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89765) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89781) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89796) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89806) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89907) : warning 218: old style prototypes used with optional semicolumns
+..\gamemodes\fg-ogc.pwn(89975) : warning 203: symbol is never used: "Tutorial"
+..\gamemodes\fg-ogc.pwn(3650) : warning 203: symbol is never used: "kodIme"
+Pawn compiler 3.10.10	 	 	Copyright (c) 1997-2006, ITB CompuPhase
+
+Header size:          36348 bytes
+Code size:         11628828 bytes
+Data size:         45452064 bytes
+Stack/heap size:      16384 bytes; estimated max. usage=6625 cells (26500 bytes)
+Total requirements:57133624 bytes
+
+330 Warnings.
+        1 file(s) copied.
+Press any key to continue . . . 
