@@ -49,32 +49,30 @@ echo.
 echo [FIX] Electron binary nedostaje - skidam rucno...
 echo.
 
-:: Read Electron version from package.json
-for /f "tokens=2 delims=:," %%a in ('findstr /C:"\"electron\"" node_modules\electron\package.json 2^>nul') do (
-    for /f "tokens=1 delims= " %%b in ("%%a") do set ELECTRON_VER=%%b
-)
-:: Remove quotes from version
-set ELECTRON_VER=%ELECTRON_VER:"=%
+:: Read Electron version from node_modules/electron/package.json using Node.js
+set ELECTRON_VER=
+for /f "delims=" %%v in ('node -e "try{console.log(require('./node_modules/electron/package.json').version)}catch(e){console.log('')}" 2^>nul') do set ELECTRON_VER=%%v
+
 echo [INFO] Electron verzija: %ELECTRON_VER%
 
 if "%ELECTRON_VER%"=="" (
     echo [GRESKA] Ne mogu pronaci Electron verziju!
-    pause
-    exit /b 1
+    echo Pokusavam fiksnu verziju 28.3.3...
+    set ELECTRON_VER=28.3.3
 )
 
-:: Download URLs to try
+:: Download URLs
 set ZIP_NAME=electron-v%ELECTRON_VER%-win32-x64.zip
 set URL1=https://github.com/electron/electron/releases/download/v%ELECTRON_VER%/%ZIP_NAME%
-set URL2=https://npmmirror.com/mirrors/electron/%ELECTRON_VER%/%ZIP_NAME%
+set URL2=https://npmmirror.com/mirrors/electron/v%ELECTRON_VER%/%ZIP_NAME%
 
 echo.
-echo [2/3] Skidam Electron %ELECTRON_VER% sa GitHub...
+echo [2/3] Skidam Electron v%ELECTRON_VER% (~80MB)...
 echo       URL: %URL1%
 echo.
 
-:: Download with PowerShell
-powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; try { Write-Host '[PS] Skidam...'; $wc = New-Object System.Net.WebClient; $wc.DownloadFile('%URL1%', 'electron_tmp.zip'); Write-Host '[PS] Skidanje zavrseno!'; } catch { Write-Host '[PS] GitHub nije uspeo, pokusavam npmmirror...'; try { $wc = New-Object System.Net.WebClient; $wc.DownloadFile('%URL2%', 'electron_tmp.zip'); Write-Host '[PS] Skidanje sa npmmirror zavrseno!'; } catch { Write-Host '[PS] GRESKA:' $_.Exception.Message; exit 1; } } }"
+:: Download with PowerShell - show progress
+powershell -Command "& { [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $url = '%URL1%'; $file = 'electron_tmp.zip'; try { Write-Host '[PS] Skidam sa GitHub...'; $wc = New-Object System.Net.WebClient; $wc.DownloadFile($url, $file); Write-Host '[PS] Gotovo!'; } catch { Write-Host '[PS] GitHub fail, pokusavam npmmirror...'; $url2 = '%URL2%'; try { $wc.DownloadFile($url2, $file); Write-Host '[PS] Gotovo sa npmmirror!'; } catch { Write-Host '[PS] GRESKA:' $_.Exception.Message; exit 1; } } }"
 
 if not exist "electron_tmp.zip" (
     echo.
@@ -89,6 +87,17 @@ if not exist "electron_tmp.zip" (
     exit /b 1
 )
 
+:: Check file size
+for %%A in ("electron_tmp.zip") do set ZIP_SIZE=%%~zA
+echo [INFO] Skinuti fajl: %ZIP_SIZE% bajtova
+
+if %ZIP_SIZE% LSS 1000000 (
+    echo [GRESKA] Fajl je premali - verovatno nije skinut ispravno!
+    del "electron_tmp.zip" 2>nul
+    pause
+    exit /b 1
+)
+
 echo.
 echo [3/3] Raspakujem Electron binary...
 
@@ -96,7 +105,7 @@ echo [3/3] Raspakujem Electron binary...
 if not exist "node_modules\electron\dist" mkdir "node_modules\electron\dist"
 
 :: Extract with PowerShell
-powershell -Command "& { try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory((Resolve-Path 'electron_tmp.zip').Path, (Resolve-Path 'node_modules\electron\dist').Path); Write-Host '[PS] Raspakivanje zavrseno!'; } catch { Write-Host '[PS] GRESKA pri raspakivanju:' $_.Exception.Message; exit 1; } }"
+powershell -Command "& { try { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory((Resolve-Path 'electron_tmp.zip').Path, (Resolve-Path 'node_modules\electron\dist').Path); Write-Host '[PS] Raspakivanje zavrseno!'; } catch { Write-Host '[PS] GRESKA:' $_.Exception.Message; exit 1; } }"
 
 :: Clean up
 del "electron_tmp.zip" 2>nul
@@ -108,8 +117,8 @@ if exist "node_modules\electron\dist\electron.exe" (
     echo.
 ) else (
     echo.
-    echo [GRESKA] Electron binary nije pronadjen nakon raspakivanja!
-    echo Pokusaj rucno skinuti i raspakovati.
+    echo [GRESKA] electron.exe nije pronadjen nakon raspakivanja!
+    echo Proveri node_modules\electron\dist\ folder
     echo.
     pause
     exit /b 1
