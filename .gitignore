@@ -1,1 +1,35 @@
-*.xml
+# Logs
+*.log
+server_log.txt
+crashinfo.txt
+
+# Compiled test files
+test*.amx
+test*.lst
+
+# SA-MP server executables (use open.mp instead)
+samp-server.exe
+samp-npc.exe
+announce.exe
+
+# Archives
+*.zip
+
+# Environment
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# PyInstaller
+launcher/build/
+launcher/dist/
+launcher/*.spec
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Pawn compiler output (keep only gamemode .amx)
+# gamemodes/*.amx is kept, but test files are ignored
