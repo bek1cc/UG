@@ -372,7 +372,28 @@ function setupSampRegistry(gtaPath, ip, port, nickname) {
     execSync(`reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`, { windowsHide: true });
     execSync(`reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${ip}:${port}" /f`, { windowsHide: true });
     execSync(`reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`, { windowsHide: true });
-    log('Registry setup OK');
+    
+    // DELETE any saved password - we don't use one
+    try {
+      execSync(`reg delete "HKCU\\Software\\SAMP" /v "Password" /f`, { windowsHide: true, stdio: 'pipe' });
+      log('Deleted saved password from registry');
+    } catch (e) { /* no password saved = good */ }
+    
+    // Also delete samp.set which can cache passwords
+    const sampSetPaths = [
+      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'SAMP', 'samp.set'),
+      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'SAMP', 'samp.set'),
+    ];
+    for (const p of sampSetPaths) {
+      try {
+        if (fs.existsSync(p)) {
+          fs.unlinkSync(p);
+          log('Deleted samp.set: ' + p);
+        }
+      } catch (e) { /* ignore */ }
+    }
+    
+    log('Registry setup OK (password cleared)');
     return true;
   } catch (err) {
     log('Registry error: ' + err.message);
