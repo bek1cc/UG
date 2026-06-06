@@ -3,15 +3,30 @@
 //  File: pawno/include/cef_tablet.inc
 //
 //  Povezuje PAWN server sa CEF browserom za moderni tablet UI.
-//  Koristi Pawn.CEF plugin za komunikaciju.
+//  Koristi Pawn.CEF / samp-cef plugin za komunikaciju.
 //
 //  Komande:
-//  /tablet      - otvori tablet (CEF)
+//  /tablet      - otvori/zatvori tablet (CEF)
 //  /bounties    - otvori tablet na bounty stranici
 //
 //  Integracija: #include <cef_tablet> u fg-ogc.pwn
 //  Potrebno: Pawn.CEF plugin instaliran na serveru
+//
+//  CEF PLUGIN INSTALACIJA:
+//  1. Preuzmi Pawn.CEF sa: https://github.com/samp-cef/CEF
+//  2. Stavi CEF.dll (Windows) ili CEF.so (Linux) u /plugins/
+//  3. Dodaj "CEF" u plugins liniju u server.cfg
+//  4. Stavi CEF/ folder sa tablet fajlovima u server root
 // ===========================================================================
+
+// ===========================================================================
+//  CEF NATIVE DEFINICIJE (iz Pawn.CEF plugina)
+//  Ove native funkcije su dostupne kad je CEF plugin ucitan
+// ===========================================================================
+native CreateBrowser(playerid, const url[], bool:fullscreen = false, bool:transparent = false);
+native DestroyBrowser(playerid, browserid);
+native SetBrowserSize(playerid, browserid, width, height);
+native EmitBrowserEvent(playerid, browserid, const event[], const data[]);
 
 // ===========================================================================
 //  KONFIGURACIJA
@@ -28,10 +43,12 @@ enum CefTabletData {
     ct_BrowserId,
     bool:ct_LoggedIn,
     ct_LoginAttempts,
-    ct_PinCode
+    ct_PinCode,
+    ct_InitTimer
 }
 
 static CefTablet[MAX_PLAYERS][CefTabletData];
+static ct_InitData[MAX_PLAYERS][256];
 
 // ===========================================================================
 //  HELPER: Format bounty data za CEF
@@ -47,15 +64,25 @@ stock CEF_FormatBountyJSON() {
         if(!first) strcat(json, ",");
         first = 0;
 
+        new placerStr[MAX_PLAYER_NAME + 12];
+        if(BountyList[i][bAnonymous]) {
+            format(placerStr, sizeof(placerStr), "Anoniman");
+        } else {
+            format(placerStr, sizeof(placerStr), "%s", BountyList[i][bPlacerName]);
+        }
+        new stackedStr[8];
+        if(BountyList[i][bAmount] > 1) format(stackedStr, sizeof(stackedStr), "true");
+        else format(stackedStr, sizeof(stackedStr), "false");
+
         new entry[256];
         format(entry, sizeof(entry),
             "{\"id\":%d,\"target\":\"%s\",\"amount\":%d,\"placer\":\"%s\",\"time\":\"%s\",\"stacked\":%s}",
             i,
             BountyList[i][bTargetName],
             BountyList[i][bAmount],
-            BountyList[i][bAnonymous] ? "Anoniman" : BountyList[i][bPlacerName],
+            placerStr,
             Bounty_FormatTimeAgo(BountyList[i][bTimestamp]),
-            BountyList[i][bAmount > 1 ? "true" : "false"
+            stackedStr
         );
         strcat(json, entry);
     }
@@ -77,22 +104,21 @@ stock CEF_TabletOpen(playerid) {
     // Postavi poziciju (centrirano na ekranu)
     SetBrowserSize(playerid, CefTablet[playerid][ct_BrowserId], CEF_TABLET_WIDTH, CEF_TABLET_HEIGHT);
 
-    // Emituj podatke igraca
+    // Emituj podatke igraca - koristimo timer umjesto defer
     new playerName[MAX_PLAYER_NAME];
     GetPlayerName(playerid, playerName, sizeof(playerName));
 
-    new data[256];
-    format(data, sizeof(data),
+    format(ct_InitData[playerid], sizeof(ct_InitData[]),
         "{\"username\":\"%s\",\"battery\":%d,\"money\":%d,\"level\":%d,\"online\":%d}",
         playerName,
         Bounty_CalcBattery(playerid),
         GetPlayerMoney(playerid),
         GetPlayerScore(playerid),
-        GetOnlinePlayers()
+        CEF_GetOnlinePlayers()
     );
 
-    // Cekaj da se browser ucita, onda posalji podatke
-    defer CEF_SendInitData(playerid, data);
+    // Cekaj 500ms da se browser ucita, onda posalji podatke
+    CefTablet[playerid][ct_InitTimer] = SetTimerEx("CEF_SendInitData", 500, false, "i", playerid);
 
     CefTablet[playerid][ct_IsOpen] = true;
     CefTablet[playerid][ct_LoggedIn] = false;
@@ -107,6 +133,12 @@ stock CEF_TabletOpen(playerid) {
 stock CEF_TabletClose(playerid) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
 
+    // Kill timer ako jos radi
+    if(CefTablet[playerid][ct_InitTimer] != 0) {
+        KillTimer(CefTablet[playerid][ct_InitTimer]);
+        CefTablet[playerid][ct_InitTimer] = 0;
+    }
+
     DestroyBrowser(playerid, CefTablet[playerid][ct_BrowserId]);
     CefTablet[playerid][ct_IsOpen] = false;
     CefTablet[playerid][ct_LoggedIn] = false;
@@ -115,11 +147,13 @@ stock CEF_TabletClose(playerid) {
 }
 
 // ===========================================================================
-//  SLANJE PODATAKA U CEF (deferred - ceka ucitavanje browsera)
+//  SLANJE PODATAKA U CEF (timer callback - ceka ucitavanje browsera)
 // ===========================================================================
-timer CEF_SendInitData[500](playerid, data[]) {
+forward CEF_SendInitData(playerid);
+public CEF_SendInitData(playerid) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
-    EmitBrowserEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:open", data);
+    CefTablet[playerid][ct_InitTimer] = 0;
+    EmitBrowserEvent(playerid, CefTablet[playerid][ct_BrowserId], "tablet:open", ct_InitData[playerid]);
 }
 
 // ===========================================================================
@@ -147,20 +181,17 @@ stock CEF_ShowToast(playerid, message[]) {
 
 // ===========================================================================
 //  PRIMANJE EVENTA IZ CEF (PAWN callback)
+//  Poziva se iz OnBrowserEvent u fg-ogc.pwn
 // ===========================================================================
-forward OnCefTabletEvent(playerid, event[], data[]);
-public OnCefTabletEvent(playerid, event[], data[]) {
-    if(!CefTablet[playerid][ct_IsOpen]) return 1;
+stock CEF_HandleBrowserEvent(playerid, event[], data[]) {
+    if(!CefTablet[playerid][ct_IsOpen]) return 0;
 
     // LOGIN ATTEMPT
     if(strcmp(event, "tablet:login:attempt") == 0) {
-        // Provjeri PIN
         if(!Bounty_HasPIN(playerid)) {
             CEF_ShowToast(playerid, "Niste registrovani! Koristi REGISTRUJ SE");
             return 1;
         }
-
-        // Prikazi dialog za PIN
         ShowPlayerDialog(playerid, BOUNTY_DLG_LOGIN, DIALOG_STYLE_INPUT,
             "{2E86DE}UG Tablet{FFFFFF} - Prijava",
             "{FFFFFF}Unesite vas PIN kod:",
@@ -202,11 +233,9 @@ public OnCefTabletEvent(playerid, event[], data[]) {
 
     // PLACE BOUNTY
     if(strcmp(event, "tablet:bounty:place") == 0) {
-        // Parse JSON: {"targetId":5,"amount":25000}
         new targetIdStr[8], amountStr[16];
 
-        // Simple JSON parsing (PAWN nema JSON library)
-        // Format: {"targetId":5,"amount":25000}
+        // Simple JSON parsing
         new startIdx = strfind(data, "\"targetId\":");
         if(startIdx != -1) {
             startIdx += strlen("\"targetId\":");
@@ -280,7 +309,7 @@ public OnCefTabletEvent(playerid, event[], data[]) {
 // ===========================================================================
 //  HELPER: GetOnlinePlayers
 // ===========================================================================
-stock GetOnlinePlayers() {
+stock CEF_GetOnlinePlayers() {
     new count = 0;
     for(new i = 0; i < MAX_PLAYERS; i++) {
         if(IsPlayerConnected(i)) count++;
@@ -292,6 +321,7 @@ stock GetOnlinePlayers() {
 //  ZCMD KOMANDE
 // ===========================================================================
 CMD:tablet(playerid, params[]) {
+    #pragma unused params
     if(CefTablet[playerid][ct_IsOpen]) {
         CEF_TabletClose(playerid);
         SendClientMessage(playerid, 0x54A0FFFF, "[TABLET]{FFFFFF} Tablet zatvoren.");
@@ -299,14 +329,6 @@ CMD:tablet(playerid, params[]) {
         CEF_TabletOpen(playerid);
         SendClientMessage(playerid, 0x54A0FFFF, "[TABLET]{FFFFFF} Tablet otvoren. Koristi /tablet za zatvaranje.");
     }
-    return 1;
-}
-
-CMD:bounties(playerid, params[]) {
-    if(!CefTablet[playerid][ct_IsOpen]) {
-        CEF_TabletOpen(playerid);
-    }
-    // TODO: Switch directly to bounty screen after login
     return 1;
 }
 
