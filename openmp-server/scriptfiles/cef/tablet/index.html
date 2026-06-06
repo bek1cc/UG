@@ -1,177 +1,63 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Unicate Gaming - Tablet</title>
-    <link rel="stylesheet" href="style.css">
+    <title>UG Tablet</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #1a1a2e; 
+            color: white; 
+            font-family: 'Segoe UI', sans-serif;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        h1 { color: #00d4ff; margin-bottom: 10px; }
+        p { color: #888; }
+        .login-form { margin-top: 20px; }
+        input { 
+            padding: 10px; 
+            margin: 5px; 
+            border: 1px solid #333; 
+            background: #16213e; 
+            color: white; 
+            border-radius: 5px; 
+            width: 80%; 
+        }
+        button { 
+            padding: 10px 30px; 
+            margin-top: 10px; 
+            background: #00d4ff; 
+            border: none; 
+            color: #000; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+    </style>
 </head>
 <body>
-    <div class="tablet-container">
-        <!-- Status Bar -->
-        <div class="status-bar">
-            <div class="status-left">
-                <span class="signal">UG 4G</span>
-                <span class="status-icon" id="signalIcon">&#9679;</span>
-            </div>
-            <div class="status-center" id="clock">00:00</div>
-            <div class="status-right">
-                <span class="battery-text" id="batteryText">100%</span>
-                <div class="battery-icon"><div class="battery-fill" id="batteryFill"></div></div>
-                <span class="theme-toggle" id="themeToggle" title="Promijeni temu">&#9789;</span>
-            </div>
-        </div>
-
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <span class="logo-text">UNICATE <span class="accent">GAMING</span></span>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-            <button class="nav-tab active" data-tab="home">&#9750; Pocetna</button>
-            <button class="nav-tab" data-tab="bounties">&#9876; Bounty</button>
-            <button class="nav-tab" data-tab="messages">&#9993; Poruke</button>
-            <button class="nav-tab" data-tab="settings">&#9881; Postavke</button>
-        </div>
-
-        <!-- Content Area -->
-        <div class="content">
-            <!-- Home Tab -->
-            <div class="tab-content active" id="tab-home">
-                <div class="welcome-card">
-                    <div class="welcome-avatar" id="playerAvatar">?</div>
-                    <div class="welcome-info">
-                        <h2>Dobrodosao natrag!</h2>
-                        <p id="playerName">Igrac</p>
-                    </div>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card blue">
-                        <div class="stat-icon">$</div>
-                        <div class="stat-value" id="statMoney">0</div>
-                        <div class="stat-label">Novac</div>
-                    </div>
-                    <div class="stat-card cyan">
-                        <div class="stat-icon">&#9733;</div>
-                        <div class="stat-value" id="statLevel">0</div>
-                        <div class="stat-label">Level</div>
-                    </div>
-                    <div class="stat-card gold">
-                        <div class="stat-icon">&#9876;</div>
-                        <div class="stat-value" id="statBounties">0</div>
-                        <div class="stat-label">Bounties</div>
-                    </div>
-                    <div class="stat-card red">
-                        <div class="stat-icon">&#9760;</div>
-                        <div class="stat-value" id="statKills">0</div>
-                        <div class="stat-label">Ubistva</div>
-                    </div>
-                </div>
-                <div class="quick-actions">
-                    <h3>Brze akcije</h3>
-                    <div class="action-grid">
-                        <button class="action-btn" onclick="call911()">&#128680; Pozovi 911</button>
-                        <button class="action-btn" onclick="callTaxi()">&#128661; Pozovi Taxi</button>
-                        <button class="action-btn" onclick="callMehanicar()">&#128295; Mehanicar</button>
-                        <button class="action-btn" onclick="openBounties()">&#9876; Bounty lista</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bounties Tab -->
-            <div class="tab-content" id="tab-bounties">
-                <div class="section-header">
-                    <h2>&#9876; Aktivni Bounty-ji</h2>
-                    <button class="btn-sm" onclick="refreshBounties()">&#8635; Osvjezi</button>
-                </div>
-                <div class="bounty-list" id="bountyList">
-                    <div class="empty-state">
-                        <div class="empty-icon">&#9876;</div>
-                        <p>Ucitavanje bounty-ja...</p>
-                    </div>
-                </div>
-                <div class="bounty-form">
-                    <h3>Postavi Bounty</h3>
-                    <input type="text" id="bountyTarget" placeholder="Ime igraca" class="input-field">
-                    <input type="number" id="bountyAmount" placeholder="Iznos ($)" class="input-field">
-                    <div class="form-row">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="bountyAnon"> Anonimno
-                        </label>
-                    </div>
-                    <button class="btn-primary" onclick="placeBounty()">&#9876; Postavi</button>
-                </div>
-            </div>
-
-            <!-- Messages Tab -->
-            <div class="tab-content" id="tab-messages">
-                <div class="section-header">
-                    <h2>&#9993; Poruke</h2>
-                </div>
-                <div class="message-list" id="messageList">
-                    <div class="empty-state">
-                        <div class="empty-icon">&#9993;</div>
-                        <p>Nema poruka</p>
-                    </div>
-                </div>
-                <div class="message-form">
-                    <input type="text" id="msgTo" placeholder="Primaoc" class="input-field">
-                    <input type="text" id="msgText" placeholder="Poruka..." class="input-field">
-                    <button class="btn-primary" onclick="sendMessage()">&#9993; Posalji</button>
-                </div>
-            </div>
-
-            <!-- Settings Tab -->
-            <div class="tab-content" id="tab-settings">
-                <h2>&#9881; Postavke</h2>
-                <div class="settings-list">
-                    <div class="setting-item">
-                        <span>Tamna tema</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="darkModeToggle" checked onchange="toggleTheme()">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <span>Zvuk obavijesti</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="soundToggle" checked>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                    <div class="setting-item">
-                        <span>Vibracija</span>
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="vibrationToggle">
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-                </div>
-                <div class="profile-card">
-                    <h3>Moj Profil</h3>
-                    <div class="profile-row"><span>Ime:</span><span id="profileName">-</span></div>
-                    <div class="profile-row"><span>Telefon:</span><span id="profilePhone">-</span></div>
-                    <div class="profile-row"><span>Level:</span><span id="profileLevel">-</span></div>
-                </div>
-                <div class="about-section">
-                    <p class="version">Unicate Gaming Tablet v2.0</p>
-                    <p class="credits">Powered by samp-cef</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Bar -->
-        <div class="bottom-bar">
-            <button class="bottom-btn close" onclick="closeTablet()">&#10005; Zatvori</button>
+    <div class="container">
+        <h1>UNICATE GAMING</h1>
+        <p>Tablet v1.0</p>
+        <div class="login-form">
+            <input type="password" id="pin" placeholder="Unesi PIN...">
+            <br>
+            <button onclick="attemptLogin()">PRIJAVI SE</button>
         </div>
     </div>
-
-    <!-- Toast notification -->
-    <div class="toast" id="toast"></div>
-
-    <script src="app.js"></script>
+    <script src="cef.js"></script>
+    <script>
+        function attemptLogin() {
+            var pin = document.getElementById('pin').value;
+            if (cef) cef.emit('tablet:login:attempt', pin);
+        }
+    </script>
 </body>
 </html>
