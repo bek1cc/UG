@@ -1612,8 +1612,9 @@ stock iPhone_OnGameModeInit() {
 
 stock iPhone_OnPlayerConnect(playerid) {
     // Reset all data
-    iPhoneData[playerid][iPhone_HasPhone] = false;
-    iPhoneData[playerid][iPhone_Number] = 0;
+    // Svi igraci automatski dobijaju telefon
+    iPhoneData[playerid][iPhone_HasPhone] = true;
+    iPhoneData[playerid][iPhone_Number] = 10000 + playerid; // Auto-generisan broj
     iPhoneData[playerid][iPhone_Credit] = 0;
     iPhoneData[playerid][iPhone_Model] = 0;
     iPhoneData[playerid][iPhone_Online] = true;

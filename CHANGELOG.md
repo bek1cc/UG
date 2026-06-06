@@ -1,5 +1,29 @@
 # UG Gamemode - Changelog
 
+## [2026-06-06] - Phone Fix + CEF Plugin Setup
+
+### Popravljeno
+- **/phone komanda** - svi igraci automatski dobijaju telefon na connect
+  - `iPhone_HasPhone = true` po defaultu (prije je bilo false)
+  - Automatski generisan broj telefona (10000 + playerid)
+  - "Nemate telefon" vise ne izlazi
+- **CEF tablet plugin** - napravljen bezbijednim za kompilaciju bez plugina
+  - `cef_tablet.inc` koristi conditional compilation (`#if defined USE_CEF`)
+  - Bez CEF plugina: /tablet koristi textdraw telefon kao fallback
+  - Sa CEF pluginom: koristi pravi samp-cef API (cef_create_browser, cef_emit_event, cef_subscribe)
+  - Server se ne crash-a vise ako CEF plugin nije instaliran
+- **server.cfg** - dodana instrukcija za CEF plugin instalaciju
+- **app.js** - azuriran za pravi samp-cef API (window.cef.emit / window.cef.subscribe)
+
+### Kako aktivirati CEF plugin
+1. Preuzmi sa https://github.com/samp-cef/CEF/releases
+2. Stavi CEF.so (Linux) ili CEF.dll (Windows) u /plugins/ folder
+3. U fg-ogc.pwn dodaj `#define USE_CEF` PRIJE `#include <cef_tablet>`
+4. U server.cfg odkomentiraj plugins liniju sa CEF.so
+5. Recompile gamemode
+
+---
+
 ## [2026-06-06] - CEF Tablet Portal UI v4.0
 
 ### Novo

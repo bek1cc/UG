@@ -1,23 +1,20 @@
 // ============================================================
 //  UG TABLET CEF - JavaScript kontroler
-//  Komunikacija: PAWN <-> CEF preko window.cef_emit / cef_subscribe
+//  Komunikacija: PAWN <-> CEF preko samp-cef API
+//  (cef.emit / cef.subscribe)
 // ============================================================
 
 // ========== STATE ==========
 const state = {
     currentScreen: 'portal',
-    username: 'Beka_Tiruriru',
+    username: 'Igrac',
     battery: 87,
-    money: 125000,
-    level: 15,
-    onlinePlayers: 47,
+    money: 0,
+    level: 1,
+    onlinePlayers: 0,
     bountyPage: 0,
     bountyTotalPages: 1,
-    bounties: [
-        { id: 1, target: 'Mirko_Djordjevic', amount: 25000, placer: 'Anoniman', time: '2h', stacked: false },
-        { id: 2, target: 'Pero_Peric', amount: 75000, placer: 'Beka_Tiruriru', time: '45m', stacked: true },
-        { id: 3, target: 'Sloba_Jebach', amount: 150000, placer: 'Anoniman', time: '15m', stacked: false },
-    ]
+    bounties: []
 };
 
 // ========== INIT ==========
@@ -29,42 +26,98 @@ document.addEventListener('DOMContentLoaded', () => {
     updateBattery(state.battery);
     updateQuickInfo();
 
-    // CEF: Subscribe to events from PAWN
-    if (typeof window.cef_subscribe === 'function') {
+    // samp-cef API: Subscribe to events from PAWN server
+    // koristimo window.cef (samp-cef plugin) ili fallback za demo
+    if (typeof window.cef !== 'undefined' && typeof window.cef.subscribe === 'function') {
+        // Samp-CEF plugin API
+        window.cef.subscribe('tablet:open', (data) => {
+            try {
+                const parsed = JSON.parse(data);
+                state.username = parsed.username || 'Igrac';
+                state.battery = parsed.battery || 87;
+                state.money = parsed.money || 0;
+                state.level = parsed.level || 1;
+                state.onlinePlayers = parsed.online || 0;
+            } catch(e) {}
+            updateUI();
+            showScreen('portal');
+        });
+
+        window.cef.subscribe('tablet:bounty:update', (data) => {
+            try {
+                const parsed = JSON.parse(data);
+                state.bounties = parsed.bounties || [];
+            } catch(e) {}
+            renderBountyList();
+        });
+
+        window.cef.subscribe('tablet:toast', (data) => {
+            try {
+                const parsed = JSON.parse(data);
+                showToast(parsed.message || 'Obavijest');
+            } catch(e) {
+                showToast('Obavijest');
+            }
+        });
+
+        window.cef.subscribe('tablet:close', () => {
+            showScreen('portal');
+        });
+    } else if (typeof window.cef_subscribe === 'function') {
+        // Starija verzija CEF API (fallback)
         window.cef_subscribe('tablet:open', (data) => {
-            const parsed = JSON.parse(data);
-            state.username = parsed.username || 'Igrac';
-            state.battery = parsed.battery || 87;
-            state.money = parsed.money || 0;
-            state.level = parsed.level || 1;
-            state.onlinePlayers = parsed.online || 0;
+            try {
+                const parsed = JSON.parse(data);
+                state.username = parsed.username || 'Igrac';
+                state.battery = parsed.battery || 87;
+                state.money = parsed.money || 0;
+                state.level = parsed.level || 1;
+                state.onlinePlayers = parsed.online || 0;
+            } catch(e) {}
             updateUI();
             showScreen('portal');
         });
 
         window.cef_subscribe('tablet:bounty:update', (data) => {
-            const parsed = JSON.parse(data);
-            state.bounties = parsed.bounties || [];
+            try {
+                const parsed = JSON.parse(data);
+                state.bounties = parsed.bounties || [];
+            } catch(e) {}
             renderBountyList();
         });
 
         window.cef_subscribe('tablet:toast', (data) => {
-            const parsed = JSON.parse(data);
-            showToast(parsed.message || 'Obavijest');
+            try {
+                const parsed = JSON.parse(data);
+                showToast(parsed.message || 'Obavijest');
+            } catch(e) {}
         });
 
         window.cef_subscribe('tablet:close', () => {
-            // CEF browser will be hidden by PAWN
+            showScreen('portal');
         });
     }
 });
+
+// ========== HELPER: Emit event to PAWN ==========
+function emitToPawn(eventName, data) {
+    // samp-cef plugin API (najnovija verzija)
+    if (typeof window.cef !== 'undefined' && typeof window.cef.emit === 'function') {
+        window.cef.emit(eventName, data || '');
+    }
+    // Starija verzija API
+    else if (typeof window.cef_emit === 'function') {
+        window.cef_emit(eventName, data || '');
+    }
+}
 
 // ========== CLOCK ==========
 function updateClock() {
     const now = new Date();
     const h = String(now.getHours()).padStart(2, '0');
     const m = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('clock').textContent = `${h}:${m}`;
+    const clockEl = document.getElementById('clock');
+    if (clockEl) clockEl.textContent = `${h}:${m}`;
 }
 
 // ========== BATTERY ==========
@@ -73,18 +126,20 @@ function updateBattery(pct) {
     state.battery = pct;
     const fill = document.getElementById('battery-fill');
     const pctEl = document.getElementById('battery-pct');
-    fill.style.width = pct + '%';
-    pctEl.textContent = pct + '%';
+    if (fill) fill.style.width = pct + '%';
+    if (pctEl) pctEl.textContent = pct + '%';
 
-    if (pct <= 20) {
-        fill.style.background = 'var(--text-red)';
-        pctEl.style.color = 'var(--text-red)';
-    } else if (pct <= 50) {
-        fill.style.background = 'var(--text-gold)';
-        pctEl.style.color = 'var(--text-gold)';
-    } else {
-        fill.style.background = 'var(--text-green)';
-        pctEl.style.color = 'var(--text-green)';
+    if (fill && pctEl) {
+        if (pct <= 20) {
+            fill.style.background = 'var(--text-red, #FF453A)';
+            pctEl.style.color = 'var(--text-red, #FF453A)';
+        } else if (pct <= 50) {
+            fill.style.background = 'var(--text-gold, #FFD60A)';
+            pctEl.style.color = 'var(--text-gold, #FFD60A)';
+        } else {
+            fill.style.background = 'var(--text-green, #30D158)';
+            pctEl.style.color = 'var(--text-green, #30D158)';
+        }
     }
 }
 
@@ -114,32 +169,26 @@ function showScreen(name) {
 
 // ========== PORTAL / LOGIN ==========
 function onPasswordClick() {
-    // In CEF: emit event to PAWN to show dialog for PIN input
-    if (typeof window.cef_emit === 'function') {
-        window.cef_emit('tablet:login:request');
-    } else {
-        // Demo mode: just login
-        showToast('Prijava uspjesna!');
-        setTimeout(() => {
-            showScreen('home');
-        }, 500);
+    emitToPawn('tablet:login:request');
+    // Demo mode (bez CEF): prikazi toast i idi na home
+    if (typeof window.cef === 'undefined' && typeof window.cef_subscribe === 'undefined') {
+        showToast('Prijava uspjesna! (Demo)');
+        setTimeout(() => showScreen('home'), 500);
     }
 }
 
 function onLogin() {
-    if (typeof window.cef_emit === 'function') {
-        window.cef_emit('tablet:login:attempt');
-    } else {
-        showToast('Prijava uspjesna!');
+    emitToPawn('tablet:login:attempt');
+    if (typeof window.cef === 'undefined' && typeof window.cef_subscribe === 'undefined') {
+        showToast('Prijava uspjesna! (Demo)');
         setTimeout(() => showScreen('home'), 500);
     }
 }
 
 function onRegister() {
-    if (typeof window.cef_emit === 'function') {
-        window.cef_emit('tablet:register:request');
-    } else {
-        showToast('Registracija uspjesna!');
+    emitToPawn('tablet:register:request');
+    if (typeof window.cef === 'undefined' && typeof window.cef_subscribe === 'undefined') {
+        showToast('Registracija uspjesna! (Demo)');
         setTimeout(() => showScreen('home'), 500);
     }
 }
@@ -147,9 +196,7 @@ function onRegister() {
 function onLogout() {
     showScreen('portal');
     showToast('Odjavljen sa portala');
-    if (typeof window.cef_emit === 'function') {
-        window.cef_emit('tablet:logout');
-    }
+    emitToPawn('tablet:logout');
 }
 
 // ========== HOME ==========
@@ -162,23 +209,30 @@ function openApp(app) {
         showScreen('bounty');
         renderBountyList();
     } else {
-        showToast('App ' + app.toUpperCase() + - uskoro!');
+        showToast('App ' + app.toUpperCase() + ' - uskoro!');
     }
 }
 
 function updateUI() {
-    document.getElementById('username-display').textContent = state.username;
-    document.getElementById('welcome-user').textContent = 'Dobrodosao, ' + state.username.split('_')[0];
+    const usernameEl = document.getElementById('username-display');
+    const welcomeEl = document.getElementById('welcome-user');
+    if (usernameEl) usernameEl.textContent = state.username;
+    if (welcomeEl) welcomeEl.textContent = 'Dobrodosao, ' + state.username.split('_')[0];
     updateBattery(state.battery);
     updateQuickInfo();
 }
 
 function updateQuickInfo() {
-    document.getElementById('player-money').textContent = '$' + state.money.toLocaleString();
-    document.getElementById('player-level').textContent = state.level;
-    document.getElementById('online-players').textContent = state.onlinePlayers + '/200';
-    document.getElementById('bounty-count').textContent = state.bounties.length;
-    document.getElementById('active-bounties').textContent = state.bounties.length;
+    const moneyEl = document.getElementById('player-money');
+    const levelEl = document.getElementById('player-level');
+    const onlineEl = document.getElementById('online-players');
+    const countEl = document.getElementById('bounty-count');
+    const activeEl = document.getElementById('active-bounties');
+    if (moneyEl) moneyEl.textContent = '$' + state.money.toLocaleString();
+    if (levelEl) levelEl.textContent = state.level;
+    if (onlineEl) onlineEl.textContent = state.onlinePlayers + '/200';
+    if (countEl) countEl.textContent = state.bounties.length;
+    if (activeEl) activeEl.textContent = state.bounties.length;
 }
 
 // ========== BOUNTY BOARD ==========
@@ -196,7 +250,6 @@ function renderBountyList() {
     if (state.bounties.length === 0) {
         list.innerHTML = `
             <div class="bounty-empty">
-                <i class="fas fa-ghost"></i>
                 Nema aktivnih nagrada<br>
                 <small>Budi prvi koji ce naruciti ubojstvo!</small>
             </div>`;
@@ -207,7 +260,7 @@ function renderBountyList() {
                 <div class="row-info">
                     <div class="row-name">${b.target}</div>
                     <div class="row-meta">
-                        ${b.placer} &bull; ${b.time} ${b.stacked ? '&bull; <span style="color:var(--text-gold)">STACKED</span>' : ''}
+                        ${b.placer} &bull; ${b.time} ${b.stacked ? '&bull; <span style="color:#FFD60A">STACKED</span>' : ''}
                     </div>
                 </div>
                 <div class="row-amount">$${b.amount.toLocaleString()}</div>
@@ -215,7 +268,8 @@ function renderBountyList() {
         `).join('');
     }
 
-    document.getElementById('page-info').textContent = `${state.bountyPage + 1} / ${state.bountyTotalPages}`;
+    const pageInfoEl = document.getElementById('page-info');
+    if (pageInfoEl) pageInfoEl.textContent = `${state.bountyPage + 1} / ${state.bountyTotalPages}`;
     updateQuickInfo();
 }
 
@@ -238,6 +292,7 @@ function showBountyDetail(index) {
     if (!b) return;
 
     const body = document.getElementById('bounty-detail-body');
+    if (!body) return;
     body.innerHTML = `
         <div class="detail-row">
             <span class="detail-label">Meta</span>
@@ -261,27 +316,33 @@ function showBountyDetail(index) {
         </div>
     `;
 
-    document.getElementById('modal-bounty-detail').classList.add('active');
+    const modal = document.getElementById('modal-bounty-detail');
+    if (modal) modal.classList.add('active');
 }
 
 function closeBountyDetail() {
-    document.getElementById('modal-bounty-detail').classList.remove('active');
+    const modal = document.getElementById('modal-bounty-detail');
+    if (modal) modal.classList.remove('active');
 }
 
 // ========== PLACE BOUNTY ==========
 function showPlaceBounty() {
-    document.getElementById('bounty-target-id').value = '';
-    document.getElementById('bounty-amount').value = '';
-    document.getElementById('modal-place-bounty').classList.add('active');
+    const targetInput = document.getElementById('bounty-target-id');
+    const amountInput = document.getElementById('bounty-amount');
+    if (targetInput) targetInput.value = '';
+    if (amountInput) amountInput.value = '';
+    const modal = document.getElementById('modal-place-bounty');
+    if (modal) modal.classList.add('active');
 }
 
 function closePlaceBounty() {
-    document.getElementById('modal-place-bounty').classList.remove('active');
+    const modal = document.getElementById('modal-place-bounty');
+    if (modal) modal.classList.remove('active');
 }
 
 function confirmPlaceBounty() {
-    const targetId = parseInt(document.getElementById('bounty-target-id').value);
-    const amount = parseInt(document.getElementById('bounty-amount').value);
+    const targetId = parseInt((document.getElementById('bounty-target-id') || {}).value || '0');
+    const amount = parseInt((document.getElementById('bounty-amount') || {}).value || '0');
 
     if (isNaN(targetId) || targetId < 0) {
         showToast('Unesi ispravan ID igraca!');
@@ -296,10 +357,11 @@ function confirmPlaceBounty() {
         return;
     }
 
-    if (typeof window.cef_emit === 'function') {
-        window.cef_emit('tablet:bounty:place', JSON.stringify({ targetId, amount }));
-    } else {
-        // Demo: Add locally
+    // Emituj event ka PAWN serveru
+    emitToPawn('tablet:bounty:place', JSON.stringify({ targetId, amount }));
+
+    // Demo mode (bez CEF): dodaj lokalno
+    if (typeof window.cef === 'undefined' && typeof window.cef_subscribe === 'undefined') {
         state.bounties.unshift({
             id: state.bounties.length + 1,
             target: 'Igrac_' + targetId,
@@ -309,7 +371,7 @@ function confirmPlaceBounty() {
             stacked: false
         });
         renderBountyList();
-        showToast('Nagrada od $' + amount.toLocaleString() + ' postavljena!');
+        showToast('Nagrada od $' + amount.toLocaleString() + ' postavljena! (Demo)');
     }
 
     closePlaceBounty();
@@ -318,7 +380,10 @@ function confirmPlaceBounty() {
 // ========== TOAST ==========
 function showToast(message) {
     const toast = document.getElementById('toast');
-    document.getElementById('toast-text').textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    const textEl = document.getElementById('toast-text');
+    if (textEl) textEl.textContent = message;
+    if (toast) {
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
 }
