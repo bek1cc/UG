@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet href="file:///C|/Users/Deja n/Desktop/www.mysql.com/Skill Arena/Server/WWW OVH COM/v5.1 by Xunder/pawno/xml/pawndoc.xsl" type="text/xsl"?>
+<doc source="C:\Users\Deja n\Desktop\www.mysql.com\Skill Arena\Server\WWW OVH COM\v5.1 by Xunder\pawno\include\easyDialog.inc">
+	<assembly>
+		<name>easyDialog.inc</name>
+	</assembly>
+	<members>
+
+		<!-- enumerations -->
+
+		<!-- constants -->
+		<member name="C:cellmax" value="2147483647">
+			<referrer name="OnDialogResponse"/>
+		</member>
+
+		<!-- variables -->
+		<member name="F:__date">
+		</member>
+		<member name="F:__file">
+		</member>
+		<member name="F:__time">
+		</member>
+		<member name="F:s_DialogName">
+			<referrer name="Dialog_Close"/>
+			<referrer name="Dialog_Open"/>
+			<referrer name="OnDialogResponse"/>
+		</member>
+		<member name="F:s_DialogOpened">
+			<referrer name="Dialog_IsOpened"/>
+			<referrer name="Dialog_Close"/>
+			<referrer name="Dialog_Open"/>
+		</member>
+
+		<!-- functions -->
+		<member name="M:@dialog_format" syntax="@dialog_format()">
+			<attribute name="public"/>
+			<stacksize value="6"/>
+			<dependency name="format"/>
+		</member>
+		<member name="M:CallLocalFunction" syntax="CallLocalFunction()">
+			<stacksize value="1"/>
+			<referrer name="OnDialogResponse"/>
+		</member>
+		<member name="M:Dialog_Close" syntax="Dialog_Close(playerid)">
+			<stacksize value="10"/>
+			<referrer name="OnDialogResponse"/>
+			<dependency name="ShowPlayerDialog"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="s_DialogOpened"/>
+			<param name="playerid">
+			</param>
+		</member>
+		<member name="M:Dialog_IsOpened" syntax="Dialog_IsOpened(playerid)">
+			<attribute name="public"/>
+			<stacksize value="1"/>
+			<dependency name="s_DialogOpened"/>
+			<param name="playerid">
+			</param>
+		</member>
+		<member name="M:Dialog_Open" syntax="Dialog_Open(playerid, function[], style, caption[], info[], button1[], button2[], ...)">
+			<stacksize value="10"/>
+			<dependency name="ShowPlayerDialog"/>
+			<dependency name="format"/>
+			<dependency name="numargs"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="s_DialogOpened"/>
+			<dependency name="strlen"/>
+			<dependency name="strpack"/>
+			<param name="playerid">
+			</param>
+			<param name="function">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="style">
+			</param>
+			<param name="caption">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="info">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="button1">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="button2">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="...">
+				<paraminfo> {Float,_} </paraminfo>
+			</param>
+		</member>
+		<member name="M:OnDialogPerformed" syntax="OnDialogPerformed(playerid, dialog[], response, success)">
+			<stacksize value="1"/>
+			<param name="playerid">
+			</param>
+			<param name="dialog">
+				<paraminfo> [] </paraminfo>
+			</param>
+			<param name="response">
+			</param>
+			<param name="success">
+			</param>
+		</member>
+		<member name="M:OnDialogResponse" syntax="OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])">
+			<attribute name="public"/>
+			<stacksize value="49"/>
+			<dependency name="CallLocalFunction"/>
+			<dependency name="Dialog_Close"/>
+			<dependency name="cellmax"/>
+			<dependency name="funcidx"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="s_DialogName"/>
+			<dependency name="strcat"/>
+			<dependency name="strlen"/>
+			<param name="playerid">
+			</param>
+			<param name="dialogid">
+			</param>
+			<param name="response">
+			</param>
+			<param name="listitem">
+			</param>
+			<param name="inputtext">
+				<paraminfo> [] </paraminfo>
+			</param>
+		</member>
+		<member name="M:ShowPlayerDialog" syntax="ShowPlayerDialog()">
+			<stacksize value="1"/>
+			<referrer name="Dialog_Close"/>
+			<referrer name="Dialog_Open"/>
+		</member>
+		<member name="M:format" syntax="format()">
+			<stacksize value="1"/>
+			<referrer name="@dialog_format"/>
+			<referrer name="Dialog_Open"/>
+		</member>
+		<member name="M:funcidx" syntax="funcidx()">
+			<stacksize value="1"/>
+			<referrer name="OnDialogResponse"/>
+		</member>
+		<member name="M:numargs" syntax="numargs()">
+			<stacksize value="1"/>
+			<referrer name="Dialog_Open"/>
+		</member>
+		<member name="M:strcat" syntax="strcat()">
+			<stacksize value="1"/>
+			<referrer name="OnDialogResponse"/>
+		</member>
+		<member name="M:strlen" syntax="strlen()">
+			<stacksize value="1"/>
+			<referrer name="Dialog_Open"/>
+			<referrer name="OnDialogResponse"/>
+		</member>
+		<member name="M:strpack" syntax="strpack()">
+			<stacksize value="1"/>
+			<referrer name="Dialog_Open"/>
+		</member>
+
+	</members>
+</doc>

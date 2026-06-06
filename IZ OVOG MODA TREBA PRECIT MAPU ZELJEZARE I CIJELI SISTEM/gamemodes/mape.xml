@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml-stylesheet href="file:///D|/_Desktop/SAMP MODOVI/UG v2/pawno/xml/pawndoc.xsl" type="text/xsl"?>
+<doc source="D:\_Desktop\SAMP MODOVI\UG v2\gamemodes\mape.pwn">
+	<assembly>
+		<name>mape.pwn</name>
+	</assembly>
+	<members>
+
+		<!-- enumerations -->
+
+		<!-- constants -->
+
+		<!-- variables -->
+		<member name="F:__date">
+		</member>
+		<member name="F:__file">
+		</member>
+		<member name="F:__time">
+		</member>
+
+		<!-- functions -->
+		<member name="M:CreateDynamicObject" syntax="CreateDynamicObject()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:CreateDynamicObjectEx" syntax="CreateDynamicObjectEx()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:CreateObject" syntax="CreateObject()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:KreirajObjekte" syntax="KreirajObjekte()">
+			<stacksize value="1256"/>
+			<dependency name="CreateDynamicObject"/>
+			<dependency name="CreateDynamicObjectEx"/>
+			<dependency name="CreateObject"/>
+			<dependency name="SetDynamicObjectMaterial"/>
+			<dependency name="SetDynamicObjectMaterialText"/>
+			<dependency name="SetObjectMaterial"/>
+			<dependency name="SetObjectMaterialText"/>
+		</member>
+		<member name="M:ObrisiObjekte" syntax="ObrisiObjekte(playerid)">
+			<stacksize value="9"/>
+			<dependency name="RemoveBuildingForPlayer"/>
+			<param name="playerid">
+			</param>
+		</member>
+		<member name="M:RemoveBuildingForPlayer" syntax="RemoveBuildingForPlayer()">
+			<stacksize value="1"/>
+			<referrer name="ObrisiObjekte"/>
+		</member>
+		<member name="M:SetDynamicObjectMaterial" syntax="SetDynamicObjectMaterial()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:SetDynamicObjectMaterialText" syntax="SetDynamicObjectMaterialText()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:SetObjectMaterial" syntax="SetObjectMaterial()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+		<member name="M:SetObjectMaterialText" syntax="SetObjectMaterialText()">
+			<stacksize value="1"/>
+			<referrer name="KreirajObjekte"/>
+		</member>
+
+	</members>
+</doc>
