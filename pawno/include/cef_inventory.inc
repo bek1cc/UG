@@ -42,18 +42,20 @@ enum InvItemData {
     inv_ScriptID
 }
 
+// Player inventory data (bez ugnijezdenog niza - Pawn to ne podrzava)
 enum InvPlayerData {
     bool:inv_IsOpen,
     inv_BrowserId,
-    InvItems[MAX_INV_SLOTS][InvItemData],
     inv_TotalWeight
 }
 
 static InvData[MAX_PLAYERS][InvPlayerData];
+// Zasebni 3D niz za iteme (Pawn ne podrzava 2D enum niz unutar enuma)
+static InvItems[MAX_PLAYERS][MAX_INV_SLOTS][InvItemData];
 
 #if defined USE_CEF
 
-// CEF natives (vec definisane u cef_tablet.inc, samo deklarisi ako nisu)
+// CEF natives - vec definisane u cef_tablet.inc, guard da ne redefinise
 #if !defined _cef_natives_defined
 native cef_create_browser(playerid, browserid, const url[], bool:hidden = false, bool:fullscreen = false);
 native cef_destroy_browser(playerid, browserid);
@@ -111,7 +113,7 @@ public CEF_InvSendData(playerid) {
     if(!InvData[playerid][inv_IsOpen]) return;
     new json[2048];
     json = CEF_InvFormatJSON(playerid);
-    cef_emit_event(playerid, "inventory:data", json);
+    cef_emit_event("inventory:data", json);
 }
 
 stock CEF_InvFormatJSON(playerid) {
@@ -120,13 +122,13 @@ stock CEF_InvFormatJSON(playerid) {
     new first = 1;
 
     for(new i = 0; i < MAX_INV_SLOTS; i++) {
-        if(!InvData[playerid][InvItems][i][inv_Exists]) continue;
+        if(!InvItems[playerid][i][inv_Exists]) continue;
 
         if(!first) strcat(json, ",");
         first = 0;
 
         new catStr[16];
-        switch(InvData[playerid][InvItems][i][inv_Category]) {
+        switch(InvItems[playerid][i][inv_Category]) {
             case INV_CAT_WEAPON: catStr = "weapon";
             case INV_CAT_ITEM: catStr = "item";
             case INV_CAT_KEY: catStr = "key";
@@ -139,12 +141,12 @@ stock CEF_InvFormatJSON(playerid) {
         format(entry, sizeof(entry),
             "{\"id\":%d,\"name\":\"%s\",\"category\":\"%s\",\"quantity\":%d,\"weight\":%.1f,\"damage\":0,\"ammo\":%d,\"description\":\"%s\"}",
             i,
-            InvData[playerid][InvItems][i][inv_Name],
+            InvItems[playerid][i][inv_Name],
             catStr,
-            InvData[playerid][InvItems][i][inv_Quantity],
-            InvData[playerid][InvItems][i][inv_Weight],
-            InvData[playerid][InvItems][i][inv_Ammo],
-            InvData[playerid][InvItems][i][inv_Desc]
+            InvItems[playerid][i][inv_Quantity],
+            InvItems[playerid][i][inv_Weight],
+            InvItems[playerid][i][inv_Ammo],
+            InvItems[playerid][i][inv_Desc]
         );
         strcat(json, entry);
     }
@@ -160,7 +162,7 @@ stock CEF_InvAddItem(playerid, name[], category, quantity, Float:weight, ammo = 
     // Trazi prazan slot
     new slot = -1;
     for(new i = 0; i < MAX_INV_SLOTS; i++) {
-        if(!InvData[playerid][InvItems][i][inv_Exists]) { slot = i; break; }
+        if(!InvItems[playerid][i][inv_Exists]) { slot = i; break; }
     }
 
     if(slot == -1) {
@@ -170,23 +172,23 @@ stock CEF_InvAddItem(playerid, name[], category, quantity, Float:weight, ammo = 
 
     // Provjeri da li vec ima isti predmet
     for(new i = 0; i < MAX_INV_SLOTS; i++) {
-        if(InvData[playerid][InvItems][i][inv_Exists] &&
-           strcmp(InvData[playerid][InvItems][i][inv_Name], name, true) == 0 &&
-           InvData[playerid][InvItems][i][inv_Category] == category) {
-            InvData[playerid][InvItems][i][inv_Quantity] += quantity;
+        if(InvItems[playerid][i][inv_Exists] &&
+           strcmp(InvItems[playerid][i][inv_Name], name, true) == 0 &&
+           InvItems[playerid][i][inv_Category] == category) {
+            InvItems[playerid][i][inv_Quantity] += quantity;
             InvData[playerid][inv_TotalWeight] += weight;
             if(InvData[playerid][inv_IsOpen]) CEF_InvSendData(playerid);
             return i;
         }
     }
 
-    InvData[playerid][InvItems][slot][inv_Exists] = true;
-    format(InvData[playerid][InvItems][slot][inv_Name], 32, "%s", name);
-    InvData[playerid][InvItems][slot][inv_Category] = category;
-    InvData[playerid][InvItems][slot][inv_Quantity] = quantity;
-    InvData[playerid][InvItems][slot][inv_Weight] = weight;
-    InvData[playerid][InvItems][slot][inv_Ammo] = ammo;
-    format(InvData[playerid][InvItems][slot][inv_Desc], 64, "%s", desc);
+    InvItems[playerid][slot][inv_Exists] = true;
+    format(InvItems[playerid][slot][inv_Name], 32, "%s", name);
+    InvItems[playerid][slot][inv_Category] = category;
+    InvItems[playerid][slot][inv_Quantity] = quantity;
+    InvItems[playerid][slot][inv_Weight] = weight;
+    InvItems[playerid][slot][inv_Ammo] = ammo;
+    format(InvItems[playerid][slot][inv_Desc], 64, "%s", desc);
     InvData[playerid][inv_TotalWeight] += weight;
 
     if(InvData[playerid][inv_IsOpen]) CEF_InvSendData(playerid);
@@ -198,14 +200,14 @@ stock CEF_InvAddItem(playerid, name[], category, quantity, Float:weight, ammo = 
 // ===========================================================================
 stock CEF_InvRemoveItem(playerid, slot) {
     if(slot < 0 || slot >= MAX_INV_SLOTS) return 0;
-    if(!InvData[playerid][InvItems][slot][inv_Exists]) return 0;
+    if(!InvItems[playerid][slot][inv_Exists]) return 0;
 
-    InvData[playerid][inv_TotalWeight] -= InvData[playerid][InvItems][slot][inv_Weight];
+    InvData[playerid][inv_TotalWeight] -= InvItems[playerid][slot][inv_Weight];
     if(InvData[playerid][inv_TotalWeight] < 0.0) InvData[playerid][inv_TotalWeight] = 0.0;
 
-    InvData[playerid][InvItems][slot][inv_Exists] = false;
-    InvData[playerid][InvItems][slot][inv_Name][0] = '\0';
-    InvData[playerid][InvItems][slot][inv_Quantity] = 0;
+    InvItems[playerid][slot][inv_Exists] = false;
+    InvItems[playerid][slot][inv_Name][0] = '\0';
+    InvItems[playerid][slot][inv_Quantity] = 0;
 
     if(InvData[playerid][inv_IsOpen]) CEF_InvSendData(playerid);
     return 1;
@@ -231,11 +233,11 @@ forward OnInvUseItem(playerid, slotStr[]);
 public OnInvUseItem(playerid, slotStr[]) {
     new slot = strval(slotStr);
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
-    if(!InvData[playerid][InvItems][slot][inv_Exists]) return;
+    if(!InvItems[playerid][slot][inv_Exists]) return;
 
     // TODO: Implementiraj koristenje predmeta
     new msg[64];
-    format(msg, sizeof(msg), "[INVENTORY]{FFFFFF} Koristis: %s", InvData[playerid][InvItems][slot][inv_Name]);
+    format(msg, sizeof(msg), "[INVENTORY]{FFFFFF} Koristis: %s", InvItems[playerid][slot][inv_Name]);
     SendClientMessage(playerid, 0x54A0FFFF, msg);
 }
 
@@ -243,10 +245,10 @@ forward OnInvDropItem(playerid, slotStr[]);
 public OnInvDropItem(playerid, slotStr[]) {
     new slot = strval(slotStr);
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
-    if(!InvData[playerid][InvItems][slot][inv_Exists]) return;
+    if(!InvItems[playerid][slot][inv_Exists]) return;
 
     new msg[64];
-    format(msg, sizeof(msg), "[INVENTORY]{FFFFFF} Bacio si: %s", InvData[playerid][InvItems][slot][inv_Name]);
+    format(msg, sizeof(msg), "[INVENTORY]{FFFFFF} Bacio si: %s", InvItems[playerid][slot][inv_Name]);
     SendClientMessage(playerid, 0xFF453AFF, msg);
     CEF_InvRemoveItem(playerid, slot);
 }
@@ -255,7 +257,7 @@ forward OnInvGiveItem(playerid, slotStr[]);
 public OnInvGiveItem(playerid, slotStr[]) {
     new slot = strval(slotStr);
     if(slot < 0 || slot >= MAX_INV_SLOTS) return;
-    if(!InvData[playerid][InvItems][slot][inv_Exists]) return;
+    if(!InvItems[playerid][slot][inv_Exists]) return;
     // TODO: Implementiraj davanje predmeta drugom igracu
     SendClientMessage(playerid, 0x54A0FFFF, "[INVENTORY]{FFFFFF} Kome zelis dati predmet? Koristi /giveitem [id]");
 }

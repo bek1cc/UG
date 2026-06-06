@@ -77,6 +77,7 @@ native cef_set_browser_pos(playerid, browserid, x, y);
 native cef_emit_event(const name[], const data[]);
 native cef_subscribe(const name[], const callback[]);
 native cef_player_has_plugin(playerid);
+#define _cef_natives_defined
 
 // ===========================================================================
 //  HELPER: Format bounty data za CEF (samo unutar USE_CEF bloka)
@@ -414,6 +415,7 @@ forward OnTabletPhoneCall(playerid, number[]);
 public OnTabletPhoneCall(playerid, number[]) {
     if(!CefTablet[playerid][ct_IsOpen]) return;
     new targetNum = strval(number);
+    #pragma unused targetNum
     // TODO: Integriraj sa iPhone call sistemom
     new msg[64];
     format(msg, sizeof(msg), "Pozivam %s...", number);

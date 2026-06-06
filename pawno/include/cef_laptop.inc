@@ -102,7 +102,7 @@ public CEF_LpSendInit(playerid) {
     format(json, sizeof(json), "{\"username\":\"%s\",\"money\":%d,\"bank\":%d}",
         playerName, GetPlayerMoney(playerid), GetPlayerMoney(playerid)); // TODO: Pravi bank balance
 
-    cef_emit_event(playerid, "laptop:init", json);
+    cef_emit_event("laptop:init", json);
 }
 
 // ===========================================================================
@@ -138,7 +138,7 @@ public OnLaptopDarkWebBuy(playerid, cmd[]) {
         new remaining = 300 - (gettime() - LaptopData[playerid][lp_DWCooldown]);
         new msg[64];
         format(msg, sizeof(msg), "Pricekaj %d sekundi!", remaining);
-        cef_emit_event(playerid, "laptop:notify", msg);
+        cef_emit_event("laptop:notify", msg);
         return;
     }
 
@@ -147,36 +147,36 @@ public OnLaptopDarkWebBuy(playerid, cmd[]) {
     // Process purchase
     new msg[128];
     if(strcmp(cmd, "pistol", true) == 0) {
-        if(GetPlayerMoney(playerid) < 5000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 5000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -5000);
         GivePlayerWeapon(playerid, 22, 50);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste Pistol 9mm za $5,000. Isporuka na tajnoj lokaciji!");
     } else if(strcmp(cmd, "deagle", true) == 0) {
-        if(GetPlayerMoney(playerid) < 15000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 15000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -15000);
         GivePlayerWeapon(playerid, 24, 30);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste Deagle za $15,000.");
     } else if(strcmp(cmd, "ak47", true) == 0) {
-        if(GetPlayerMoney(playerid) < 25000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 25000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -25000);
         GivePlayerWeapon(playerid, 30, 120);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste AK-47 za $25,000.");
     } else if(strcmp(cmd, "m4", true) == 0) {
-        if(GetPlayerMoney(playerid) < 30000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 30000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -30000);
         GivePlayerWeapon(playerid, 31, 120);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste M4 za $30,000.");
     } else if(strcmp(cmd, "sniper", true) == 0) {
-        if(GetPlayerMoney(playerid) < 50000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 50000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -50000);
         GivePlayerWeapon(playerid, 34, 20);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste Sniper Rifle za $50,000.");
     } else if(strcmp(cmd, "weed", true) == 0) {
-        if(GetPlayerMoney(playerid) < 3000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 3000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -3000);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste Marihuanu x5 za $3,000.");
     } else if(strcmp(cmd, "coke", true) == 0) {
-        if(GetPlayerMoney(playerid) < 8000) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+        if(GetPlayerMoney(playerid) < 8000) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
         GivePlayerMoney(playerid, -8000);
         format(msg, sizeof(msg), "[DARK WEB]{FFFFFF} Kupili ste Kokain x5 za $8,000.");
     } else {
@@ -190,8 +190,8 @@ forward OnLaptopBankDeposit(playerid, amountStr[]);
 public OnLaptopBankDeposit(playerid, amountStr[]) {
     if(!LaptopData[playerid][lp_IsOpen]) return;
     new amount = strval(amountStr);
-    if(amount <= 0) { cef_emit_event(playerid, "laptop:notify", "Nevazeci iznos!"); return; }
-    if(GetPlayerMoney(playerid) < amount) { cef_emit_event(playerid, "laptop:notify", "Nemate dovoljno novca!"); return; }
+    if(amount <= 0) { cef_emit_event("laptop:notify", "Nevazeci iznos!"); return; }
+    if(GetPlayerMoney(playerid) < amount) { cef_emit_event("laptop:notify", "Nemate dovoljno novca!"); return; }
     // TODO: Dodaj na bank racun
     GivePlayerMoney(playerid, -amount);
     new msg[64];
@@ -203,7 +203,7 @@ forward OnLaptopBankWithdraw(playerid, amountStr[]);
 public OnLaptopBankWithdraw(playerid, amountStr[]) {
     if(!LaptopData[playerid][lp_IsOpen]) return;
     new amount = strval(amountStr);
-    if(amount <= 0) { cef_emit_event(playerid, "laptop:notify", "Nevazeci iznos!"); return; }
+    if(amount <= 0) { cef_emit_event("laptop:notify", "Nevazeci iznos!"); return; }
     // TODO: Provjeri bank stanje, skinis sa racuna
     GivePlayerMoney(playerid, amount);
     new msg[64];
