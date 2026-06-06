@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.4 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.5 ===\n'); } catch(e) {}
 
-log('Launcher v3.4 starting...');
+log('Launcher v3.5 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.4.0';
+const LAUNCHER_VERSION = '3.5.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -561,6 +561,72 @@ function getCefState(gtaPath) {
   };
 }
 
+// ============================================================
+//  PRE-LAUNCH FIXES (prevent common SA-MP crashes)
+// ============================================================
+
+// Kill any zombie gta_sa.exe processes (causes crash at 0x00746929)
+function killZombieProcesses() {
+  try {
+    const result = execSync('tasklist /FI "IMAGENAME eq gta_sa.exe" /NH', { encoding: 'utf8', windowsHide: true });
+    if (result.includes('gta_sa.exe')) {
+      log('Found zombie gta_sa.exe process, killing...');
+      try {
+        execSync('taskkill /F /IM gta_sa.exe', { windowsHide: true });
+        log('Killed zombie gta_sa.exe');
+      } catch (e) {
+        log('Could not kill gta_sa.exe: ' + e.message);
+      }
+      return true;
+    }
+  } catch (e) { /* tasklist not found or no processes */ }
+  return false;
+}
+
+// Delete gta_sa.set (corrupt settings cause crashes)
+function deleteGtaSet() {
+  const paths = [
+    path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'gta_sa.set'),
+    path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'gta_sa.set')
+  ];
+  let deleted = false;
+  for (const p of paths) {
+    try {
+      if (fs.existsSync(p)) {
+        fs.unlinkSync(p);
+        log('Deleted gta_sa.set: ' + p);
+        deleted = true;
+      }
+    } catch (e) {
+      log('Could not delete gta_sa.set: ' + e.message);
+    }
+  }
+  return deleted;
+}
+
+// Remove compatibility mode from gta_sa.exe and samp.exe
+function removeCompatibilityMode(gtaPath) {
+  const files = ['gta_sa.exe', 'samp.exe'];
+  let fixed = false;
+  for (const f of files) {
+    const fullPath = path.join(gtaPath, f);
+    if (!fs.existsSync(fullPath)) continue;
+    try {
+      // Check and remove compatibility mode from registry
+      const { execSync } = require('child_process');
+      // Remove from HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers
+      try {
+        execSync(`reg delete "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${fullPath}" /f`, { windowsHide: true, stdio: 'pipe' });
+        log('Removed compatibility mode for: ' + f);
+        fixed = true;
+      } catch (e) {
+        // No compat entry = good, nothing to remove
+      }
+    } catch (e) { /* ignore */ }
+  }
+  return fixed;
+}
+
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
@@ -568,9 +634,23 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const sampExe = path.join(gtaPath, 'samp.exe');
   if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Instaliraj SA-MP klijent (R4/R5).' };
 
+  // Check for samp.img (missing = instant crash)
+  const sampImg = path.join(gtaPath, 'samp.img');
+  if (!fs.existsSync(sampImg)) {
+    log('WARNING: samp.img not found - will cause crash!');
+    return { error: 'samp.img nije pronadjen u GTA folderu! Ovaj fajl je potreban za SA-MP. reinstaliraj SA-MP klijent.' };
+  }
+
   if (!nickname || nickname.length < 3) nickname = 'Unicate_Player';
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
+
+  // PRE-LAUNCH FIXES
+  log('Running pre-launch crash fixes...');
+  const killedZombie = killZombieProcesses();
+  const deletedSet = deleteGtaSet();
+  const removedCompat = removeCompatibilityMode(gtaPath);
+  log('Pre-launch: zombie=' + killedZombie + ' set=' + deletedSet + ' compat=' + removedCompat);
 
   const settings = loadSettings();
   const srv = getActiveServer();
@@ -613,9 +693,14 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     child.unref();
     
     log('Launch OK (PID: ' + child.pid + ')');
+    const fixes = [];
+    if (killedZombie) fixes.push('ubijen dupli proces');
+    if (deletedSet) fixes.push('obrisan gta_sa.set');
+    if (removedCompat) fixes.push('iskljucen compatibility mode');
+    const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
     const msg = cefEnabled 
-      ? 'SA-MP pokrenut! CEF ukljucen (tablet, inventar, TD rade).'
-      : 'SA-MP pokrenut! CEF iskljucen (osnovni mod, bez CEF UI). Ako crasha, ukljuci CEF toggle u Settings.';
+      ? 'SA-MP pokrenut! CEF ukljucen (tablet, inventar, TD rade).' + fixMsg
+      : 'SA-MP pokrenut! CEF iskljucen (osnovni mod).' + fixMsg;
     return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);

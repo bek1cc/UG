@@ -23,7 +23,7 @@ async function init() {
       SERVER_NAME: 'Unicate Gaming RPG',
       WEBSITE_URL: 'https://ug-ogc.com',
       DISCORD_URL: 'https://discord.gg/unicategaming',
-      LAUNCHER_VERSION: '3.4.0'
+      LAUNCHER_VERSION: '3.5.0'
     };
     statusData = { gta_path: null, has_samp: false, cef_ok: false, has_asi: false, ready: false, missing: ['client'] };
   }
