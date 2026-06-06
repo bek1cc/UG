@@ -115,24 +115,33 @@ echo   rmdir /s /q node_modules
 echo   set ELECTRON_MIRROR=https://npmmirror.com/mirrors/electron/
 echo   npm install
 echo.
-echo Ako ni to ne radi, pokusaj bez mirror-a:
-echo   set ELECTRON_MIRROR=
-echo   npm install
-echo.
 pause
 exit /b 1
 
 :launch
 echo [OK] Pokrecem launcher...
 echo.
-call npx electron .
-if %ERRORLEVEL% NEQ 0 (
+echo [INFO] Ako se launcher odmah ugasi, vidjeces gresku ispod.
+echo.
+
+:: Run Electron with --no-sandbox for Windows compatibility
+call npx electron . --no-sandbox 2>&1
+set EXIT_CODE=%ERRORLEVEL%
+
+echo.
+if %EXIT_CODE% NEQ 0 (
+    echo ============================================
+    echo [GRESKA] Launcher se srusio! (Exit code: %EXIT_CODE%)
+    echo ============================================
     echo.
-    echo [GRESKA] Launcher nije mogao da se pokrene!
-    echo Pokusaj rucno:
-    echo   cd /d "%~dp0"
-    echo   npx electron .
+    echo Pokusaj:
+    echo   1. Obrisi node_modules folder i pokreni run.bat ponovo
+    echo   2. Iskljuci antivirus i pokusaj ponovo
+    echo   3. Pokreni rucno u CMD:
+    echo      cd /d "%~dp0"
+    echo      npx electron . --no-sandbox
     echo.
-    pause
-    exit /b 1
 )
+
+:: Keep window open so user can see errors
+pause

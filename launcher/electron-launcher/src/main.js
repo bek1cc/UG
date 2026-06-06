@@ -8,9 +8,20 @@ const dgram = require('dgram');
 const AdmZip = require('adm-zip');
 
 // ============================================================
+//  CRASH PROTECTION
+// ============================================================
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT ERROR]', err.message);
+  console.error(err.stack);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('[UNHANDLED REJECTION]', err);
+});
+
+// ============================================================
 //  CONFIG
 // ============================================================
-// Server config - supports switching between production and local test
 const SERVERS = {
   production: { ip: '135.125.156.197', port: 7777, name: 'Unicate Gaming RPG' },
   local: { ip: '127.0.0.1', port: 7777, name: 'Unicate Gaming TEST' }
@@ -36,6 +47,10 @@ const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
 let mainWindow = null;
 
+console.log('[LAUNCHER] Starting Unicate Gaming Launcher v3.0');
+console.log('[LAUNCHER] LAUNCHER_DIR:', LAUNCHER_DIR);
+console.log('[LAUNCHER] __dirname:', __dirname);
+
 // ============================================================
 //  SETTINGS
 // ============================================================
@@ -44,14 +59,18 @@ function loadSettings() {
     if (fs.existsSync(SETTINGS_FILE)) {
       return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
     }
-  } catch (e) {}
+  } catch (e) {
+    console.error('[LAUNCHER] Error loading settings:', e.message);
+  }
   return {};
 }
 
 function saveSettings(data) {
   try {
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2));
-  } catch (e) {}
+  } catch (e) {
+    console.error('[LAUNCHER] Error saving settings:', e.message);
+  }
 }
 
 // ============================================================
@@ -62,7 +81,6 @@ function findGtaPath() {
   if (settings.gta_path && fs.existsSync(path.join(settings.gta_path, 'gta_sa.exe'))) {
     return settings.gta_path;
   }
-  // Common paths
   const common = [
     'C:\\Program Files (x86)\\Rockstar Games\\GTA San Andreas',
     'D:\\GTA San Andreas', 'D:\\GTA SA', 'D:\\Games\\GTA SA',
@@ -113,7 +131,7 @@ function querySampServer(ip, port) {
   return new Promise((resolve) => {
     try {
       const sock = dgram.createSocket('udp4');
-      const timeout = setTimeout(() => { sock.close(); resolve({ online: false }); }, 3000);
+      const timeout = setTimeout(() => { try { sock.close(); } catch(e) {} resolve({ online: false }); }, 3000);
       const ipParts = ip.split('.').map(Number);
       const pkt = Buffer.concat([
         Buffer.from('SAMP'),
@@ -122,11 +140,11 @@ function querySampServer(ip, port) {
         Buffer.from('i')
       ]);
       sock.send(pkt, port, ip, (err) => {
-        if (err) { clearTimeout(timeout); sock.close(); resolve({ online: false }); }
+        if (err) { clearTimeout(timeout); try { sock.close(); } catch(e) {} resolve({ online: false }); }
       });
       sock.on('message', (data) => {
         clearTimeout(timeout);
-        sock.close();
+        try { sock.close(); } catch(e) {}
         if (data.length < 11) { resolve({ online: false }); return; }
         let off = 11;
         const pwlen = data.readUInt16LE(off); off += 2 + pwlen;
@@ -138,6 +156,7 @@ function querySampServer(ip, port) {
         const mode = data.slice(off, off + mlen).toString('latin1');
         resolve({ players, max_players: maxp, name, gamemode: mode, online: true });
       });
+      sock.on('error', () => { clearTimeout(timeout); try { sock.close(); } catch(e) {} resolve({ online: false }); });
     } catch (e) {
       resolve({ online: false });
     }
@@ -157,10 +176,8 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
     let startTime = Date.now();
 
     mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.0' } }, (response) => {
-      // Handle redirects (GitHub uses 302 redirects)
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         const newUrl = response.headers.location;
-        // Consume response to free memory
         response.resume();
         return downloadFile(newUrl, dest, onProgress, maxRedirects - 1).then(resolve).catch(reject);
       }
@@ -184,7 +201,6 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
 
       file.on('finish', () => {
         file.close();
-        // Verify the file was actually written
         if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
           try { fs.unlinkSync(dest); } catch (e) {}
           return reject(new Error('Downloaded file is empty'));
@@ -215,10 +231,8 @@ async function autoInstall(gtaPath, missing) {
           component: 'ASI Loader', pct, downloaded: dl, total, speed
         });
       });
-      // Extract dsound.dll
       const zip = new AdmZip(tmpZip);
-      // Try dinput8.dll first (newer), then dsound.dll (older)
-      const entry = zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dinput8.dll')) 
+      const entry = zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dinput8.dll'))
         || zip.getEntries().find(e => e.entryName.toLowerCase().endsWith('dsound.dll'));
       if (entry) {
         fs.writeFileSync(path.join(gtaPath, entry.entryName.split('/').pop()), entry.getData());
@@ -239,7 +253,6 @@ async function autoInstall(gtaPath, missing) {
           component: 'CEF Runtime', pct, downloaded: dl, total, speed
         });
       });
-      // Extract all
       const zip = new AdmZip(tmpZip);
       zip.extractAllTo(gtaPath, true);
       try { fs.unlinkSync(tmpZip); } catch (e) {}
@@ -252,57 +265,70 @@ async function autoInstall(gtaPath, missing) {
 //  CREATE WINDOW
 // ============================================================
 function createWindow() {
-  // Resolve paths correctly - __dirname is the src/ folder
-  const srcDir = __dirname;
-  const indexPath = path.join(srcDir, 'index.html');
-  const preloadPath = path.join(srcDir, 'preload.js');
-  // Try both .ico and .png for icon
-  const iconIco = path.join(srcDir, 'ug_icon.ico');
-  const iconPng = path.join(srcDir, 'ug_logo.png');
-  let iconPath = null;
-  if (fs.existsSync(iconIco)) iconPath = iconIco;
-  else if (fs.existsSync(iconPng)) iconPath = iconPng;
+  try {
+    const srcDir = __dirname;
+    const indexPath = path.join(srcDir, 'index.html');
+    const preloadPath = path.join(srcDir, 'preload.js');
+    const iconIco = path.join(srcDir, 'ug_icon.ico');
+    const iconPng = path.join(srcDir, 'ug_logo.png');
+    let iconPath = null;
+    if (fs.existsSync(iconIco)) iconPath = iconIco;
+    else if (fs.existsSync(iconPng)) iconPath = iconPng;
 
-  console.log('[LAUNCHER] __dirname:', srcDir);
-  console.log('[LAUNCHER] index.html exists:', fs.existsSync(indexPath));
-  console.log('[LAUNCHER] icon path:', iconPath);
-  console.log('[LAUNCHER] icon exists:', iconPath ? fs.existsSync(iconPath) : false);
+    console.log('[LAUNCHER] Creating window...');
+    console.log('[LAUNCHER] index.html:', indexPath, 'exists:', fs.existsSync(indexPath));
+    console.log('[LAUNCHER] preload.js:', preloadPath, 'exists:', fs.existsSync(preloadPath));
 
-  mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 1100,
-    minHeight: 700,
-    frame: false,
-    transparent: false,
-    resizable: true,
-    title: 'Unicate Gaming - Launcher',
-    backgroundColor: '#0b0f1a',
-    icon: iconPath || undefined,
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: preloadPath
-    }
-  });
+    mainWindow = new BrowserWindow({
+      width: 1280,
+      height: 800,
+      minWidth: 1100,
+      minHeight: 700,
+      frame: false,
+      transparent: false,
+      resizable: true,
+      title: 'Unicate Gaming - Launcher',
+      backgroundColor: '#0b0f1a',
+      icon: iconPath || undefined,
+      show: false, // Don't show until ready
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        preload: preloadPath,
+        sandbox: false // Disable sandbox for Windows compatibility
+      }
+    });
 
-  // Open DevTools for debugging (remove in production)
-  // Open DevTools for debugging (remove in production)
-  // mainWindow.webContents.openDevTools();
+    // Show window only when renderer is ready (prevents flash/crash)
+    mainWindow.once('ready-to-show', () => {
+      console.log('[LAUNCHER] Window ready, showing...');
+      mainWindow.show();
+    });
 
-  // Load the index.html
-  mainWindow.loadFile(indexPath).catch(err => {
-    console.error('[LAUNCHER] Failed to load index.html:', err);
-  });
+    // Load the index.html
+    mainWindow.loadFile(indexPath).catch(err => {
+      console.error('[LAUNCHER] Failed to load index.html:', err);
+    });
 
-  // Log any console errors from renderer
-  mainWindow.webContents.on('console-message', (event, level, message) => {
-    console.log('[RENDERER]', message);
-  });
+    // Log renderer console messages
+    mainWindow.webContents.on('console-message', (event, level, message) => {
+      console.log('[RENDERER]', message);
+    });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+    // Log renderer errors
+    mainWindow.webContents.on('render-process-gone', (event, details) => {
+      console.error('[LAUNCHER] Renderer process gone:', details);
+    });
+
+    mainWindow.on('closed', () => {
+      console.log('[LAUNCHER] Window closed');
+      mainWindow = null;
+    });
+
+    console.log('[LAUNCHER] Window created successfully');
+  } catch (err) {
+    console.error('[LAUNCHER] Error creating window:', err);
+  }
 }
 
 // ============================================================
@@ -404,6 +430,22 @@ ipcMain.handle('close-window', () => {
 // ============================================================
 //  APP EVENTS
 // ============================================================
-app.whenReady().then(createWindow);
-app.on('window-all-closed', () => app.quit());
-app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+app.whenReady().then(() => {
+  console.log('[LAUNCHER] App ready, creating window...');
+  createWindow();
+}).catch(err => {
+  console.error('[LAUNCHER] App ready failed:', err);
+});
+
+app.on('window-all-closed', () => {
+  console.log('[LAUNCHER] All windows closed, quitting...');
+  app.quit();
+});
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+app.on('before-quit', () => {
+  console.log('[LAUNCHER] App about to quit...');
+});
