@@ -1,5 +1,33 @@
 # UG Gamemode - Changelog
 
+## [2026-06-06] - Bounty Board Sistem v1.0
+
+### Novo
+- **Bounty Board sistem** (`pawno/include/bounty.inc`) - javna tablica nagrada
+  - Igrači stavljaju novac na glavu drugih igrača
+  - Ko ubije metu, dobija nagradu
+  - Više bountyja se zbrajaju na istu metu
+  - Tab lista sa statusom (online/offline), iznosom, ko je postavio
+  - Potvrda prije postavljanja (dialog)
+  - Cooldown 5 min između postavljanja
+  - Meta dobija obavijest kad dobije bounty
+  - Globalna obavijest za sve igrače
+  - GameText + zvuk kad ubica pokupi nagradu
+  - Bounty ostaje i kad meta disconnecta (match po imenu)
+
+### Komande
+- `/bounty [ID] [Iznos]` - postavi nagradu na igrača
+- `/bounty` (bez parametara) - pogledaj listu svih nagrada
+- `/bounties` - pregled svih aktivnih bountyja
+- `/bountyme` - provjeri da li imaš nagradu na sebi
+
+### Pravila
+- Minimum: $1,000 | Maksimum: $500,000
+- Ne možeš staviti na sebe
+- Cooldown: 5 minuta
+
+---
+
 ## [2026-06-06] - iPhone Telefon Sistem v2.0
 
 ### Novo
