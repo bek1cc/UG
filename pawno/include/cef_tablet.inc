@@ -53,7 +53,33 @@ static CefTablet[MAX_PLAYERS][CefTabletData];
 static ct_InitData[MAX_PLAYERS][512];
 
 // ===========================================================================
-//  HELPER: Format bounty data za CEF
+//  HELPER: GetOnlinePlayers (zajednicko za obje verzije)
+// ===========================================================================
+stock CEF_GetOnlinePlayers() {
+    new count = 0;
+    for(new i = 0; i < MAX_PLAYERS; i++) {
+        if(IsPlayerConnected(i)) count++;
+    }
+    return count;
+}
+
+// ===========================================================================
+//  CEF PLUGIN VERZIJA - koristi pravi samp-cef API
+// ===========================================================================
+#if defined USE_CEF
+
+// Samp-CEF native funkcije
+native cef_create_browser(playerid, browserid, const url[], bool:hidden = false, bool:fullscreen = false);
+native cef_destroy_browser(playerid, browserid);
+native cef_hide_browser(playerid, browserid, bool:hide);
+native cef_set_browser_size(playerid, browserid, width, height);
+native cef_set_browser_pos(playerid, browserid, x, y);
+native cef_emit_event(const name[], const data[]);
+native cef_subscribe(const name[], const callback[]);
+native cef_player_has_plugin(playerid);
+
+// ===========================================================================
+//  HELPER: Format bounty data za CEF (samo unutar USE_CEF bloka)
 // ===========================================================================
 stock CEF_FormatBountyJSON() {
     new json[2048];
@@ -92,32 +118,6 @@ stock CEF_FormatBountyJSON() {
     strcat(json, "]}");
     return json;
 }
-
-// ===========================================================================
-//  HELPER: GetOnlinePlayers
-// ===========================================================================
-stock CEF_GetOnlinePlayers() {
-    new count = 0;
-    for(new i = 0; i < MAX_PLAYERS; i++) {
-        if(IsPlayerConnected(i)) count++;
-    }
-    return count;
-}
-
-// ===========================================================================
-//  CEF PLUGIN VERZIJA - koristi pravi samp-cef API
-// ===========================================================================
-#if defined USE_CEF
-
-// Samp-CEF native funkcije
-native cef_create_browser(playerid, browserid, const url[], bool:hidden = false, bool:fullscreen = false);
-native cef_destroy_browser(playerid, browserid);
-native cef_hide_browser(playerid, browserid, bool:hide);
-native cef_set_browser_size(playerid, browserid, width, height);
-native cef_set_browser_pos(playerid, browserid, x, y);
-native cef_emit_event(const name[], const data[]);
-native cef_subscribe(const name[], const callback[]);
-native cef_player_has_plugin(playerid);
 
 // ===========================================================================
 //  OTVARANJE TABLETA (CEF)

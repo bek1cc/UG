@@ -1,323 +1,176 @@
 <!DOCTYPE html>
-<html lang="hr" data-theme="dark">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UG Tablet</title>
+    <title>Unicate Gaming - Tablet</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- LOCK SCREEN -->
-    <div id="lockScreen" class="screen active">
-        <div class="lock-bg"></div>
-        <div class="lock-content">
-            <div class="lock-status">
-                <span class="lock-signal">&#9679;&#9679;&#9679;&#9679;</span>
-                <span class="lock-carrier">UG 5G</span>
-                <span class="lock-battery-wrap"><span class="lock-battery-fill" id="lockBatteryFill" style="width:100%"></span></span>
-                <span class="lock-battery-text" id="lockBattery">100%</span>
-            </div>
-            <div class="lock-time" id="lockTime">00:00</div>
-            <div class="lock-date" id="lockDate">Ponedjeljak, 1. Sijecnja</div>
-            <div class="lock-brand">
-                <div class="lock-brand-icon">UG</div>
-                <div class="lock-brand-text">UNICATE GAMING</div>
-            </div>
-            <div class="lock-swipe-hint">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-                <span>Klikni za otkljuavanje</span>
-            </div>
-            <button class="unlock-btn" onclick="showLogin()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-                OTKLJUCAJ
-            </button>
-        </div>
-    </div>
-
-    <!-- LOGIN SCREEN -->
-    <div id="loginScreen" class="screen">
-        <div class="login-bg"></div>
-        <div class="login-content">
-            <div class="login-logo-wrap">
-                <div class="login-logo">UG</div>
-                <div class="login-glow"></div>
-            </div>
-            <div class="login-title">UNICATE GAMING</div>
-            <div class="login-subtitle">Sigurna prijava na tablet</div>
-
-            <div class="login-form">
-                <div class="login-field">
-                    <label class="login-label">KORISNIK</label>
-                    <div class="login-username" id="loginUsername">Username</div>
-                </div>
-                <div class="login-field">
-                    <label class="login-label">PIN KOD</label>
-                    <div class="pin-dots" id="pinDots">
-                        <span class="pin-dot"></span>
-                        <span class="pin-dot"></span>
-                        <span class="pin-dot"></span>
-                        <span class="pin-dot"></span>
-                    </div>
-                    <input type="password" id="pinInput" class="login-input" placeholder="Unesite PIN (4 cifre)" maxlength="4" pattern="[0-9]*" autocomplete="off">
-                </div>
-                <button class="login-btn" onclick="attemptLogin()">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-                    PRIJAVI SE
-                </button>
-                <button class="register-btn" onclick="attemptRegister()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-                    REGISTRUJ SE
-                </button>
-            </div>
-
-            <div id="loginMessage" class="login-message"></div>
-        </div>
-    </div>
-
-    <!-- HOME SCREEN -->
-    <div id="homeScreen" class="screen">
+    <div class="tablet-container">
+        <!-- Status Bar -->
         <div class="status-bar">
             <div class="status-left">
-                <svg class="status-signal" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 20h2V8H2v12zm4 0h2V4H6v16zm4 0h2v-8h-2v8zm4 0h2V9h-2v11zm4 0h2V2h-2v18z"/></svg>
-                <span class="carrier">UG 5G</span>
+                <span class="signal">UG 4G</span>
+                <span class="status-icon" id="signalIcon">&#9679;</span>
             </div>
-            <div class="status-center" id="statusTime">00:00</div>
+            <div class="status-center" id="clock">00:00</div>
             <div class="status-right">
-                <span class="battery-text" id="statusBattery">100%</span>
-                <div class="battery-icon-wrap"><div class="battery-icon-fill" id="statusBatteryFill" style="width:100%"></div></div>
+                <span class="battery-text" id="batteryText">100%</span>
+                <div class="battery-icon"><div class="battery-fill" id="batteryFill"></div></div>
+                <span class="theme-toggle" id="themeToggle" title="Promijeni temu">&#9789;</span>
             </div>
         </div>
 
-        <div class="home-welcome" id="homeWelcome">Dobrodosao</div>
-
-        <div class="home-grid">
-            <div class="app-icon" onclick="openApp('phone')">
-                <div class="app-icon-bg gradient-green">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                </div>
-                <span class="app-label">Telefon</span>
-            </div>
-            <div class="app-icon" onclick="openApp('sms')">
-                <div class="app-icon-bg gradient-blue">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-                </div>
-                <span class="app-label">Poruke</span>
-            </div>
-            <div class="app-icon" onclick="openApp('bounty')">
-                <div class="app-icon-bg gradient-red">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                </div>
-                <span class="app-label">Bounty</span>
-            </div>
-            <div class="app-icon" onclick="openApp('bank')">
-                <div class="app-icon-bg gradient-gold">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1a1a2e" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a4 4 0 00-8 0v2"/><line x1="12" y1="12" x2="12" y2="16"/></svg>
-                </div>
-                <span class="app-label">Banka</span>
-            </div>
-            <div class="app-icon" onclick="openApp('contacts')">
-                <div class="app-icon-bg gradient-cyan">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-                </div>
-                <span class="app-label">Kontakt</span>
-            </div>
-            <div class="app-icon" onclick="openApp('gps')">
-                <div class="app-icon-bg gradient-purple">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-                </div>
-                <span class="app-label">GPS</span>
-            </div>
-            <div class="app-icon" onclick="openApp('darkweb')">
-                <div class="app-icon-bg gradient-darkred">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                </div>
-                <span class="app-label">Dark Web</span>
-            </div>
-            <div class="app-icon" onclick="openApp('911')">
-                <div class="app-icon-bg gradient-emergency">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                </div>
-                <span class="app-label">Hitna</span>
-            </div>
-            <div class="app-icon" onclick="openApp('settings')">
-                <div class="app-icon-bg gradient-gray">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                </div>
-                <span class="app-label">Podesi</span>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <span class="logo-text">UNICATE <span class="accent">GAMING</span></span>
             </div>
         </div>
 
-        <div class="home-dock">
-            <div class="dock-item" onclick="openApp('phone')">
-                <div class="dock-bg gradient-green">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="home">&#9750; Pocetna</button>
+            <button class="nav-tab" data-tab="bounties">&#9876; Bounty</button>
+            <button class="nav-tab" data-tab="messages">&#9993; Poruke</button>
+            <button class="nav-tab" data-tab="settings">&#9881; Postavke</button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Home Tab -->
+            <div class="tab-content active" id="tab-home">
+                <div class="welcome-card">
+                    <div class="welcome-avatar" id="playerAvatar">?</div>
+                    <div class="welcome-info">
+                        <h2>Dobrodosao natrag!</h2>
+                        <p id="playerName">Igrac</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">$</div>
+                        <div class="stat-value" id="statMoney">0</div>
+                        <div class="stat-label">Novac</div>
+                    </div>
+                    <div class="stat-card cyan">
+                        <div class="stat-icon">&#9733;</div>
+                        <div class="stat-value" id="statLevel">0</div>
+                        <div class="stat-label">Level</div>
+                    </div>
+                    <div class="stat-card gold">
+                        <div class="stat-icon">&#9876;</div>
+                        <div class="stat-value" id="statBounties">0</div>
+                        <div class="stat-label">Bounties</div>
+                    </div>
+                    <div class="stat-card red">
+                        <div class="stat-icon">&#9760;</div>
+                        <div class="stat-value" id="statKills">0</div>
+                        <div class="stat-label">Ubistva</div>
+                    </div>
+                </div>
+                <div class="quick-actions">
+                    <h3>Brze akcije</h3>
+                    <div class="action-grid">
+                        <button class="action-btn" onclick="call911()">&#128680; Pozovi 911</button>
+                        <button class="action-btn" onclick="callTaxi()">&#128661; Pozovi Taxi</button>
+                        <button class="action-btn" onclick="callMehanicar()">&#128295; Mehanicar</button>
+                        <button class="action-btn" onclick="openBounties()">&#9876; Bounty lista</button>
+                    </div>
                 </div>
             </div>
-            <div class="dock-item" onclick="openApp('sms')">
-                <div class="dock-bg gradient-blue">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+
+            <!-- Bounties Tab -->
+            <div class="tab-content" id="tab-bounties">
+                <div class="section-header">
+                    <h2>&#9876; Aktivni Bounty-ji</h2>
+                    <button class="btn-sm" onclick="refreshBounties()">&#8635; Osvjezi</button>
+                </div>
+                <div class="bounty-list" id="bountyList">
+                    <div class="empty-state">
+                        <div class="empty-icon">&#9876;</div>
+                        <p>Ucitavanje bounty-ja...</p>
+                    </div>
+                </div>
+                <div class="bounty-form">
+                    <h3>Postavi Bounty</h3>
+                    <input type="text" id="bountyTarget" placeholder="Ime igraca" class="input-field">
+                    <input type="number" id="bountyAmount" placeholder="Iznos ($)" class="input-field">
+                    <div class="form-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="bountyAnon"> Anonimno
+                        </label>
+                    </div>
+                    <button class="btn-primary" onclick="placeBounty()">&#9876; Postavi</button>
                 </div>
             </div>
-            <div class="dock-item" onclick="openApp('bounty')">
-                <div class="dock-bg gradient-red">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+
+            <!-- Messages Tab -->
+            <div class="tab-content" id="tab-messages">
+                <div class="section-header">
+                    <h2>&#9993; Poruke</h2>
+                </div>
+                <div class="message-list" id="messageList">
+                    <div class="empty-state">
+                        <div class="empty-icon">&#9993;</div>
+                        <p>Nema poruka</p>
+                    </div>
+                </div>
+                <div class="message-form">
+                    <input type="text" id="msgTo" placeholder="Primaoc" class="input-field">
+                    <input type="text" id="msgText" placeholder="Poruka..." class="input-field">
+                    <button class="btn-primary" onclick="sendMessage()">&#9993; Posalji</button>
                 </div>
             </div>
-            <div class="dock-item" onclick="openApp('settings')">
-                <div class="dock-bg gradient-gray">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+
+            <!-- Settings Tab -->
+            <div class="tab-content" id="tab-settings">
+                <h2>&#9881; Postavke</h2>
+                <div class="settings-list">
+                    <div class="setting-item">
+                        <span>Tamna tema</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="darkModeToggle" checked onchange="toggleTheme()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Zvuk obavijesti</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="soundToggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <span>Vibracija</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="vibrationToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="profile-card">
+                    <h3>Moj Profil</h3>
+                    <div class="profile-row"><span>Ime:</span><span id="profileName">-</span></div>
+                    <div class="profile-row"><span>Telefon:</span><span id="profilePhone">-</span></div>
+                    <div class="profile-row"><span>Level:</span><span id="profileLevel">-</span></div>
+                </div>
+                <div class="about-section">
+                    <p class="version">Unicate Gaming Tablet v2.0</p>
+                    <p class="credits">Powered by samp-cef</p>
                 </div>
             </div>
         </div>
 
-        <div class="home-bar" onclick="closeTablet()"></div>
-    </div>
-
-    <!-- SETTINGS APP -->
-    <div id="settingsApp" class="screen app-screen">
-        <div class="app-header">
-            <button class="back-btn" onclick="goHome()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Natrag
-            </button>
-            <span class="app-title">Podesavanja</span>
-        </div>
-        <div class="app-content">
-            <div class="settings-section">
-                <div class="settings-item" onclick="toggleTheme()">
-                    <div class="settings-icon">
-                        <svg id="themeIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Tamna tema</div>
-                        <div class="settings-desc" id="themeDesc">Aktivna</div>
-                    </div>
-                    <div class="settings-toggle" id="themeToggle">
-                        <div class="toggle-knob"></div>
-                    </div>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-icon gradient-blue">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Moj broj</div>
-                        <div class="settings-desc" id="settingsPhone">---</div>
-                    </div>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-icon gradient-green">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Novac</div>
-                        <div class="settings-desc" id="settingsMoney">$0</div>
-                    </div>
-                </div>
-                <div class="settings-item" onclick="closeTablet()">
-                    <div class="settings-icon gradient-red">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    </div>
-                    <div class="settings-info">
-                        <div class="settings-name">Odjavi se</div>
-                        <div class="settings-desc">Zatvori tablet</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- BOUNTY APP -->
-    <div id="bountyApp" class="screen app-screen">
-        <div class="app-header">
-            <button class="back-btn" onclick="goHome()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Natrag
-            </button>
-            <span class="app-title">Bounty Board</span>
-        </div>
-        <div class="app-content">
-            <div class="bounty-stats">
-                <div class="stat-card stat-red">
-                    <div class="stat-value" id="bountyCount">0</div>
-                    <div class="stat-label">Aktivnih</div>
-                </div>
-                <div class="stat-card stat-gold">
-                    <div class="stat-value" id="bountyTotal">$0</div>
-                    <div class="stat-label">Ukupno</div>
-                </div>
-            </div>
-
-            <div class="bounty-form">
-                <h3>Postavi nagradu</h3>
-                <input type="text" id="bountyTarget" class="form-input" placeholder="Ime igraca">
-                <input type="number" id="bountyAmount" class="form-input" placeholder="Iznos ($)" min="1000" max="500000">
-                <button class="submit-btn" onclick="placeBounty()">POSTAVI</button>
-            </div>
-
-            <div class="bounty-list" id="bountyList">
-                <div class="bounty-empty">Nema aktivnih nagrada</div>
-            </div>
+        <!-- Bottom Bar -->
+        <div class="bottom-bar">
+            <button class="bottom-btn close" onclick="closeTablet()">&#10005; Zatvori</button>
         </div>
     </div>
 
-    <!-- PHONE APP -->
-    <div id="phoneApp" class="screen app-screen">
-        <div class="app-header">
-            <button class="back-btn" onclick="goHome()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Natrag
-            </button>
-            <span class="app-title">Telefon</span>
-        </div>
-        <div class="app-content">
-            <div class="phone-keypad">
-                <input type="text" id="phoneDial" class="dial-display" placeholder="Unesi broj" readonly>
-                <div class="keypad-grid">
-                    <button class="key" onclick="dialKey('1')">1</button>
-                    <button class="key" onclick="dialKey('2')">2</button>
-                    <button class="key" onclick="dialKey('3')">3</button>
-                    <button class="key" onclick="dialKey('4')">4</button>
-                    <button class="key" onclick="dialKey('5')">5</button>
-                    <button class="key" onclick="dialKey('6')">6</button>
-                    <button class="key" onclick="dialKey('7')">7</button>
-                    <button class="key" onclick="dialKey('8')">8</button>
-                    <button class="key" onclick="dialKey('9')">9</button>
-                    <button class="key key-clear" onclick="dialClear()">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
-                    </button>
-                    <button class="key" onclick="dialKey('0')">0</button>
-                    <button class="key key-call" onclick="makeCall()">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- SMS APP -->
-    <div id="smsApp" class="screen app-screen">
-        <div class="app-header">
-            <button class="back-btn" onclick="goHome()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                Natrag
-            </button>
-            <span class="app-title">Poruke</span>
-        </div>
-        <div class="app-content">
-            <div class="sms-form">
-                <input type="text" id="smsTarget" class="form-input" placeholder="Broj telefona">
-                <input type="text" id="smsMessage" class="form-input" placeholder="Poruka">
-                <button class="submit-btn submit-blue" onclick="sendSMS()">POSALJI</button>
-            </div>
-            <div class="sms-list" id="smsList">
-                <div class="bounty-empty">Nemate poruka</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TOAST NOTIFICATION -->
-    <div id="toast" class="toast"></div>
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
 
     <script src="app.js"></script>
 </body>
