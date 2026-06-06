@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   browseGta: () => ipcRenderer.invoke('browse-gta'),
   launchGame: (nickname) => ipcRenderer.invoke('launch-game', nickname),
   autoInstall: () => ipcRenderer.invoke('auto-install'),
+  setServerMode: (mode) => ipcRenderer.invoke('set-server-mode', mode),
   openUrl: (url) => ipcRenderer.invoke('open-url', url),
   minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
   maximizeWindow: () => ipcRenderer.invoke('maximize-window'),

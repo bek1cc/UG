@@ -47,6 +47,7 @@ function updateUI() {
   updateServerStatus();
   updateComponents();
   updateGtaPath();
+  updateServerMode();
 }
 
 function updateServerStatus() {
@@ -123,6 +124,29 @@ function updateComponents() {
   }
 }
 
+function updateServerMode() {
+  if (!config) return;
+  const mode = config.server_mode || 'production';
+  const btnProd = document.getElementById('btnModeProduction');
+  const btnLocal = document.getElementById('btnModeLocal');
+  const hint = document.getElementById('modeHint');
+  const panelIP = document.getElementById('panelServerIP');
+  const serverIP = document.getElementById('serverIP');
+
+  if (btnProd && btnLocal) {
+    btnProd.classList.toggle('active', mode === 'production');
+    btnLocal.classList.toggle('active', mode === 'local');
+  }
+  if (hint) {
+    hint.textContent = mode === 'production' 
+      ? 'Konektujes se na produkcijski server' 
+      : 'Konektujes se na lokalni test server (127.0.0.1)';
+    hint.style.color = mode === 'local' ? 'var(--orange)' : 'var(--dim)';
+  }
+  if (panelIP) panelIP.textContent = `${config.SERVER_IP}:${config.SERVER_PORT}`;
+  if (serverIP) serverIP.textContent = `${config.SERVER_IP}:${config.SERVER_PORT}`;
+}
+
 function updateGtaPath() {
   const pathEl = document.getElementById('gtaPath');
   const rightPath = document.getElementById('rightGtaPath');
@@ -179,6 +203,25 @@ function setupEventListeners() {
 
     btn.disabled = false;
     btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> AUTO-INSTALACIJA`;
+  });
+
+  // Server mode buttons
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const mode = btn.dataset.mode;
+      if (!mode) return;
+      const result = await API.setServerMode(mode);
+      if (result && result.success) {
+        config.SERVER_IP = result.ip;
+        config.SERVER_PORT = result.port;
+        config.SERVER_NAME = result.name;
+        config.server_mode = result.mode;
+        updateServerMode();
+        // Refresh server info for new IP
+        serverInfo = await API.getServerInfo();
+        updateServerStatus();
+      }
+    });
   });
 
   // Social buttons

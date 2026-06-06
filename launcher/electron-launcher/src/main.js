@@ -10,8 +10,18 @@ const AdmZip = require('adm-zip');
 // ============================================================
 //  CONFIG
 // ============================================================
-const SERVER_IP = '135.125.156.197';
-const SERVER_PORT = 7777;
+// Server config - supports switching between production and local test
+const SERVERS = {
+  production: { ip: '135.125.156.197', port: 7777, name: 'Unicate Gaming RPG' },
+  local: { ip: '127.0.0.1', port: 7777, name: 'Unicate Gaming TEST' }
+};
+
+function getActiveServer() {
+  const settings = loadSettings();
+  const mode = settings.server_mode || 'production';
+  return { ...SERVERS[mode], mode };
+}
+
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
@@ -275,7 +285,8 @@ function createWindow() {
   });
 
   // Open DevTools for debugging (remove in production)
-  mainWindow.webContents.openDevTools();
+  // Open DevTools for debugging (remove in production)
+  // mainWindow.webContents.openDevTools();
 
   // Load the index.html
   mainWindow.loadFile(indexPath).catch(err => {
@@ -298,7 +309,8 @@ function createWindow() {
 ipcMain.handle('get-version', () => LAUNCHER_VERSION);
 
 ipcMain.handle('get-server-info', async () => {
-  return await querySampServer(SERVER_IP, SERVER_PORT);
+  const srv = getActiveServer();
+  return await querySampServer(srv.ip, srv.port);
 });
 
 ipcMain.handle('get-status', () => {
@@ -307,7 +319,17 @@ ipcMain.handle('get-status', () => {
 });
 
 ipcMain.handle('get-config', () => {
-  return { SERVER_IP, SERVER_PORT, SERVER_NAME, WEBSITE_URL, DISCORD_URL, LAUNCHER_VERSION };
+  const srv = getActiveServer();
+  return { SERVER_IP: srv.ip, SERVER_PORT: srv.port, SERVER_NAME: srv.name, WEBSITE_URL, DISCORD_URL, LAUNCHER_VERSION, server_mode: srv.mode };
+});
+
+ipcMain.handle('set-server-mode', (event, mode) => {
+  if (mode !== 'production' && mode !== 'local') return { error: 'Invalid mode' };
+  const settings = loadSettings();
+  settings.server_mode = mode;
+  saveSettings(settings);
+  const srv = getActiveServer();
+  return { success: true, ip: srv.ip, port: srv.port, name: srv.name, mode: srv.mode };
 });
 
 ipcMain.handle('browse-gta', async () => {
@@ -336,7 +358,8 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   const sampExe = path.join(gtaPath, 'samp.exe');
   return new Promise((resolve) => {
-    execFile(sampExe, [SERVER_IP, SERVER_PORT.toString(), nickname], { cwd: gtaPath }, (err) => {
+    const srv = getActiveServer();
+    execFile(sampExe, [srv.ip, srv.port.toString(), nickname], { cwd: gtaPath }, (err) => {
       if (err) resolve({ error: 'Greska pri pokretanju: ' + err.message });
       else resolve({ success: true });
     });

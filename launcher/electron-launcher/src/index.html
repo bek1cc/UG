@@ -226,6 +226,23 @@
         <div class="page" id="page-settings">
           <div class="section-header"><h2>PODESAVANJA</h2><div class="section-line"></div></div>
           <div class="settings-grid">
+            <!-- Server Mode -->
+            <div class="setting-card">
+              <div class="setting-label">SERVER MODE</div>
+              <div class="server-mode-switch">
+                <button class="mode-btn active" id="btnModeProduction" data-mode="production">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/></svg>
+                  <span>PRODUKCIJA</span>
+                  <span class="mode-ip">135.125.156.197</span>
+                </button>
+                <button class="mode-btn" id="btnModeLocal" data-mode="local">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                  <span>LOKALNI TEST</span>
+                  <span class="mode-ip">127.0.0.1</span>
+                </button>
+              </div>
+              <div class="mode-hint" id="modeHint">Konektujes se na produkcijski server</div>
+            </div>
             <!-- GTA Path -->
             <div class="setting-card">
               <div class="setting-label">GTA:SA Putanja</div>
@@ -299,7 +316,7 @@
           <div class="panel-title">KONEKCIJA</div>
           <div class="panel-field">
             <div class="panel-label">IP Adresa</div>
-            <div class="panel-value-mono">135.125.156.197:7777</div>
+            <div class="panel-value-mono" id="panelServerIP">135.125.156.197:7777</div>
           </div>
           <div class="panel-field">
             <div class="panel-label">GTA:SA Putanja</div>

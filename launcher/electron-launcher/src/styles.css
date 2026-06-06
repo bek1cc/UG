@@ -678,6 +678,51 @@ html, body {
   opacity: 0.5; cursor: not-allowed;
 }
 
+/* ---------- SERVER MODE SWITCH ---------- */
+.server-mode-switch {
+  display: flex; gap: 8px;
+}
+
+.mode-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 4px; background: var(--bg-input);
+  border: 2px solid rgba(26, 37, 64, 0.5);
+  border-radius: var(--radius); padding: 14px 12px;
+  cursor: pointer; transition: all var(--transition);
+  color: var(--dim);
+}
+
+.mode-btn svg { opacity: 0.5; transition: all var(--transition); }
+
+.mode-btn span:first-of-type {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+}
+
+.mode-ip {
+  font-size: 9px; color: var(--darker);
+  font-family: 'Consolas', 'Courier New', monospace;
+}
+
+.mode-btn:hover {
+  border-color: var(--blue);
+  color: var(--light);
+}
+
+.mode-btn.active {
+  border-color: var(--neon);
+  background: var(--bg-active);
+  color: var(--neon);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.15);
+}
+
+.mode-btn.active svg { opacity: 1; color: var(--neon); stroke: var(--neon); }
+.mode-btn.active .mode-ip { color: var(--blue); }
+
+.mode-hint {
+  font-size: 10px; color: var(--dim); margin-top: 8px;
+  text-align: center;
+}
+
 /* ---------- ACTIONS ---------- */
 .actions-list { display: flex; flex-direction: column; gap: 6px; }
 
