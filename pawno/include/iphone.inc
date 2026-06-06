@@ -1722,14 +1722,16 @@ stock iPhone_LoadData(playerid) {
 //  SYNC - Poziva se iz fg-ogc.pwn kad se ucitavaju podaci igraca
 // ===========================================================================
 stock iPhone_SyncPlayerData(playerid, number, credit, model, bool:online) {
+    // Svi igraci UVIJEK imaju telefon - ako nema broj, automatski dodijeli
+    if(number == 0) {
+        number = 10000 + playerid;
+    }
     iPhoneData[playerid][iPhone_Number] = number;
     iPhoneData[playerid][iPhone_Credit] = credit;
     iPhoneData[playerid][iPhone_Model] = model;
-    iPhoneData[playerid][iPhone_Online] = online;
-    iPhoneData[playerid][iPhone_HasPhone] = (number != 0);
+    iPhoneData[playerid][iPhone_Online] = true; // Uvijek online po defaultu
+    iPhoneData[playerid][iPhone_HasPhone] = true; // Svi uvijek imaju telefon
 
     // Load saved contacts/SMS
-    if(number != 0) {
-        iPhone_LoadData(playerid);
-    }
+    iPhone_LoadData(playerid);
 }

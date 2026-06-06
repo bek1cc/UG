@@ -1,26 +1,44 @@
 # UG Gamemode - Changelog
 
-## [2026-06-06] - Phone Fix + CEF Plugin Setup
+## [2026-06-06] - CEF Plugin Integration + Phone Auto-Grant
 
 ### Popravljeno
-- **/phone komanda** - svi igraci automatski dobijaju telefon na connect
-  - `iPhone_HasPhone = true` po defaultu (prije je bilo false)
-  - Automatski generisan broj telefona (10000 + playerid)
-  - "Nemate telefon" vise ne izlazi
-- **CEF tablet plugin** - napravljen bezbijednim za kompilaciju bez plugina
-  - `cef_tablet.inc` koristi conditional compilation (`#if defined USE_CEF`)
-  - Bez CEF plugina: /tablet koristi textdraw telefon kao fallback
-  - Sa CEF pluginom: koristi pravi samp-cef API (cef_create_browser, cef_emit_event, cef_subscribe)
-  - Server se ne crash-a vise ako CEF plugin nije instaliran
-- **server.cfg** - dodana instrukcija za CEF plugin instalaciju
-- **app.js** - azuriran za pravi samp-cef API (window.cef.emit / window.cef.subscribe)
+- **/phone komanda** - svi igraci UVIJEK imaju telefon, nema vise "Nemate telefon"
+  - `iPhone_SyncPlayerData` sada automatski dodjeljuje broj ako je 0
+  - `iPhone_HasPhone = true` i `iPhone_Online = true` uvijek
+  - Ako igrac nema sacuvan broj, automatski se generise (10000 + playerid)
+- **CEF plugin** - sada je DIO standardne konfiguracije
+  - `server.cfg` - CEF.so dodat u plugins liniju
+  - `fg-ogc.pwn` - `#define USE_CEF` dodato PRIJE `#include <cef_tablet>`
+  - `cef_tablet.inc` - koristi pravi samp-cef API (cef_create_browser, cef_emit_event, cef_subscribe)
+  - `app.js` - koristi pravi samp-cef JS API (window.cef.emit / window.cef.subscribe)
+  - Fix: `Bounty_CheckPIN` → `Bounty_LoadPIN`, `Bounty_SetPIN` → `Bounty_SavePIN`
 
-### Kako aktivirati CEF plugin
-1. Preuzmi sa https://github.com/samp-cef/CEF/releases
+### Novo
+- **CEF Tablet UI** kompletno redizajniran
+  - Lock screen sa "UNICATE GAMING" brandingom i plavom gradient pozadinom
+  - Login screen sa PIN kodom (prijava + registracija)
+  - Home screen sa app ikonama (Telefon, Poruke, Bounty, Banka, Kontakt, GPS, Dark Web, Hitna, Podesi)
+  - Bounty Board app sa formom za postavljanje nagrade i listom
+  - Telefon app sa keypad-om
+  - SMS app sa formom za slanje
+  - Toast notifikacije
+  - Modern dark theme sa plavim akcentima
+
+### Fajlovi
+- `CEF/tablet/index.html` - Kompletni tablet UI sa svim screenovima
+- `CEF/tablet/style.css` - Moderan CSS sa dark theme, animacijama, gradient bojama
+- `CEF/tablet/app.js` - JS sa pravim samp-cef API (window.cef.emit / window.cef.subscribe)
+- `pawno/include/cef_tablet.inc` - PAWN integracija sa samp-cef nativnim funkcijama
+- `pawno/include/iphone.inc` - Fix: SyncPlayerData uvijek daje telefon
+- `server.cfg` - CEF.so dodat u plugins liniju
+- `gamemodes/fg-ogc.pwn` - #define USE_CEF dodato
+
+### Kako pokrenuti CEF
+1. Preuzmi CEF plugin sa https://github.com/samp-cef/CEF/releases
 2. Stavi CEF.so (Linux) ili CEF.dll (Windows) u /plugins/ folder
-3. U fg-ogc.pwn dodaj `#define USE_CEF` PRIJE `#include <cef_tablet>`
-4. U server.cfg odkomentiraj plugins liniju sa CEF.so
-5. Recompile gamemode
+3. Pokreni server - CEF.so je vec u plugins liniji
+4. Ako CEF plugin nije instaliran, /tablet koristi textdraw fallback
 
 ---
 
