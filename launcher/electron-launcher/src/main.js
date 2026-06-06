@@ -241,6 +241,7 @@ function createWindow() {
     frame: false,
     transparent: false,
     resizable: true,
+    title: 'Unicate Gaming - Launcher',
     backgroundColor: '#0b0f1a',
     icon: fs.existsSync(iconPath) ? iconPath : undefined,
     webPreferences: {
