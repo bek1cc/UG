@@ -634,11 +634,11 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const sampExe = path.join(gtaPath, 'samp.exe');
   if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Instaliraj SA-MP klijent (R4/R5).' };
 
-  // Check for samp.img (missing = instant crash)
+  // Check for samp.img - warn but don't block (some installs don't have it in GTA dir)
   const sampImg = path.join(gtaPath, 'samp.img');
-  if (!fs.existsSync(sampImg)) {
-    log('WARNING: samp.img not found - will cause crash!');
-    return { error: 'samp.img nije pronadjen u GTA folderu! Ovaj fajl je potreban za SA-MP. reinstaliraj SA-MP klijent.' };
+  const hasSampImg = fs.existsSync(sampImg);
+  if (!hasSampImg) {
+    log('WARNING: samp.img not found in GTA dir (may be OK for some installs)');
   }
 
   if (!nickname || nickname.length < 3) nickname = 'Unicate_Player';
@@ -685,10 +685,23 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    const child = spawn(sampExe, [srv.ip, srv.port.toString(), nickname], {
-      cwd: gtaPath,
+    // Write a bat file that kills zombie processes first, then launches SA-MP
+    const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
+    const batContent = `@echo off
+taskkill /F /IM gta_sa.exe >nul 2>&1
+timeout /t 1 /nobreak >nul
+cd /d "${gtaPath}"
+start "" "${sampExe}" ${srv.ip} ${srv.port} ${nickname}
+exit
+`;
+    fs.writeFileSync(batPath, batContent);
+    log('Wrote launch bat: ' + batPath);
+    
+    // Run the bat file
+    const child = spawn('cmd.exe', ['/c', batPath], {
       detached: true,
-      stdio: 'ignore'
+      stdio: 'ignore',
+      windowsHide: true
     });
     child.unref();
     
@@ -696,11 +709,9 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
     if (deletedSet) fixes.push('obrisan gta_sa.set');
-    if (removedCompat) fixes.push('iskljucen compatibility mode');
+    if (removedCompat) fixes.push('iskljucen compat mode');
     const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
-    const msg = cefEnabled 
-      ? 'SA-MP pokrenut! CEF ukljucen (tablet, inventar, TD rade).' + fixMsg
-      : 'SA-MP pokrenut! CEF iskljucen (osnovni mod).' + fixMsg;
+    const msg = 'SA-MP pokrenut!' + fixMsg + ' R4/R5 podrzano.';
     return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
