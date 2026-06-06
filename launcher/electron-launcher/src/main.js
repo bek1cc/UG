@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.3 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.4 ===\n'); } catch(e) {}
 
-log('Launcher v3.3 starting...');
+log('Launcher v3.4 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.3.0';
+const LAUNCHER_VERSION = '3.4.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -174,13 +174,13 @@ function getStatus(gtaPath) {
 }
 
 // ============================================================
-//  SAMP SERVER QUERY (faster timeout)
+//  SAMP SERVER QUERY (fixed parser + faster timeout)
 // ============================================================
 function querySampServer(ip, port) {
   return new Promise((resolve) => {
     try {
       const sock = dgram.createSocket('udp4');
-      const timeout = setTimeout(() => { try { sock.close(); } catch(e) {} resolve({ online: false }); }, 3000); // 3s instead of 5s
+      const timeout = setTimeout(() => { try { sock.close(); } catch(e) {} resolve({ online: false }); }, 3000);
       const ipParts = ip.split('.').map(Number);
       const pkt = Buffer.concat([
         Buffer.from('SAMP'),
@@ -194,16 +194,47 @@ function querySampServer(ip, port) {
       sock.on('message', (data) => {
         clearTimeout(timeout);
         try { sock.close(); } catch(e) {}
-        if (data.length < 11) { resolve({ online: false }); return; }
-        let off = 11;
-        const pwlen = data.readUInt16LE(off); off += 2 + pwlen;
-        const players = data.readUInt16LE(off); off += 2;
-        const maxp = data.readUInt16LE(off); off += 2;
-        const nlen = data.readUInt32LE(off); off += 4;
-        const name = data.slice(off, off + nlen).toString('latin1'); off += nlen;
-        const mlen = data.readUInt32LE(off); off += 4;
-        const mode = data.slice(off, off + mlen).toString('latin1');
-        resolve({ players, max_players: maxp, name, gamemode: mode, online: true });
+        try {
+          // SA-MP 'i' (info) response format:
+          // Header: SAMP(4) + IP(4) + Port(2) + 'i'(1) = 11 bytes
+          // Then: IsPassworded(1) + Players(2) + MaxPlayers(2) + NameLen(4) + Name + ModeLen(4) + Mode + MapLen(4) + Map
+          if (data.length < 11) { resolve({ online: false }); return; }
+          let off = 11;
+
+          // IsPassworded: 1 byte (uint8) - NOT 2 bytes!
+          if (off + 1 > data.length) { resolve({ online: false }); return; }
+          const isPassworded = data.readUInt8(off); off += 1;
+
+          // Players: 2 bytes (uint16 LE)
+          if (off + 2 > data.length) { resolve({ online: false }); return; }
+          const players = data.readUInt16LE(off); off += 2;
+
+          // Max Players: 2 bytes (uint16 LE)
+          if (off + 2 > data.length) { resolve({ online: false }); return; }
+          const maxp = data.readUInt16LE(off); off += 2;
+
+          // Server Name: length(4) + string
+          if (off + 4 > data.length) { resolve({ online: false }); return; }
+          const nlen = data.readUInt32LE(off); off += 4;
+          if (off + nlen > data.length) { resolve({ online: false }); return; }
+          const name = data.slice(off, off + nlen).toString('latin1'); off += nlen;
+
+          // Game Mode: length(4) + string
+          let mode = 'RPG';
+          if (off + 4 <= data.length) {
+            const mlen = data.readUInt32LE(off); off += 4;
+            if (off + mlen <= data.length) {
+              mode = data.slice(off, off + mlen).toString('latin1'); off += mlen;
+            }
+          }
+
+          log('Query OK: ' + players + '/' + maxp + ' name=' + name + ' mode=' + mode);
+          resolve({ players, max_players: maxp, name, gamemode: mode, online: true, password: isPassworded === 1 });
+        } catch (parseErr) {
+          log('Query parse error: ' + parseErr.message);
+          // Server responded but we couldn't parse - still online
+          resolve({ players: 0, max_players: 200, name: 'SA-MP Server', gamemode: 'RPG', online: true });
+        }
       });
       sock.on('error', () => { clearTimeout(timeout); try { sock.close(); } catch(e) {} resolve({ online: false }); });
     } catch (e) {
@@ -415,15 +446,17 @@ ipcMain.handle('get-server-info', async () => {
   const srv = getActiveServer();
   const result = await querySampServer(srv.ip, srv.port);
   
-  // TCP fallback for localhost
+  // TCP fallback for localhost (only if UDP query failed)
   if (!result.online && srv.mode === 'local') {
     const tcpCheck = await new Promise((resolve) => {
-      const net = require('net');
-      const sock = net.createConnection(srv.port, srv.ip);
-      sock.setTimeout(2000);
-      sock.on('connect', () => { sock.destroy(); resolve(true); });
-      sock.on('error', () => { sock.destroy(); resolve(false); });
-      sock.on('timeout', () => { sock.destroy(); resolve(false); });
+      try {
+        const net = require('net');
+        const sock = net.createConnection(srv.port, srv.ip);
+        sock.setTimeout(2000);
+        sock.on('connect', () => { sock.destroy(); resolve(true); });
+        sock.on('error', () => { sock.destroy(); resolve(false); });
+        sock.on('timeout', () => { sock.destroy(); resolve(false); });
+      } catch(e) { resolve(false); }
     });
     if (tcpCheck) {
       return { online: true, players: 0, max_players: 200, name: srv.name, gamemode: 'RPG (Local Test)', local_fallback: true };
@@ -470,6 +503,44 @@ ipcMain.handle('browse-gta', async () => {
   return null;
 });
 
+// ============================================================
+//  RENAME CEF/ASI FILES (prevent crash in local mode)
+//  In local mode, CEF client files can crash SA-MP.
+//  We temporarily rename them before launch.
+// ============================================================
+function toggleCefFiles(gtaPath, disable) {
+  const filesToToggle = [
+    { name: 'cef.asi', disabled: 'cef.asi.disabled' },
+    { name: 'dsound.dll', disabled: 'dsound.dll.disabled' },
+    { name: 'dinput8.dll', disabled: 'dinput8.dll.disabled' }
+  ];
+  const toggled = [];
+  for (const f of filesToToggle) {
+    const normalPath = path.join(gtaPath, f.name);
+    const disabledPath = path.join(gtaPath, f.disabled);
+    try {
+      if (disable) {
+        // Rename active files to .disabled
+        if (fs.existsSync(normalPath) && !fs.existsSync(disabledPath)) {
+          fs.renameSync(normalPath, disabledPath);
+          toggled.push(f.name + ' -> ' + f.disabled);
+          log('Disabled: ' + f.name);
+        }
+      } else {
+        // Rename .disabled back to active
+        if (fs.existsSync(disabledPath)) {
+          fs.renameSync(disabledPath, normalPath);
+          toggled.push(f.disabled + ' -> ' + f.name);
+          log('Re-enabled: ' + f.name);
+        }
+      }
+    } catch (e) {
+      log('Toggle error for ' + f.name + ': ' + e.message);
+    }
+  }
+  return toggled;
+}
+
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
@@ -486,6 +557,17 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   if (srv.mode === 'production') {
     const status = getStatus(gtaPath);
     if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
+    // Make sure CEF files are enabled for production
+    toggleCefFiles(gtaPath, false);
+  } else {
+    // LOCAL MODE: Disable CEF/ASI to prevent crash
+    log('Local mode: disabling CEF/ASI files to prevent crash...');
+    const toggled = toggleCefFiles(gtaPath, true);
+    if (toggled.length > 0) {
+      log('Disabled files: ' + toggled.join(', '));
+    } else {
+      log('No CEF/ASI files to disable (already disabled or not present)');
+    }
   }
 
   log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname);
@@ -501,7 +583,10 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     child.unref();
     
     log('Launch OK (PID: ' + child.pid + ')');
-    return { success: true, pid: child.pid };
+    const msg = srv.mode === 'local' 
+      ? 'Lokalni mod: CEF/ASI iskljuceni (kao i treba). Ako zelis natrag za produkciju, idi u Settings i stavi PRODUKCIJA.'
+      : 'SA-MP pokrenut!';
+    return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };

@@ -23,7 +23,7 @@ async function init() {
       SERVER_NAME: 'Unicate Gaming RPG',
       WEBSITE_URL: 'https://ug-ogc.com',
       DISCORD_URL: 'https://discord.gg/unicategaming',
-      LAUNCHER_VERSION: '3.3.0'
+      LAUNCHER_VERSION: '3.4.0'
     };
     statusData = { gta_path: null, has_samp: false, cef_ok: false, has_asi: false, ready: false, missing: ['client'] };
   }
@@ -205,12 +205,13 @@ function setupEventListeners() {
       const hint = document.querySelector('.connect-hint');
       if (hint) {
         const origHint = hint.textContent;
-        hint.textContent = 'SA-MP pokrenut! Konektovanje na server...';
+        const origColor = hint.style.color;
+        hint.textContent = result.message || 'SA-MP pokrenut! Konektovanje na server...';
         hint.style.color = 'var(--green)';
         setTimeout(() => {
           hint.textContent = origHint;
-          hint.style.color = '';
-        }, 3000);
+          hint.style.color = origColor || '';
+        }, 5000);
       }
     }
   });
