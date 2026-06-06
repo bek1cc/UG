@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.5 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.6 ===\n'); } catch(e) {}
 
-log('Launcher v3.5 starting...');
+log('Launcher v3.6 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.5.0';
+const LAUNCHER_VERSION = '3.6.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -707,12 +707,15 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
     // Write a bat file that kills zombie processes first, then launches SA-MP
+    // IMPORTANT: samp.exe command line is: samp.exe <ip> <port> [password]
+    // The 3rd argument is PASSWORD, NOT nickname! Nickname comes from registry.
+    // Passing nickname as 3rd arg causes "Wrong server password" error!
     const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
     const batContent = `@echo off
 taskkill /F /IM gta_sa.exe >nul 2>&1
 timeout /t 1 /nobreak >nul
 cd /d "${gtaPath}"
-start "" "${sampExe}" ${srv.ip} ${srv.port} ${nickname}
+start "" "${sampExe}" ${srv.ip} ${srv.port}
 exit
 `;
     fs.writeFileSync(batPath, batContent);
@@ -732,7 +735,7 @@ exit
     if (deletedSet) fixes.push('obrisan gta_sa.set');
     if (removedCompat) fixes.push('iskljucen compat mode');
     const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
-    const msg = 'SA-MP pokrenut!' + fixMsg + ' R4/R5 podrzano.';
+    const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname + ' (iz registra)';
     return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
