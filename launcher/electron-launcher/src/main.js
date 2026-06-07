@@ -668,6 +668,25 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   if (!nickname || nickname.length < 3) nickname = 'Unicate_Player';
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
+  
+  // CRITICAL: SA-MP RPG servers REQUIRE Ime_Prezime format (underscore + capital letters)
+  // Without underscore, server KICKS player with "Server closed the connection"
+  if (!nickname.includes('_')) {
+    // No underscore - auto-fix: split and add underscore with proper capitalization
+    // e.g. "Beka" → "Beka_Player", "beka" → "Beka_Player"
+    const capitalizedName = nickname.charAt(0).toUpperCase() + nickname.slice(1).toLowerCase();
+    nickname = capitalizedName + '_Player';
+    log('Auto-fixed nickname to RP format: ' + nickname);
+  }
+  
+  // Ensure first letter is uppercase and letter after _ is uppercase
+  const parts = nickname.split('_');
+  if (parts.length >= 2) {
+    parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1).toLowerCase();
+    parts[1] = parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase();
+    nickname = parts.join('_');
+  }
+  
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
 
   // PRE-LAUNCH FIXES
