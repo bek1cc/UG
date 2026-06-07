@@ -364,57 +364,32 @@ async function autoInstall(gtaPath, missing) {
 }
 
 // ============================================================
-//  SA-MP REGISTRY SETUP (NUCLEAR - delete ALL, recreate clean)
+//  SA-MP REGISTRY SETUP (GENTLE - only touch what we need)
 // ============================================================
 function setupSampRegistry(gtaPath, ip, port, nickname) {
   try {
     const { execSync } = require('child_process');
     
-    // STEP 1: DELETE ENTIRE SAMP registry key (nuclear cleanup)
-    // This removes ALL values including any cached passwords, saved servers, etc.
-    try {
-      execSync(`reg delete "HKCU\\Software\\SAMP" /f`, { windowsHide: true, stdio: 'pipe' });
-      log('Nuked entire HKCU\\Software\\SAMP key');
-    } catch (e) { /* key doesn't exist = fine */ }
+    // GENTLE approach: Only set/update the values we need
+    // DO NOT nuke the entire registry key - SA-MP stores important
+    // settings there (audio, chat, display, etc.) that the game needs
     
-    // STEP 2: Recreate with ONLY the values we need (NO Password!)
+    // Set PlayerName
     execSync(`reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`, { windowsHide: true });
+    // Set LastServer
     execSync(`reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${ip}:${port}" /f`, { windowsHide: true });
+    // Set gta_sa_exe path
     execSync(`reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`, { windowsHide: true });
     
-    // STEP 3: Delete ALL samp.set files (can cache passwords per-server)
-    const sampSetPaths = [
-      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'SAMP', 'samp.set'),
-      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'SAMP', 'samp.set'),
-      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'SAMP'),
-      path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'SAMP'),
-    ];
-    for (const p of sampSetPaths) {
-      try {
-        if (fs.existsSync(p)) {
-          const stat = fs.statSync(p);
-          if (stat.isDirectory()) {
-            // Delete entire SAMP folder and recreate empty
-            fs.rmSync(p, { recursive: true, force: true });
-            fs.mkdirSync(p, { recursive: true });
-            log('Nuked and recreated SAMP dir: ' + p);
-          } else {
-            fs.unlinkSync(p);
-            log('Deleted samp.set: ' + p);
-          }
-        }
-      } catch (e) { log('Cleanup warning: ' + e.message); }
-    }
-    
-    // STEP 4: Verify no Password value exists
+    // ONLY delete the Password value (this is what causes "Wrong server password")
     try {
-      const check = execSync(`reg query "HKCU\\Software\\SAMP" /v "Password"`, { encoding: 'utf8', windowsHide: true, stdio: 'pipe' });
-      log('WARNING: Password value still exists after cleanup! ' + check);
-    } catch (e) {
-      log('Verified: No Password value in registry (good)');
+      execSync(`reg delete "HKCU\\Software\\SAMP" /v "Password" /f`, { windowsHide: true, stdio: 'pipe' });
+      log('Deleted Password value from registry');
+    } catch (e) { 
+      log('No Password value to delete (good)'); 
     }
     
-    log('Registry setup OK (nuclear cleanup done)');
+    log('Registry setup OK (gentle - only deleted Password)');
     return true;
   } catch (err) {
     log('Registry error: ' + err.message);
@@ -625,8 +600,9 @@ function killZombieProcesses() {
   return false;
 }
 
-// Delete gta_sa.set (corrupt settings cause crashes)
-function deleteGtaSet() {
+// Delete gta_sa.set ONLY if it's corrupted (causes crash at 0x00746929)
+// But DON'T always delete it - valid settings help the game run stable
+function deleteGtaSetIfNeeded() {
   const paths = [
     path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'gta_sa.set'),
     path.join(process.env.USERPROFILE || '', 'Documents', 'GTA SA User Files', 'gta_sa.set')
@@ -635,12 +611,19 @@ function deleteGtaSet() {
   for (const p of paths) {
     try {
       if (fs.existsSync(p)) {
-        fs.unlinkSync(p);
-        log('Deleted gta_sa.set: ' + p);
-        deleted = true;
+        const stat = fs.statSync(p);
+        // Only delete if file is suspiciously small (< 100 bytes = likely corrupt)
+        // Normal gta_sa.set is several KB
+        if (stat.size < 100) {
+          fs.unlinkSync(p);
+          log('Deleted CORRUPT gta_sa.set (too small): ' + p);
+          deleted = true;
+        } else {
+          log('Keeping valid gta_sa.set: ' + p + ' (' + stat.size + ' bytes)');
+        }
       }
     } catch (e) {
-      log('Could not delete gta_sa.set: ' + e.message);
+      log('Could not check gta_sa.set: ' + e.message);
     }
   }
   return deleted;
@@ -690,7 +673,7 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   // PRE-LAUNCH FIXES
   log('Running pre-launch crash fixes...');
   const killedZombie = killZombieProcesses();
-  const deletedSet = deleteGtaSet();
+  const deletedSet = deleteGtaSetIfNeeded();
   const removedCompat = removeCompatibilityMode(gtaPath);
   log('Pre-launch: zombie=' + killedZombie + ' set=' + deletedSet + ' compat=' + removedCompat);
 
@@ -727,32 +710,29 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // SA-MP R5 command line: samp.exe IP:PORT (colon format, single argument!)
-    // Two-argument format (IP PORT) causes "Wrong server password" bug
-    // The colon format is what samp:// protocol uses internally
+    // LAUNCH via samp:// protocol - this is the EXACT same method as
+    // clicking a "Connect" link on a website. SA-MP handles it internally
+    // exactly like manual connection. This fixed "Wrong server password".
+    //
+    // DO NOT use: spawn(sampExe, ['IP', 'PORT']) - causes password bug
+    // DO NOT use: spawn(sampExe, ['IP:PORT']) - causes password bug
+    // samp:// is the ONLY reliable way to auto-connect without password issues
     
-    // Small delay to ensure registry is fully written before samp.exe reads it
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    const serverAddr = `${srv.ip}:${srv.port}`;
-    log('Launching with colon format: samp.exe ' + serverAddr);
+    const sampUrl = `samp://${srv.ip}:${srv.port}`;
+    log('Launching via samp:// protocol: ' + sampUrl);
     
-    const child = spawn(sampExe, [serverAddr], {
-      detached: true,
-      stdio: 'ignore',
-      cwd: gtaPath,
-      windowsHide: true
-    });
-    child.unref();
+    shell.openExternal(sampUrl);
     
-    log('Launch OK - direct spawn with colon format (PID: ' + child.pid + ')');
+    log('Launch OK via samp:// protocol');
     const fixes = [];
     if (killedZombie) fixes.push('ubijen dupli proces');
-    if (deletedSet) fixes.push('obrisan gta_sa.set');
+    if (deletedSet) fixes.push('obrisan corrupt gta_sa.set');
     if (removedCompat) fixes.push('iskljucen compat mode');
     const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
     const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname;
-    return { success: true, pid: child.pid, message: msg };
+    return { success: true, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
