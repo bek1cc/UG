@@ -710,29 +710,29 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // LAUNCH via samp:// protocol - this is the EXACT same method as
-    // clicking a "Connect" link on a website. SA-MP handles it internally
-    // exactly like manual connection. This fixed "Wrong server password".
+    // AUTO-CONNECT via samp:// protocol
+    // Server config fix: minimum_send_bits_per_second set to 0
+    // (was 96000 = too high, server kicked client before it started sending data)
     //
-    // DO NOT use: spawn(sampExe, ['IP', 'PORT']) - causes password bug
-    // DO NOT use: spawn(sampExe, ['IP:PORT']) - causes password bug
-    // samp:// is the ONLY reliable way to auto-connect without password issues
+    // If samp:// still fails, fallback to just opening samp.exe (manual Connect)
     
     await new Promise(resolve => setTimeout(resolve, 500));
     
     const sampUrl = `samp://${srv.ip}:${srv.port}`;
-    log('Launching via samp:// protocol: ' + sampUrl);
+    log('Auto-connect via samp://: ' + sampUrl);
     
-    shell.openExternal(sampUrl);
-    
-    log('Launch OK via samp:// protocol');
-    const fixes = [];
-    if (killedZombie) fixes.push('ubijen dupli proces');
-    if (deletedSet) fixes.push('obrisan corrupt gta_sa.set');
-    if (removedCompat) fixes.push('iskljucen compat mode');
-    const fixMsg = fixes.length > 0 ? ' (Fix: ' + fixes.join(', ') + ')' : '';
-    const msg = 'SA-MP pokrenut!' + fixMsg + ' Nickname: ' + nickname;
-    return { success: true, message: msg };
+    try {
+      await shell.openExternal(sampUrl);
+      log('Launch OK via samp:// protocol (auto-connect)');
+      const msg = 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...';
+      return { success: true, message: msg };
+    } catch (sampProtoErr) {
+      // Fallback: just open samp.exe, user clicks Connect manually
+      log('samp:// failed, opening samp.exe manually: ' + sampProtoErr.message);
+      await shell.openPath(sampExe);
+      const msg = 'SA-MP otvoren! Klikni Connect da se spojis.';
+      return { success: true, message: msg };
+    }
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
