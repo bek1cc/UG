@@ -33,3 +33,7 @@ Thumbs.db
 
 # Pawn compiler output (keep only gamemode .amx)
 # gamemodes/*.amx is kept, but test files are ignored
+
+# Launcher build output (NOT the releases)
+launcher/electron-launcher/dist/
+launcher/electron-launcher/node_modules/
