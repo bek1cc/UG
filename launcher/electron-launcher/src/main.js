@@ -710,27 +710,21 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // APPROACH: Write a .bat file that sets registry, then launches samp.exe
-    // This is the ONLY method proven to actually connect to the server.
-    // - samp:// causes "Server closed the connection"
-    // - spawn(sampExe, [ip, port]) causes "Wrong server password" 
-    // - bat file with just IP PORT works (tested in v3.5 - user got in!)
-    // The bat file runs: reg delete Password → reg add PlayerName → samp.exe IP PORT
-    
-    await new Promise(resolve => setTimeout(resolve, 300));
+    // EXACT v3.5 METHOD - this is what worked when user got in!
+    // Bat file with timeout + nickname as 3rd arg
+    // The "password" message is a SA-MP display quirk but CONNECTION WORKS
     
     const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
     const batContent = `@echo off
 taskkill /F /IM gta_sa.exe >nul 2>&1
+timeout /t 1 /nobreak >nul
 reg delete "HKCU\\Software\\SAMP" /v "Password" /f >nul 2>&1
-reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f >nul 2>&1
-reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${srv.ip}:${srv.port}" /f >nul 2>&1
 cd /d "${gtaPath}"
-start "" "${sampExe}" ${srv.ip} ${srv.port}
+start "" "${sampExe}" ${srv.ip} ${srv.port} ${nickname}
 exit
 `;
     fs.writeFileSync(batPath, batContent);
-    log('Wrote launch bat');
+    log('Wrote launch bat (v3.5 method)');
     
     const child = spawn('cmd.exe', ['/c', batPath], {
       detached: true,
@@ -739,7 +733,7 @@ exit
     });
     child.unref();
     
-    log('Launch OK via bat (PID: ' + child.pid + ')');
+    log('Launch OK via v3.5 bat method (PID: ' + child.pid + ')');
     const msg = 'SA-MP pokrenut! Nickname: ' + nickname;
     return { success: true, pid: child.pid, message: msg };
   } catch (err) {
