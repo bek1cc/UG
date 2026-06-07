@@ -710,29 +710,38 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // AUTO-CONNECT via samp:// protocol
-    // Server config fix: minimum_send_bits_per_second set to 0
-    // (was 96000 = too high, server kicked client before it started sending data)
-    //
-    // If samp:// still fails, fallback to just opening samp.exe (manual Connect)
+    // APPROACH: Write a .bat file that sets registry, then launches samp.exe
+    // This is the ONLY method proven to actually connect to the server.
+    // - samp:// causes "Server closed the connection"
+    // - spawn(sampExe, [ip, port]) causes "Wrong server password" 
+    // - bat file with just IP PORT works (tested in v3.5 - user got in!)
+    // The bat file runs: reg delete Password → reg add PlayerName → samp.exe IP PORT
     
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 300));
     
-    const sampUrl = `samp://${srv.ip}:${srv.port}`;
-    log('Auto-connect via samp://: ' + sampUrl);
+    const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
+    const batContent = `@echo off
+taskkill /F /IM gta_sa.exe >nul 2>&1
+reg delete "HKCU\\Software\\SAMP" /v "Password" /f >nul 2>&1
+reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f >nul 2>&1
+reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${srv.ip}:${srv.port}" /f >nul 2>&1
+cd /d "${gtaPath}"
+start "" "${sampExe}" ${srv.ip} ${srv.port}
+exit
+`;
+    fs.writeFileSync(batPath, batContent);
+    log('Wrote launch bat');
     
-    try {
-      await shell.openExternal(sampUrl);
-      log('Launch OK via samp:// protocol (auto-connect)');
-      const msg = 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...';
-      return { success: true, message: msg };
-    } catch (sampProtoErr) {
-      // Fallback: just open samp.exe, user clicks Connect manually
-      log('samp:// failed, opening samp.exe manually: ' + sampProtoErr.message);
-      await shell.openPath(sampExe);
-      const msg = 'SA-MP otvoren! Klikni Connect da se spojis.';
-      return { success: true, message: msg };
-    }
+    const child = spawn('cmd.exe', ['/c', batPath], {
+      detached: true,
+      stdio: 'ignore',
+      windowsHide: true
+    });
+    child.unref();
+    
+    log('Launch OK via bat (PID: ' + child.pid + ')');
+    const msg = 'SA-MP pokrenut! Nickname: ' + nickname;
+    return { success: true, pid: child.pid, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
