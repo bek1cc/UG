@@ -710,32 +710,21 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
     
-    // EXACT v3.5 METHOD - this is what worked when user got in!
-    // Bat file with timeout + nickname as 3rd arg
-    // The "password" message is a SA-MP display quirk but CONNECTION WORKS
+    // samp:// protocol - ONLY method that doesn't cause "Wrong server password"
+    // Server config updated: grace_period=30s, player_timeout=60s, mtu=1400, multiplier=5
+    // This should fix "Server closed the connection" which was caused by
+    // server kicking clients too aggressively on connect
     
-    const batPath = path.join(LAUNCHER_DIR, 'ug_launch.bat');
-    const batContent = `@echo off
-taskkill /F /IM gta_sa.exe >nul 2>&1
-timeout /t 1 /nobreak >nul
-reg delete "HKCU\\Software\\SAMP" /v "Password" /f >nul 2>&1
-cd /d "${gtaPath}"
-start "" "${sampExe}" ${srv.ip} ${srv.port} ${nickname}
-exit
-`;
-    fs.writeFileSync(batPath, batContent);
-    log('Wrote launch bat (v3.5 method)');
+    await new Promise(resolve => setTimeout(resolve, 500));
     
-    const child = spawn('cmd.exe', ['/c', batPath], {
-      detached: true,
-      stdio: 'ignore',
-      windowsHide: true
-    });
-    child.unref();
+    const sampUrl = `samp://${srv.ip}:${srv.port}`;
+    log('Launching via samp://: ' + sampUrl);
     
-    log('Launch OK via v3.5 bat method (PID: ' + child.pid + ')');
-    const msg = 'SA-MP pokrenut! Nickname: ' + nickname;
-    return { success: true, pid: child.pid, message: msg };
+    shell.openExternal(sampUrl);
+    
+    log('Launch OK via samp://');
+    const msg = 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...';
+    return { success: true, message: msg };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
