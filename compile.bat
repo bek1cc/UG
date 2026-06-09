@@ -20,7 +20,7 @@ del /f /q "fg-ogc.amx" 2>nul
 REM === COMPILE (using open.mp qawno compiler) ===
 echo Compiling fg-ogc.pwn with qawno...
 echo.
-"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -;+
+"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -ipawno\include -;+
 
 echo.
 
