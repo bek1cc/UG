@@ -21,7 +21,7 @@ app.commandLine.appendSwitch('ignore-gpu-blocklist');
 // ============================================================
 //  ASYNC LOG (non-blocking) - sync writes slow down startup
 // ============================================================
-const LOG_FILE = path.join(path.dirname(app.getPath('exe')), 'launcher_debug.log');
+const LOG_FILE = path.join(app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..'), 'launcher_debug.log');
 let logBuffer = [];
 let logFlushing = false;
 
@@ -79,7 +79,9 @@ const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/downlo
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
 const SAMP_CLIENT_URL = 'https://files.sa-mp.com/sa-mp-0.3.7-R4-install.exe';
 
-const LAUNCHER_DIR = path.dirname(app.getPath('exe'));
+// In development (npm start), __dirname is src/ so we go up one level
+// In production (packaged), app.getPath('exe') is the correct dir
+const LAUNCHER_DIR = app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..');
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
 let mainWindow = null;
