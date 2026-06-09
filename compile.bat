@@ -9,15 +9,18 @@ REM Kill any running server
 taskkill /f /im omp-server.exe >nul 2>nul
 timeout /t 1 /nobreak >nul
 
+REM OpenMP folder name
+set OMP=# open.mp
+
 REM === DELETE OLD .amx ===
-del /f /q "open.mp\gamemodes\fg-ogc.amx" 2>nul
+del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
 del /f /q "gamemodes\fg-ogc.amx" 2>nul
 del /f /q "fg-ogc.amx" 2>nul
 
 REM === COMPILE (using open.mp qawno compiler) ===
 echo Compiling fg-ogc.pwn with qawno...
 echo.
-"open.mp\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"open.mp\qawno\include" -;+
+"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -;+
 
 echo.
 
@@ -34,36 +37,36 @@ if exist "gamemodes\fg-ogc.amx" (
 )
 
 REM === COPY TO OPEN.MP ===
-if not exist "open.mp\gamemodes" mkdir "open.mp\gamemodes"
-copy /Y "gamemodes\fg-ogc.amx" "open.mp\gamemodes\fg-ogc.amx" >nul
-echo [OK] fg-ogc.amx deployed to open.mp\gamemodes\
+if not exist "%OMP%\gamemodes" mkdir "%OMP%\gamemodes"
+copy /Y "gamemodes\fg-ogc.amx" "%OMP%\gamemodes\fg-ogc.amx" >nul
+echo [OK] fg-ogc.amx deployed to %OMP%\gamemodes\
 
 REM === COPY PLUGINS ===
-if not exist "open.mp\plugins" mkdir "open.mp\plugins"
+if not exist "%OMP%\plugins" mkdir "%OMP%\plugins"
 for %%p in (crashdetect streamer sscanf iTD MapAndreas) do (
-    if exist "plugins\%%p.dll" copy /Y "plugins\%%p.dll" "open.mp\plugins\" >nul 2>nul
+    if exist "plugins\%%p.dll" copy /Y "plugins\%%p.dll" "%OMP%\plugins\" >nul 2>nul
 )
 echo [OK] Plugins deployed
 
 REM === COPY CEF SCRIPTFILES ===
 if exist "scriptfiles\cef" (
-    if not exist "open.mp\scriptfiles\cef" mkdir "open.mp\scriptfiles\cef"
-    xcopy /E /I /Y /Q "scriptfiles\cef" "open.mp\scriptfiles\cef" >nul 2>nul
+    if not exist "%OMP%\scriptfiles\cef" mkdir "%OMP%\scriptfiles\cef"
+    xcopy /E /I /Y /Q "scriptfiles\cef" "%OMP%\scriptfiles\cef" >nul 2>nul
 )
 echo [OK] CEF resources deployed
 
 REM === COPY STATIC SCRIPTFILES (only if open.mp dirs don't exist) ===
 for %%d in (Organizacije Dileri Firme AutoSaloni Garages Kontejneri Kapije Parkinzi Pumpe Bankomati Events GPS Granice Furniture Aktori Poslovi Radars Ulice Zones) do (
-    if not exist "open.mp\scriptfiles\%%d" (
+    if not exist "%OMP%\scriptfiles\%%d" (
         if exist "scriptfiles\%%d" (
-            xcopy /E /I /Y /Q "scriptfiles\%%d" "open.mp\scriptfiles\%%d" >nul 2>nul
+            xcopy /E /I /Y /Q "scriptfiles\%%d" "%OMP%\scriptfiles\%%d" >nul 2>nul
         )
     )
 )
 
 REM === ENSURE RUNTIME DIRS EXIST ===
 for %%d in (Korisnici Igraci Admini Admins Helperi Multiacc Streljane Logovi Inventory) do (
-    if not exist "open.mp\scriptfiles\%%d" mkdir "open.mp\scriptfiles\%%d" 2>nul
+    if not exist "%OMP%\scriptfiles\%%d" mkdir "%OMP%\scriptfiles\%%d" 2>nul
 )
 echo [OK] Scriptfiles synced
 
@@ -73,5 +76,5 @@ echo ============================================
 echo   Ready! Starting open.mp server...
 echo ============================================
 echo.
-cd /d "%~dp0open.mp"
+cd /d "%~dp0%OMP%"
 omp-server.exe
