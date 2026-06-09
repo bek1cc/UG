@@ -99,5 +99,6 @@ echo ============================================
 echo   Ready! Starting open.mp server...
 echo ============================================
 echo.
+pause
 cd /d "%~dp0%OMP%"
 omp-server.exe
