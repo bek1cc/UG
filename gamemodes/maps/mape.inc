@@ -1,3 +1,6 @@
+#pragma warning disable 240
+#pragma warning disable 204
+
 stock ObrisiObjekte(playerid)
 {
         // PCELAR

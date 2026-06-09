@@ -1,3 +1,6 @@
+#pragma warning disable 239
+#pragma warning disable 203
+
 // ===========================================================================
 //  iPHONE TELEFON SISTEM v2.0 za SA-MP
 //  File: pawno/include/iphone.inc

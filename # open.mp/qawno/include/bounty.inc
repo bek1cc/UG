@@ -1,5 +1,7 @@
 #pragma warning disable 239
 #pragma warning disable 214
+#pragma warning disable 252
+#pragma warning disable 203
 
 // ===========================================================================
 //  BOUNTY BOARD SISTEM v3.0 za SA-MP - TABLET PORTAL UI
