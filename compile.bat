@@ -12,15 +12,9 @@ timeout /t 1 /nobreak >nul
 REM OpenMP folder name (with space and hash)
 set OMP=# open.mp
 
-REM === PATCH YSI y_hooks.inc (fix forward slash check) ===
-REM YSI y_hooks has a strict check that fails with pawncc 3.10.11
-REM Uses patch_yhooks.ps1 to reliably fix the encoding
-if exist "%~dp0patch_yhooks.ps1" (
-    echo [PATCH] Running YSI y_hooks patch...
-    powershell -ExecutionPolicy Bypass -File "%~dp0patch_yhooks.ps1"
-) else (
-    echo [PATCH] patch_yhooks.ps1 not found, skipping YSI patch
-)
+REM === YSI includes are now pre-patched in repo ===
+REM No runtime patching needed - all #error Did you use lines are already commented out
+REM Gamemode uses new YSI paths: YSI_Storage\y_ini, YSI_Data\y_iterate, YSI_Coding\y_timers
 
 REM === DELETE OLD .amx ===
 del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
