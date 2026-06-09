@@ -157,16 +157,19 @@ function getStatus(gtaPath) {
   if (gtaPath && fs.existsSync(gtaPath)) {
     s.has_samp = fs.existsSync(path.join(gtaPath, 'samp.exe'));
     const hasAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
-    const hasCef = fs.existsSync(path.join(gtaPath, 'cef'));
+    const hasCefFolder = fs.existsSync(path.join(gtaPath, 'cef'));
+    // CEF runtime check: libcef.dll and client.dll are the critical CEF engine files
+    const hasCefRuntime = fs.existsSync(path.join(gtaPath, 'cef', 'libcef.dll')) && fs.existsSync(path.join(gtaPath, 'cef', 'client.dll'));
     s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
-    if (hasAsi && hasCef) { s.cef_ok = true; s.cef_msg = 'CEF OK'; }
+    if (hasAsi && hasCefRuntime) { s.cef_ok = true; s.cef_msg = 'CEF OK'; }
+    else if (hasAsi && hasCefFolder) { s.cef_msg = 'CEF runtime fali (libcef.dll)'; }
     else if (hasAsi) { s.cef_msg = 'Fali cef/ folder'; }
-    else if (hasCef) { s.cef_msg = 'Fali cef.asi'; }
+    else if (hasCefFolder) { s.cef_msg = 'Fali cef.asi'; }
     else { s.cef_msg = 'Nije instaliran'; }
     if (!s.has_samp) s.missing.push('client');
     if (!isLocal) {
       if (!hasAsi) s.missing.push('cef_asi');
-      if (!hasCef) s.missing.push('cef_runtime');
+      if (!hasCefRuntime) s.missing.push('cef_runtime');
       if (!s.has_asi) s.missing.push('asi_loader');
       s.ready = s.has_samp && s.cef_ok && s.has_asi;
     } else {
