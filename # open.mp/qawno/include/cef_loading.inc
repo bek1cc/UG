@@ -6,47 +6,44 @@
 #define CEF_LOADING_BROWSER_ID  50
 #define CEF_LOADING_URL         "http://cef/loading/index.html"
 
+// Loading screen je UKLONJEN - portal se prikazuje direktno
+// Ove funkcije ostaju kao stub-ovi da se ne bi kompajlacija break-ovala
+
 stock CEF_LoadingOpen(playerid)
 {
-        CEF_CreateBrowser(playerid, CEF_LOADING_BROWSER_ID, CEF_LOADING_URL, false);
+        #pragma unused playerid
+        // NE OTVARAJ loading screen - portal se otvara direktno iz OnCefReady
 }
 
 stock CEF_LoadingClose(playerid)
 {
-        CEF_DestroyBrowser(playerid, CEF_LOADING_BROWSER_ID);
+        #pragma unused playerid
 }
 
 stock CefLoading_OnCefReady(playerid)
 {
-        // CEF is ready - show the loading screen immediately
-        printf("[CEF-LOADING] CefReady for player %d - opening loading screen", playerid);
-        CEF_LoadingOpen(playerid);
+        // UKLONJENO: Ne prikazuje se vise loading screen
+        // Portal se otvara direktno iz OnCefReady u fg-ogc.pwn
+        printf("[CEF-LOADING] Skipping loading screen, portal opens directly for player %d", playerid);
 }
 
 stock CefLoading_OnBrowserCreated(playerid, browserid)
 {
-        if(browserid == CEF_LOADING_BROWSER_ID)
-        {
-                printf("[CEF-LOADING] Loading browser created successfully for player %d", playerid);
-        }
+        #pragma unused playerid, browserid
 }
 
 stock CefLoading_InitSubscriptions()
 {
-        // Register the OnLoadingComplete event from the loading screen JS
-        // When loading screen reaches 100%, it calls: cef.emit('OnLoadingComplete')
-        CEF_RegisterEvent("OnLoadingComplete", "OnCefLoadingComplete");
+        // Loading event se vise ne koristi, ali ostavljamo registraciju
+        // da ne bi break-ovali kod ako se negdje poziva
 }
 
 stock CefLoading_OnGameModeInit()
 {
-        // Register loading screen resource so CEF can find it
-        // CEF_AddResource takes the folder name relative to scriptfiles/cef/
-        // So "loading" maps to scriptfiles/cef/loading/
-        // URL http://cef/loading/index.html is intercepted by CEF's custom scheme handler
+        // I dalje registrujemo resurs za CEF, cak i ako loading screen nije u upotrebi
         CEF_AddResource("loading");
         CefLoading_InitSubscriptions();
-        printf("[CEF-LOADING] Resource registered: loading -> scriptfiles/cef/loading/");
+        printf("[CEF-LOADING] Resource registered (disabled): loading -> scriptfiles/cef/loading/");
 }
 
 stock CefLoading_OnPlayerDisconnect(playerid)
@@ -54,15 +51,9 @@ stock CefLoading_OnPlayerDisconnect(playerid)
         #pragma unused playerid
 }
 
-// Called when the loading screen JS fires cef.emit('OnLoadingComplete')
+// Zadrzavamo forward za kompatibilnost, ali se ne poziva vise
 forward OnCefLoadingComplete(playerid);
 public OnCefLoadingComplete(playerid)
 {
-        printf("[CEF-LOADING] Loading complete for player %d - closing loading screen, opening portal", playerid);
-
-        // Close the loading screen browser
-        CEF_LoadingClose(playerid);
-
-        // Now open the portal (login/register screen)
-        CEF_PortalOpen(playerid);
+        printf("[CEF-LOADING] OnCefLoadingComplete called for player %d - but loading screen is disabled, ignoring", playerid);
 }

@@ -146,7 +146,7 @@
 
         /* Portal card */
         .portal-card {
-            width: 420px;
+            width: 440px;
             background: rgba(12, 14, 26, 0.85);
             border: 1px solid rgba(0, 180, 255, 0.15);
             border-radius: 16px;
@@ -187,11 +187,31 @@
             100% { left: 100%; }
         }
 
+        /* Welcome text */
+        .welcome-text {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .welcome-text .player-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #00b4ff;
+            letter-spacing: 1px;
+        }
+
+        .welcome-text .welcome-sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 4px;
+        }
+
         /* Tab navigation */
         .tab-nav {
             display: flex;
             gap: 0;
-            margin-bottom: 32px;
+            margin-bottom: 28px;
+            margin-top: 20px;
             position: relative;
         }
 
@@ -231,7 +251,7 @@
         /* Form styles */
         .form-container {
             position: relative;
-            min-height: 280px;
+            min-height: 100px;
         }
 
         .form-panel {
@@ -249,7 +269,7 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -277,7 +297,7 @@
             opacity: 0.3;
         }
 
-        .form-input {
+        .form-input, .form-select {
             width: 100%;
             padding: 14px 16px 14px 44px;
             background: rgba(255, 255, 255, 0.04);
@@ -288,21 +308,41 @@
             font-size: 14px;
             transition: all 0.3s ease;
             outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-select {
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .form-select option {
+            background: #0c0e1a;
+            color: #ffffff;
         }
 
         .form-input::placeholder {
             color: rgba(255, 255, 255, 0.2);
         }
 
-        .form-input:focus {
+        .form-input:focus, .form-select:focus {
             border-color: rgba(0, 180, 255, 0.5);
             background: rgba(0, 180, 255, 0.04);
             box-shadow: 0 0 20px rgba(0, 180, 255, 0.1);
         }
 
-        .form-input.error {
+        .form-input.error, .form-select.error {
             border-color: rgba(239, 16, 51, 0.5);
             box-shadow: 0 0 20px rgba(239, 16, 51, 0.1);
+        }
+
+        .form-input:read-only {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         /* Error message */
@@ -410,7 +450,7 @@
         /* Footer links */
         .portal-footer {
             text-align: center;
-            margin-top: 24px;
+            margin-top: 20px;
         }
 
         .portal-footer a {
@@ -499,65 +539,6 @@
             color: #00ff88;
         }
 
-        /* Remember me checkbox */
-        .remember-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 4px;
-            margin-bottom: 4px;
-        }
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-
-        .checkbox-wrapper input[type="checkbox"] {
-            appearance: none;
-            width: 16px;
-            height: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-            background: rgba(255, 255, 255, 0.03);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.2s ease;
-        }
-
-        .checkbox-wrapper input[type="checkbox"]:checked {
-            background: #00b4ff;
-            border-color: #00b4ff;
-        }
-
-        .checkbox-wrapper input[type="checkbox"]:checked::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-size: 10px;
-        }
-
-        .checkbox-wrapper span {
-            font-size: 12px;
-            color: rgba(255, 255, 255, 0.4);
-        }
-
-        .forgot-link {
-            font-size: 12px;
-            color: rgba(0, 180, 255, 0.5);
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .forgot-link:hover {
-            color: #00b4ff;
-        }
-
         /* Password visibility toggle */
         .toggle-password {
             position: absolute;
@@ -613,6 +594,16 @@
             text-transform: uppercase;
             color: rgba(255, 255, 255, 0.5);
         }
+
+        /* Form row (two columns) */
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -631,34 +622,28 @@
             <div class="brand-info">
                 San Andreas Multiplayer<br>
                 RPG Server<br>
-                Pridruži se zajednici
+                Pridruzi se zajednici
             </div>
         </div>
 
         <!-- Portal card -->
         <div class="portal-card">
+            <!-- Welcome text -->
+            <div class="welcome-text">
+                <div class="player-name" id="displayName">Dobrodosao</div>
+                <div class="welcome-sub" id="welcomeSub">Unesi podatke da nastavis</div>
+            </div>
+
             <!-- Tab navigation -->
-            <div class="tab-nav">
+            <div class="tab-nav" id="tabNav">
                 <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">Prijava</button>
                 <button class="tab-btn" data-tab="register" onclick="switchTab('register')">Registracija</button>
                 <div class="tab-indicator" id="tabIndicator"></div>
             </div>
 
-            <!-- Login form -->
+            <!-- Login form - SAMO LOZINKA -->
             <div class="form-panel active" id="loginPanel">
                 <form onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label>Korisničko ime</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            <input type="text" class="form-input" id="loginUsername" placeholder="Unesi korisničko ime" autocomplete="off" maxlength="24">
-                        </div>
-                        <div class="error-msg" id="loginUsernameError"></div>
-                    </div>
-
                     <div class="form-group">
                         <label>Lozinka</label>
                         <div class="input-wrapper">
@@ -677,14 +662,6 @@
                         <div class="error-msg" id="loginPasswordError"></div>
                     </div>
 
-                    <div class="remember-row">
-                        <label class="checkbox-wrapper">
-                            <input type="checkbox" id="rememberMe">
-                            <span>Zapamti me</span>
-                        </label>
-                        <a href="#" class="forgot-link">Zaboravljena lozinka?</a>
-                    </div>
-
                     <button type="submit" class="submit-btn" id="loginBtn">
                         Prijavi se
                     </button>
@@ -697,23 +674,29 @@
                 </div>
 
                 <div class="portal-footer">
-                    <a href="#" onclick="switchTab('register')">Nemaš nalog? Registruj se</a>
+                    <a href="#" onclick="switchTab('register')">Nemas nalog? Registruj se</a>
                 </div>
             </div>
 
-            <!-- Register form -->
+            <!-- Register form - LOZINKA, EMAIL, GODINE, DRZAVA, SPOL -->
             <div class="form-panel" id="registerPanel">
                 <form onsubmit="handleRegister(event)">
                     <div class="form-group">
-                        <label>Korisničko ime</label>
+                        <label>Lozinka</label>
                         <div class="input-wrapper">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                             </svg>
-                            <input type="text" class="form-input" id="regUsername" placeholder="Izaberi korisničko ime" autocomplete="off" maxlength="24">
+                            <input type="password" class="form-input" id="regPassword" placeholder="Izaberi lozinku (min. 6 karaktera)" autocomplete="off" maxlength="64">
+                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPassword', this)">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                            </button>
                         </div>
-                        <div class="error-msg" id="regUsernameError"></div>
+                        <div class="error-msg" id="regPasswordError"></div>
                     </div>
 
                     <div class="form-group">
@@ -729,32 +712,52 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Lozinka</label>
+                        <label>Godine</label>
                         <div class="input-wrapper">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                                <polyline points="12,6 12,12 16,14"/>
                             </svg>
-                            <input type="password" class="form-input" id="regPassword" placeholder="Izaberi lozinku" autocomplete="off" maxlength="64">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPassword', this)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                            </button>
+                            <input type="number" class="form-input" id="regGodine" placeholder="Tvoje godine (12-70)" min="12" max="70" autocomplete="off">
                         </div>
-                        <div class="error-msg" id="regPasswordError"></div>
+                        <div class="error-msg" id="regGodineError"></div>
                     </div>
 
                     <div class="form-group">
-                        <label>Potvrdi lozinku</label>
+                        <label>Drzava</label>
                         <div class="input-wrapper">
                             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
                             </svg>
-                            <input type="password" class="form-input" id="regConfirmPassword" placeholder="Ponovi lozinku" autocomplete="off" maxlength="64">
+                            <select class="form-select" id="regDrzava">
+                                <option value="" disabled selected>Izaberi drzavu</option>
+                                <option value="3">Bosna i Hercegovina</option>
+                                <option value="1">Srbija</option>
+                                <option value="2">Hrvatska</option>
+                                <option value="4">Crna Gora</option>
+                                <option value="5">Makedonija</option>
+                                <option value="6">Ostalo</option>
+                            </select>
                         </div>
-                        <div class="error-msg" id="regConfirmError"></div>
+                        <div class="error-msg" id="regDrzavaError"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Spol</label>
+                        <div class="input-wrapper">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                            <select class="form-select" id="regSpol">
+                                <option value="" disabled selected>Izaberi spol</option>
+                                <option value="1">Musko</option>
+                                <option value="2">Zensko</option>
+                            </select>
+                        </div>
+                        <div class="error-msg" id="regSpolError"></div>
                     </div>
 
                     <button type="submit" class="submit-btn" id="registerBtn">
@@ -769,7 +772,7 @@
                 </div>
 
                 <div class="portal-footer">
-                    <a href="#" onclick="switchTab('login')">Već imaš nalog? Prijavi se</a>
+                    <a href="#" onclick="switchTab('login')">Vec imas nalog? Prijavi se</a>
                 </div>
             </div>
 
@@ -788,19 +791,23 @@
     </div>
 
     <!-- Version -->
-    <div class="version-tag">v2.0</div>
+    <div class="version-tag">v2.1</div>
 
     <!-- Toast notifications -->
     <div class="toast" id="toast"></div>
 
     <script>
+        // ===== Global State =====
+        var isRegistered = false;
+        var playerName = '';
+
         // ===== Tab Switching =====
         function switchTab(tab) {
-            const loginBtn = document.querySelector('[data-tab="login"]');
-            const registerBtn = document.querySelector('[data-tab="register"]');
-            const loginPanel = document.getElementById('loginPanel');
-            const registerPanel = document.getElementById('registerPanel');
-            const indicator = document.getElementById('tabIndicator');
+            var loginBtn = document.querySelector('[data-tab="login"]');
+            var registerBtn = document.querySelector('[data-tab="register"]');
+            var loginPanel = document.getElementById('loginPanel');
+            var registerPanel = document.getElementById('registerPanel');
+            var indicator = document.getElementById('tabIndicator');
 
             // Clear errors
             clearErrors();
@@ -823,42 +830,34 @@
         }
 
         // Initialize tab indicator
-        window.addEventListener('load', () => {
-            const loginBtn = document.querySelector('[data-tab="login"]');
-            const indicator = document.getElementById('tabIndicator');
+        window.addEventListener('load', function() {
+            var loginBtn = document.querySelector('[data-tab="login"]');
+            var indicator = document.getElementById('tabIndicator');
             indicator.style.left = '0';
             indicator.style.width = loginBtn.offsetWidth + 'px';
+
+            // Focus password field for login
+            setTimeout(function() {
+                document.getElementById('loginPassword').focus();
+            }, 500);
         });
 
         // ===== Password Visibility Toggle =====
         function togglePasswordVisibility(inputId, btn) {
-            const input = document.getElementById(inputId);
+            var input = document.getElementById(inputId);
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                </svg>`;
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
             } else {
                 input.type = 'password';
-                btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                </svg>`;
+                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
             }
         }
 
         // ===== Form Validation =====
-        function validateUsername(value) {
-            if (!value || value.length < 3) return 'Korisničko ime mora imati najmanje 3 karaktera';
-            if (value.length > 24) return 'Korisničko ime ne može biti duže od 24 karaktera';
-            if (!/^[a-zA-Z0-9_]+$/.test(value)) return 'Korisničko ime može sadržati samo slova, brojeve i _';
-            return null;
-        }
-
         function validatePassword(value) {
-            if (!value || value.length < 4) return 'Lozinka mora imati najmanje 4 karaktera';
-            if (value.length > 64) return 'Lozinka ne može biti duža od 64 karaktera';
+            if (!value || value.length < 6) return 'Lozinka mora imati najmanje 6 karaktera';
+            if (value.length > 64) return 'Lozinka ne moze biti duza od 64 karaktera';
             return null;
         }
 
@@ -868,39 +867,57 @@
             return null;
         }
 
+        function validateGodine(value) {
+            var age = parseInt(value);
+            if (!value || isNaN(age)) return 'Unesi tvoje godine';
+            if (age < 12 || age > 70) return 'Godine moraju biti izmedju 12 i 70';
+            return null;
+        }
+
+        function validateDrzava(value) {
+            if (!value) return 'Izaberi drzavu';
+            return null;
+        }
+
+        function validateSpol(value) {
+            if (!value) return 'Izaberi spol';
+            return null;
+        }
+
         function showError(elementId, message) {
-            const el = document.getElementById(elementId);
+            var el = document.getElementById(elementId);
             el.textContent = message;
             el.classList.add('visible');
-            // Also add error class to input
-            const input = el.previousElementSibling?.querySelector('.form-input') 
-                        || el.parentElement.querySelector('.form-input');
+            var input = el.previousElementSibling ? el.previousElementSibling.querySelector('.form-input, .form-select') : null;
+            if (!input) input = el.parentElement.querySelector('.form-input, .form-select');
             if (input) input.classList.add('error');
         }
 
         function clearErrors() {
-            document.querySelectorAll('.error-msg').forEach(el => {
-                el.textContent = '';
-                el.classList.remove('visible');
-            });
-            document.querySelectorAll('.form-input').forEach(el => {
-                el.classList.remove('error');
-            });
+            var errors = document.querySelectorAll('.error-msg');
+            for (var i = 0; i < errors.length; i++) {
+                errors[i].textContent = '';
+                errors[i].classList.remove('visible');
+            }
+            var inputs = document.querySelectorAll('.form-input, .form-select');
+            for (var j = 0; j < inputs.length; j++) {
+                inputs[j].classList.remove('error');
+            }
         }
 
         // ===== Toast Notification =====
-        function showToast(message, type = 'error') {
-            const toast = document.getElementById('toast');
+        function showToast(message, type) {
+            var toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = `toast ${type} visible`;
-            setTimeout(() => {
+            toast.className = 'toast ' + (type || 'error') + ' visible';
+            setTimeout(function() {
                 toast.classList.remove('visible');
             }, 4000);
         }
 
         // ===== Set Loading State =====
         function setLoading(loading) {
-            const overlay = document.getElementById('formLoading');
+            var overlay = document.getElementById('formLoading');
             if (loading) {
                 overlay.classList.add('visible');
             } else {
@@ -908,60 +925,58 @@
             }
         }
 
-        // ===== Login Handler =====
+        // ===== Login Handler - SAMO LOZINKA =====
         function handleLogin(e) {
             e.preventDefault();
             clearErrors();
 
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            var password = document.getElementById('loginPassword').value;
 
-            let hasError = false;
-            const usernameErr = validateUsername(username);
-            if (usernameErr) { showError('loginUsernameError', usernameErr); hasError = true; }
-            const passwordErr = validatePassword(password);
-            if (passwordErr) { showError('loginPasswordError', passwordErr); hasError = true; }
-
-            if (hasError) return;
+            var passwordErr = validatePassword(password);
+            if (passwordErr) { showError('loginPasswordError', passwordErr); return; }
 
             setLoading(true);
-            // omp-cef: emituj event ka PAWN-u
+            // Emituj event ka PAWN-u - samo lozinka
             if (typeof cef !== 'undefined' && cef.emit) {
-                cef.emit('portal:loginAttempt', username, password);
+                cef.emit('portal:loginAttempt', password);
             } else {
-                console.log('[DEV] Login attempt:', username);
-                setTimeout(() => { setLoading(false); showToast('Development mode', 'error'); }, 1500);
+                console.log('[DEV] Login attempt, password length: ' + password.length);
+                setTimeout(function() { setLoading(false); showToast('Development mode', 'error'); }, 1500);
             }
         }
 
-        // ===== Register Handler =====
+        // ===== Register Handler - LOZINKA, EMAIL, GODINE, DRZAVA, SPOL =====
         function handleRegister(e) {
             e.preventDefault();
             clearErrors();
 
-            const username = document.getElementById('regUsername').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const password = document.getElementById('regPassword').value;
-            const confirmPassword = document.getElementById('regConfirmPassword').value;
+            var password = document.getElementById('regPassword').value;
+            var email = document.getElementById('regEmail').value.trim();
+            var godine = document.getElementById('regGodine').value;
+            var drzava = document.getElementById('regDrzava').value;
+            var spol = document.getElementById('regSpol').value;
 
-            let hasError = false;
-            const usernameErr = validateUsername(username);
-            if (usernameErr) { showError('regUsernameError', usernameErr); hasError = true; }
-            const emailErr = validateEmail(email);
-            if (emailErr) { showError('regEmailError', emailErr); hasError = true; }
-            const passwordErr = validatePassword(password);
+            var hasError = false;
+            var passwordErr = validatePassword(password);
             if (passwordErr) { showError('regPasswordError', passwordErr); hasError = true; }
-            if (password !== confirmPassword) { showError('regConfirmError', 'Lozinke se ne podudaraju'); hasError = true; }
+            var emailErr = validateEmail(email);
+            if (emailErr) { showError('regEmailError', emailErr); hasError = true; }
+            var godineErr = validateGodine(godine);
+            if (godineErr) { showError('regGodineError', godineErr); hasError = true; }
+            var drzavaErr = validateDrzava(drzava);
+            if (drzavaErr) { showError('regDrzavaError', drzavaErr); hasError = true; }
+            var spolErr = validateSpol(spol);
+            if (spolErr) { showError('regSpolError', spolErr); hasError = true; }
 
             if (hasError) return;
 
             setLoading(true);
-            // omp-cef: emituj event ka PAWN-u
+            // Emituj event ka PAWN-u - lozinka, email, godine, drzava, spol
             if (typeof cef !== 'undefined' && cef.emit) {
-                cef.emit('portal:registerAttempt', username, email, password);
+                cef.emit('portal:registerAttempt', password, email, parseInt(godine), parseInt(drzava), parseInt(spol));
             } else {
-                console.log('[DEV] Register attempt:', username, email);
-                setTimeout(() => { setLoading(false); showToast('Development mode', 'error'); }, 1500);
+                console.log('[DEV] Register attempt: pass=' + password.length + ', email=' + email + ', god=' + godine + ', drz=' + drzava + ', spol=' + spol);
+                setTimeout(function() { setLoading(false); showToast('Development mode', 'error'); }, 1500);
             }
         }
 
@@ -971,9 +986,9 @@
         window.portal_loginResponse = function(success, message) {
             setLoading(false);
             if (success) {
-                showToast('Prijava uspješna! Dobrodošao natrag.', 'success');
+                showToast('Prijava uspjesna! Dobrodosao natrag.', 'success');
             } else {
-                showToast(message || 'Pogrešno korisničko ime ili lozinka.', 'error');
+                showToast(message || 'Pogresna lozinka. Pokusaj ponovo.', 'error');
                 document.getElementById('loginPassword').value = '';
                 document.getElementById('loginPassword').focus();
             }
@@ -983,40 +998,59 @@
         window.portal_registerResponse = function(success, message) {
             setLoading(false);
             if (success) {
-                showToast('Registracija uspješna! Dobrodošao na server.', 'success');
+                showToast('Registracija uspjesna! Dobrodosao na server.', 'success');
             } else {
-                showToast(message || 'Registracija nije uspjela. Pokušaj ponovo.', 'error');
+                showToast(message || 'Registracija nije uspjela. Pokusaj ponovo.', 'error');
             }
         };
 
         // Inicijalizacija portala - poziva se iz PAWN-a (portal:init event)
-        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName))
-        window.portal_init = function(playerName) {
-            if (playerName && playerName.length > 0) {
-                document.getElementById('loginUsername').value = playerName;
-                document.getElementById('regUsername').value = playerName;
+        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName), CEF_INT(isRegistered), CEF_STR(storedPassword))
+        window.portal_init = function(pName, registered, storedPass) {
+            playerName = pName || '';
+            isRegistered = (registered === 1 || registered === true);
+
+            // Prikazi ime igraca
+            var displayName = document.getElementById('displayName');
+            if (playerName.length > 0) {
+                displayName.textContent = playerName.replace(/_/g, ' ');
+            }
+
+            // Ako je registrovan - prikazi login (samo lozinka)
+            // Ako nije - prikazi register
+            if (isRegistered) {
+                document.getElementById('welcomeSub').textContent = 'Unesi lozinku da se ulogujes';
+                switchTab('login');
+                // Sakrij tab navigaciju - samo login
+                document.getElementById('tabNav').style.display = 'flex';
+            } else {
+                document.getElementById('welcomeSub').textContent = 'Popuni podatke za registraciju';
+                switchTab('register');
+                // Sakrij tab navigaciju - samo register
+                document.getElementById('tabNav').style.display = 'flex';
             }
         };
 
-        // Register CEF event listener for portal:init (omp-cef uses cef.on() for PAWN→JS events)
+        // Register CEF event listener for portal:init (omp-cef uses cef.on() for PAWN->JS events)
         if (typeof cef !== 'undefined' && cef.on) {
-            cef.on('portal:init', function(playerName) {
-                window.portal_init(playerName);
+            cef.on('portal:init', function(pName, registered, storedPass) {
+                window.portal_init(pName, registered, storedPass);
+            });
+
+            cef.on('portal:loginResponse', function(success, message) {
+                window.portal_loginResponse(success, message);
+            });
+
+            cef.on('portal:registerResponse', function(success, message) {
+                window.portal_registerResponse(success, message);
             });
         }
 
         // ===== Keyboard shortcuts =====
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'Tab' && !e.shiftKey) {
                 // Let default tab behavior work for form navigation
             }
-        });
-
-        // Focus first input on load
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loginUsername').focus();
-            }, 500);
         });
     </script>
 </body>

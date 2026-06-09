@@ -31,10 +31,17 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
         {
                 printf("[CEF-PORTAL] Portal browser created successfully for player %d", playerid);
 
-                // Send player info to portal JS
+                // Send player info to portal JS - playerName, isRegistered, storedPassword
                 new playerName[MAX_PLAYER_NAME];
                 GetPlayerName(playerid, playerName, sizeof(playerName));
-                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:init", CEF_STR(playerName));
+
+                new isRegistered = PlayerInfo[playerid][xRegistrovan];
+
+                // Posalji ime, da li je registrovan, i lozinku (za login validaciju)
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:init",
+                        CEF_STR(playerName),
+                        CEF_INT(isRegistered),
+                        CEF_STR(PlayerInfo[playerid][xLozinka]));
 
                 // Focus the portal so player can type in login fields
                 CEF_FocusBrowser(playerid, CEF_PORTAL_BROWSER_ID, true);
@@ -43,9 +50,11 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
 
 stock CefPortal_InitSubscriptions()
 {
-        // Register events that portal JS can emit
-        CEF_RegisterEvent("portal:loginAttempt", "OnCefPortalLogin", Argument_String, Argument_String);
-        CEF_RegisterEvent("portal:registerAttempt", "OnCefPortalRegister", Argument_String, Argument_String, Argument_String);
+        // Login: samo lozinka
+        CEF_RegisterEvent("portal:loginAttempt", "OnCefPortalLogin", Argument_String);
+        // Register: lozinka, email, godine, drzava, spol
+        CEF_RegisterEvent("portal:registerAttempt", "OnCefPortalRegister",
+                Argument_String, Argument_String, Argument_Integer, Argument_Integer, Argument_Integer);
 }
 
 stock CefPortal_OnGameModeInit()
@@ -60,31 +69,97 @@ stock CefPortal_OnPlayerDisconnect(playerid)
         PortalOpen[playerid] = false;
 }
 
-// OnPortalFinished is implemented in the main gamemode (fg-ogc.pwn)
-// Do not forward-declare here to avoid duplicate declaration warning
-
-// Called when player clicks Login on the portal
-forward OnCefPortalLogin(playerid, const username[], const password[]);
-public OnCefPortalLogin(playerid, const username[], const password[])
+// ==========================================================================
+// LOGIN PREKO PORTALA - igrac unio samo lozinku
+// ==========================================================================
+forward OnCefPortalLogin(playerid, const password[]);
+public OnCefPortalLogin(playerid, const password[])
 {
-        printf("[CEF-PORTAL] Login attempt from player %d, username: %s", playerid, username);
+        printf("[CEF-PORTAL] Login attempt from player %d, password length: %d", playerid, strlen(password));
 
-        // Close the portal - player is going into the game
+        // Validiraj lozinku
+        if(isnull(password) || strcmp(password, PlayerInfo[playerid][xLozinka], false) != 0)
+        {
+                printf("[CEF-PORTAL] Wrong password for player %d", playerid);
+                // Posalji gresku nazad u portal JS
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:loginResponse",
+                        CEF_BOOL(false), CEF_STR("Pogresna lozinka! Pokusaj ponovo."));
+                return 1;
+        }
+
+        printf("[CEF-PORTAL] Correct password for player %d - closing portal, spawning", playerid);
+
+        // Zatvori portal
         CEF_PortalClose(playerid);
 
-        // Call OnPortalFinished which handles login/register and spawning
-        OnPortalFinished(playerid);
+        // Pozovi portal login spawn funkciju
+        CefPortalLoginSpawn(playerid);
+
+        return 1;
 }
 
-// Called when player clicks Register on the portal
-forward OnCefPortalRegister(playerid, const username[], const email[], const password[]);
-public OnCefPortalRegister(playerid, const username[], const email[], const password[])
+// ==========================================================================
+// REGISTER PREKO PORTALA - igrac unio lozinka, email, godine, drzava, spol
+// ==========================================================================
+forward OnCefPortalRegister(playerid, const password[], const email[], godine, drzava, spol);
+public OnCefPortalRegister(playerid, const password[], const email[], godine, drzava, spol)
 {
-        printf("[CEF-PORTAL] Register attempt from player %d, username: %s, email: %s", playerid, username, email);
+        printf("[CEF-PORTAL] Register attempt from player %d, pass len=%d, email=%s, godine=%d, drzava=%d, spol=%d",
+                playerid, strlen(password), email, godine, drzava, spol);
 
-        // Close the portal - player is going into the game
+        // Validacija
+        if(strlen(password) < 6)
+        {
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
+                        CEF_BOOL(false), CEF_STR("Lozinka mora imati najmanje 6 karaktera!"));
+                return 1;
+        }
+        if(godine < 12 || godine > 70)
+        {
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
+                        CEF_BOOL(false), CEF_STR("Godine moraju biti izmedju 12 i 70!"));
+                return 1;
+        }
+        if(drzava < 1 || drzava > 6)
+        {
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
+                        CEF_BOOL(false), CEF_STR("Izaberite drzavu!"));
+                return 1;
+        }
+        if(spol < 1 || spol > 2)
+        {
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
+                        CEF_BOOL(false), CEF_STR("Izaberite spol!"));
+                return 1;
+        }
+
+        printf("[CEF-PORTAL] Registration valid for player %d - saving data, closing portal", playerid);
+
+        // Sacuvaj podatke
+        strmid(PlayerInfo[playerid][xLozinka], password, 0, strlen(password), 50);
+        strmid(PlayerInfo[playerid][xEmail], email, 0, strlen(email), 34);
+        PlayerInfo[playerid][xGodine] = godine;
+        PlayerInfo[playerid][xDrzava] = drzava;
+        PlayerInfo[playerid][xSpol] = spol;
+        PlayerInfo[playerid][xRegistrovan] = 1;
+
+        // Zatvori portal
         CEF_PortalClose(playerid);
 
-        // Call OnPortalFinished which handles login/register and spawning
-        OnPortalFinished(playerid);
+        // Pozovi portal register spawn funkciju
+        CefPortalRegisterSpawn(playerid);
+
+        return 1;
 }
+
+// ==========================================================================
+// SPAWN FUNKCIJE - direktno spawnanje nakon portala
+// ==========================================================================
+
+// Login spawn - koristi se nakon sto je lozinka validirana u portalu
+// Deklarisano u fg-ogc.pwn
+// forward CefPortalLoginSpawn(playerid);
+
+// Register spawn - koristi se nakon sto su svi podaci sacuvani iz portala
+// Deklarisano u fg-ogc.pwn
+// forward CefPortalRegisterSpawn(playerid);
