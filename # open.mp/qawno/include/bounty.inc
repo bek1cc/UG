@@ -1,3 +1,6 @@
+#pragma warning disable 239
+#pragma warning disable 214
+
 // ===========================================================================
 //  BOUNTY BOARD SISTEM v3.0 za SA-MP - TABLET PORTAL UI
 //  File: pawno/include/bounty.inc
@@ -1287,7 +1290,7 @@ stock CMD_Bounty_Me(playerid) {
 // ===========================================================================
 //  DIALOG HANDLER
 // ===========================================================================
-stock Bounty_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[]) {
+stock Bounty_OnDialogResponse(playerid, dialogid, response, listitem, const inputtext[]) {
     switch(dialogid) {
         // Registracija - unos PIN-a
         case BOUNTY_DLG_REGISTER: {

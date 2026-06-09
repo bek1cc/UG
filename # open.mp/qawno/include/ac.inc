@@ -17,18 +17,18 @@ forward ac_SetSpawnInfo(playerid);
 forward ac_SetVehiclePos(vehicleid, Float:x, Float:y, Float:z);
 forward ac_Kick(playerid);
 
-// Native-style declarations for stock ac_ functions
+// Forward declarations for stock ac_ functions
 // (These are defined later in the gamemode)
-native ac_KillTimer(timerid);
-native ac_SetPlayerCheckpoint(playerid, Float:x, Float:y, Float:z, Float:size);
-native ac_DisablePlayerCheckpoint(playerid);
-native ac_SetPlayerWantedLevel(playerid, broj);
-native ac_IsNotWeaponNoAmmo(weaponid);
-native ac_IsGiveVehicleWeapon(weaponid);
-native ac_SetPlayerHealth(playerid, Float:Zivot);
-native ac_SetPlayerArmour(playerid, Float:armor);
-native ac_AttachTrailerToVehicle(trailerid, vehicleid);
-native ac_PutPlayerInVehicle(playerid, vehicleid, seatid);
-native ac_RemovePlayerFromVehicle(playerid);
-native ac_SetVehicleHealth(vehicleid, Float:vHealth);
-native ac_RepairVehicle(playerid, vehicleid);
+forward ac_KillTimer(timerid);
+forward ac_SetPlayerCheckpoint(playerid, Float:x, Float:y, Float:z, Float:size);
+forward ac_DisablePlayerCheckpoint(playerid);
+forward ac_SetPlayerWantedLevel(playerid, broj);
+forward ac_IsNotWeaponNoAmmo(weaponid);
+forward ac_IsGiveVehicleWeapon(weaponid);
+forward ac_SetPlayerHealth(playerid, Float:Zivot);
+forward ac_SetPlayerArmour(playerid, Float:armor);
+forward ac_AttachTrailerToVehicle(trailerid, vehicleid);
+forward ac_PutPlayerInVehicle(playerid, vehicleid, seatid);
+forward ac_RemovePlayerFromVehicle(playerid);
+forward ac_SetVehicleHealth(vehicleid, Float:vHealth);
+forward ac_RepairVehicle(playerid, vehicleid);
