@@ -999,6 +999,13 @@
             }
         };
 
+        // Register CEF event listener for portal:init (omp-cef uses cef.on() for PAWN→JS events)
+        if (typeof cef !== 'undefined' && cef.on) {
+            cef.on('portal:init', function(playerName) {
+                window.portal_init(playerName);
+            });
+        }
+
         // ===== Keyboard shortcuts =====
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Tab' && !e.shiftKey) {

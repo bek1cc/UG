@@ -535,14 +535,12 @@
                     }, 50);
                 }
 
-                // Notify SA-MP server - emitujemo "loading:complete" event
-                // koji je registrovan u PAWN-u kao CEF_RegisterEvent("loading:complete", "OnCefLoadingComplete")
+                // Notify SA-MP server - emitujemo "OnLoadingComplete" event
+                // koji je registrovan u PAWN-u kao CEF_RegisterEvent("OnLoadingComplete", "OnCefLoadingComplete")
                 setTimeout(() => {
                     if (typeof cef !== 'undefined' && cef.emit) {
-                        console.log('[CEF-LOADING] Emitting loading:complete event');
-                        cef.emit('loading:complete');
-                    } else {
-                        console.log('[CEF-LOADING] cef.emit not available - cannot notify server');
+                        console.log('[CEF-LOADING] Emitting OnLoadingComplete event');
+                        cef.emit('OnLoadingComplete');
                     }
                 }, 500);
             }
