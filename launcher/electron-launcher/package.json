@@ -4,6 +4,8 @@
   "description": "Unicate Gaming RPG - SAMP Launcher",
   "main": "src/main.js",
   "scripts": {
+    "setup-electron": "node setup_electron.js",
+    "prestart": "node setup_electron.js",
     "start": "electron .",
     "build": "electron-builder --win",
     "build:portable": "electron-builder --win portable"
