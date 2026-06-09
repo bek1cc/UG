@@ -21,6 +21,14 @@ del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
 del /f /q "gamemodes\fg-ogc.amx" 2>nul
 del /f /q "fg-ogc.amx" 2>nul
 
+REM === DELETE OLD CONFLICTING INCLUDES ===
+REM Old foreach.inc conflicts with YSI y_iterate/y_foreach
+del /f /q "gamemodes\foreach.inc" 2>nul
+del /f /q "gamemodes\maps\foreach.inc" 2>nul
+del /f /q "gamemodes\systems\foreach.inc" 2>nul
+del /f /q "%OMP%\qawno\include\foreach.inc" 2>nul
+del /f /q "%OMP%\qawno\upgrader\foreach.inc" 2>nul
+
 REM === COMPILE (using qawno compiler from open.mp) ===
 echo Compiling fg-ogc.pwn with qawno...
 echo.
