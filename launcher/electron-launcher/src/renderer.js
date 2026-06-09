@@ -273,6 +273,28 @@ function setupEventListeners() {
     btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> AUTO-INSTALACIJA`;
   });
 
+  // Verify & Repair button
+  document.getElementById('btnVerify')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnVerify');
+    btn.disabled = true;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="spin"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> PROVJERAVAM...`;
+
+    const result = await API.verifyRepair();
+    if (result && result.error) {
+      alert('Greska: ' + result.error);
+    } else if (result && result.success) {
+      alert(result.message);
+    }
+
+    // Refresh status
+    statusData = await API.getStatus();
+    updateComponents();
+    updateGtaPath();
+
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg> PROVJERI FAJLOVE`;
+  });
+
   // Server mode buttons
   document.querySelectorAll('.mode-btn').forEach(btn => {
     btn.addEventListener('click', async () => {

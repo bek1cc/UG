@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('launcherAPI', {
   browseGta: () => ipcRenderer.invoke('browse-gta'),
   launchGame: (nickname) => ipcRenderer.invoke('launch-game', nickname),
   autoInstall: () => ipcRenderer.invoke('auto-install'),
+  verifyRepair: () => ipcRenderer.invoke('verify-repair'),
   setServerMode: (mode) => ipcRenderer.invoke('set-server-mode', mode),
   toggleCef: (enabled) => ipcRenderer.invoke('toggle-cef', enabled),
   getCefState: () => ipcRenderer.invoke('get-cef-state'),

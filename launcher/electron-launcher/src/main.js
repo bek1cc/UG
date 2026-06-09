@@ -674,16 +674,49 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   // Restore any files corrupted by old launcher versions (Resource Hacker)
   restoreFromBackup(gtaPath);
 
-  // AUTO-INSTALL: Check what's missing and install automatically
-  const status = getStatus(gtaPath);
-  if (status.missing.length > 0) {
-    log('Auto-install: Missing components: ' + status.missing.join(', '));
+  // ============================================================
+  // FORCE VERIFY: Always check critical CEF files before launching
+  // Even if status says OK, verify the actual runtime files exist
+  // ============================================================
+  const forceMissing = [];
+  
+  // Check ASI Loader (dsound.dll or dinput8.dll)
+  const hasAsiLoader = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
+  if (!hasAsiLoader) forceMissing.push('asi_loader');
+  
+  // Check cef.asi
+  if (!fs.existsSync(path.join(gtaPath, 'cef.asi'))) forceMissing.push('cef_asi');
+  
+  // Check CEF runtime (libcef.dll + client.dll) - THIS IS THE CRITICAL CHECK
+  // Without these, cef.asi cannot render anything!
+  const hasCefRuntime = fs.existsSync(path.join(gtaPath, 'cef', 'libcef.dll')) && fs.existsSync(path.join(gtaPath, 'cef', 'client.dll'));
+  if (!hasCefRuntime) forceMissing.push('cef_runtime');
+  
+  // Check SA-MP client
+  if (!fs.existsSync(path.join(gtaPath, 'samp.exe'))) forceMissing.push('client');
+
+  if (forceMissing.length > 0) {
+    log('FORCE VERIFY: Missing critical files: ' + forceMissing.join(', '));
     if (mainWindow) mainWindow.webContents.send('install-progress', {
-      component: 'Instalacija komponenti...', pct: 0, downloaded: 0, total: 0, speed: 0
+      component: 'Provjera i instalacija fajlova...', pct: 0, downloaded: 0, total: 0, speed: 0
     });
     try {
+      await autoInstall(gtaPath, forceMissing);
+      log('FORCE VERIFY: All critical files installed!');
+    } catch (e) {
+      log('FORCE VERIFY: Failed: ' + e.message);
+      return { error: 'Instalacija neuspjesna: ' + e.message };
+    }
+  } else {
+    log('FORCE VERIFY: All critical CEF files present - OK');
+  }
+
+  // Also check for any other missing components from standard status check
+  const status = getStatus(gtaPath);
+  if (status.missing.length > 0) {
+    log('Auto-install: Additional missing components: ' + status.missing.join(', '));
+    try {
       await autoInstall(gtaPath, status.missing);
-      log('Auto-install: All missing components installed!');
     } catch (e) {
       log('Auto-install: Failed: ' + e.message);
     }
@@ -841,6 +874,78 @@ ipcMain.handle('open-url', (event, url) => { shell.openExternal(url); });
 ipcMain.handle('minimize-window', () => { if (mainWindow) mainWindow.minimize(); });
 ipcMain.handle('maximize-window', () => { if (mainWindow) { mainWindow.isMaximized() ? mainWindow.unmaximize() : mainWindow.maximize(); } });
 ipcMain.handle('close-window', () => { if (mainWindow) mainWindow.close(); });
+
+// ============================================================
+//  VERIFY & REPAIR - Force re-check all critical CEF files
+// ============================================================
+ipcMain.handle('verify-repair', async () => {
+  const gtaPath = findGtaPath();
+  if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
+
+  log('VERIFY & REPAIR: Starting full verification...');
+
+  // List of all critical files to check
+  const criticalFiles = [
+    { path: 'cef.asi', name: 'CEF Plugin (cef.asi)', component: 'cef_asi' },
+    { path: 'cef/libcef.dll', name: 'CEF Engine (libcef.dll)', component: 'cef_runtime' },
+    { path: 'cef/client.dll', name: 'CEF Client (client.dll)', component: 'cef_runtime' },
+    { path: 'samp.exe', name: 'SA-MP Client (samp.exe)', component: 'client' },
+  ];
+
+  // Check ASI loader separately (either dsound.dll or dinput8.dll)
+  const hasAsiLoader = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
+
+  const missing = [];
+  const present = [];
+
+  for (const file of criticalFiles) {
+    const fullPath = path.join(gtaPath, file.path);
+    if (fs.existsSync(fullPath)) {
+      const size = fs.statSync(fullPath).size;
+      present.push(file.name + ' (' + (size / 1024 / 1024).toFixed(1) + 'MB)');
+    } else {
+      missing.push(file.component);
+      present.push(file.name + ' - FALI!');
+    }
+  }
+
+  if (!hasAsiLoader) missing.push('asi_loader');
+
+  log('VERIFY: Present: ' + present.join(', '));
+  log('VERIFY: Missing components: ' + (missing.length > 0 ? missing.join(', ') : 'NONE'));
+
+  if (missing.length === 0) {
+    return { success: true, message: 'Svi fajlovi su prisutni!\n\n' + present.join('\n'), files: present };
+  }
+
+  // Download and install missing components
+  log('VERIFY & REPAIR: Installing missing: ' + missing.join(', '));
+  if (mainWindow) mainWindow.webContents.send('install-progress', {
+    component: 'Popravka fajlova...', pct: 0, downloaded: 0, total: 0, speed: 0
+  });
+
+  try {
+    await autoInstall(gtaPath, missing);
+    log('VERIFY & REPAIR: Complete!');
+
+    // Re-verify after install
+    const stillMissing = [];
+    for (const file of criticalFiles) {
+      if (!fs.existsSync(path.join(gtaPath, file.path))) {
+        stillMissing.push(file.name);
+      }
+    }
+
+    if (stillMissing.length > 0) {
+      return { error: 'Neki fajlovi i dalje fale: ' + stillMissing.join(', '), files: present };
+    }
+
+    return { success: true, message: 'Svi fajlovi uspjesno instalirani!', files: present };
+  } catch (e) {
+    log('VERIFY & REPAIR: Failed: ' + e.message);
+    return { error: 'Popravka neuspjesna: ' + e.message };
+  }
+});
 
 // ============================================================
 //  APP EVENTS
