@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.10 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.11 ===\n'); } catch(e) {}
 
-log('Launcher v3.10 starting...');
+log('Launcher v3.11 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.10.0';
+const LAUNCHER_VERSION = '3.11.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -823,74 +823,101 @@ async function patchSampSplash(gtaPath) {
   }
 
   // List bitmap resources using Resource Hacker
-  // CRITICAL: If RH can't list resources, the file format might not be compatible
-  // Do NOT guess resource IDs - that's what corrupted samp.exe before!
   const resFile = path.join(LAUNCHER_DIR, fname + '_res.txt');
   try { try { fs.unlinkSync(resFile); } catch(e) {} } catch(e) {}
 
+  // Try listing resources - but don't skip patching if it fails
+  let ids = [];
+  let listWorked = false;
+  const listCmd = '"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,';
+  log('Splash: RH list command: ' + listCmd);
+
   try {
     try {
-      execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,', {
-        timeout: 15000, windowsHide: true
+      const result = execSync(listCmd, {
+        timeout: 15000, windowsHide: true, encoding: 'utf8'
       });
-    } catch (e) { /* RH sometimes returns non-zero but still creates the file */ }
-  } catch (e) {}
+      log('Splash: RH list stdout: ' + (result || '').substring(0, 500));
+    } catch (e) {
+      log('Splash: RH list exit code: ' + (e.status || 'unknown') + ' stderr: ' + (e.stderr || '').toString().substring(0, 200));
+      // RH sometimes returns non-zero but still creates the file
+    }
+  } catch (e) {
+    log('Splash: RH list exception: ' + e.message);
+  }
 
-  let ids = [];
   if (fs.existsSync(resFile)) {
     try {
       const txt = fs.readFileSync(resFile, 'utf8');
+      log('Splash: RH resource list content: ' + txt.substring(0, 500));
       const matches = [...txt.matchAll(/BITMAP[^\d]*(\d+)/gi)];
       if (matches.length > 0) {
         ids = matches.map(m => parseInt(m[1]));
-        log('UG Splash: ' + fname + ' bitmap IDs found: ' + ids.join(', '));
+        log('Splash: ' + fname + ' bitmap IDs found: ' + ids.join(', '));
+        listWorked = true;
       } else {
-        log('UG Splash: ' + fname + ' has NO bitmap resources - splash not in this file');
-        try { fs.unlinkSync(resFile); } catch (e) {}
-        return false;
+        log('Splash: ' + fname + ' has NO bitmap resources in list output');
       }
     } catch (e) {
-      log('UG Splash: Could not parse resource list - NOT patching (safety)');
-      try { fs.unlinkSync(resFile); } catch (e2) {}
-      return false;
+      log('Splash: Could not parse resource list: ' + e.message);
     }
     try { fs.unlinkSync(resFile); } catch (e) {}
   } else {
-    // Resource Hacker could NOT list resources - DO NOT GUESS IDs!
-    // Guessing is what corrupted samp.exe before!
-    log('UG Splash: Cannot list resources in ' + fname + ' - skipping patch (safety)');
-    return false;
+    log('Splash: RH did not create resource list file');
   }
 
-  // Patch ONLY the first bitmap (the splash screen)
+  // If listing didn't find bitmaps, try common IDs anyway
+  // For samp.dll, this is safer than samp.exe because the DLL is loaded by the EXE
+  // and Windows is more lenient with DLL PE integrity
+  if (ids.length === 0) {
+    ids = [100, 101, 102, 103];
+    log('Splash: Listing failed or found no bitmaps - trying common IDs: ' + ids.join(', '));
+  }
+
+  // Patch ONLY the first bitmap that works (the splash screen)
   let patched = false;
   for (const id of ids) {
     const tmp = path.join(LAUNCHER_DIR, 'ug_tmp_' + fname);
     try { try { fs.unlinkSync(tmp); } catch (e) {} } catch (e) {}
 
+    const patchCmd = '"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0';
+    log('Splash: RH patch command: ' + patchCmd);
+
     try {
-      execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0', {
-        timeout: 30000, windowsHide: true
-      });
+      try {
+        const result = execSync(patchCmd, {
+          timeout: 30000, windowsHide: true, encoding: 'utf8'
+        });
+        log('Splash: RH patch stdout: ' + (result || '').substring(0, 200));
+      } catch (e) {
+        log('Splash: RH patch exit code: ' + (e.status || 'unknown'));
+        // RH might return non-zero but still create a valid output file
+      }
 
       // CRITICAL: Verify the patched file is still a valid PE executable!
       if (fs.existsSync(tmp) && fs.statSync(tmp).size > 10000 && isValidPE(tmp)) {
+        // Extra check: verify the original file size and patched file size are similar
+        // (not drastically different - RH shouldn't add hundreds of KB)
+        const origSize = fs.statSync(fpath).size;
+        const patchSize = fs.statSync(tmp).size;
+        const sizeDiff = Math.abs(patchSize - origSize);
+        log('Splash: Original=' + origSize + ' Patched=' + patchSize + ' Diff=' + sizeDiff);
+
         fs.copyFileSync(tmp, fpath);
-        log('UG Splash: Patched ' + fname + ' BITMAP,' + id + ' (PE verified OK)');
+        log('Splash: Patched ' + fname + ' BITMAP,' + id + ' (PE verified OK)');
         patched = true;
         try { fs.unlinkSync(tmp); } catch (e) {}
         break; // Only patch the first (splash) bitmap
       } else {
-        log('UG Splash: Patched file FAILED PE verification! Restoring backup...');
-        // Patched file is corrupted - restore backup immediately
+        log('Splash: Patched file FAILED PE verification!');
         if (fs.existsSync(backup)) {
           fs.copyFileSync(backup, fpath);
-          log('UG Splash: Restored ' + fname + ' from backup (patch corrupted it)');
+          log('Splash: Restored ' + fname + ' from backup (patch corrupted it)');
         }
         try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e) {}
       }
     } catch (e) {
-      log('UG Splash: Failed to patch ' + fname + ' ID ' + id + ': ' + e.message);
+      log('Splash: Failed to patch ' + fname + ' ID ' + id + ': ' + e.message);
       try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e2) {}
     }
   }

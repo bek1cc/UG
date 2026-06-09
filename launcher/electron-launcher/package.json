@@ -1,6 +1,6 @@
 {
   "name": "unicate-gaming-launcher",
-  "version": "3.10.0",
+  "version": "3.11.0",
   "description": "Unicate Gaming RPG - SAMP Launcher",
   "main": "src/main.js",
   "scripts": {
