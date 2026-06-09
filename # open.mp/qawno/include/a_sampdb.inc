@@ -1,28 +1,30 @@
-#if defined _INC_a_sampdb
+//  SA-MP Native SQLite Database Functions
+//
+//  (c) Copyright 2015, SA-MP Team
+//
+
+#if defined _sampdb_included
 	#endinput
 #endif
+#define _sampdb_included
+#pragma library sampdb
 
-#if defined SAMP_COMPAT
-	#if !defined OPEN_MP_NO_WRAPPER_WARNING
-		#define OPEN_MP_NO_WRAPPER_WARNING
-	#endif
-#endif
+native DB:db_open(name[]);
+native db_close(DB:db);
+native DBResult:db_query(DB:db, query[]);
+native db_free_result(DBResult:dbresult);
+native db_num_rows(DBResult:dbresult);
+native db_next_row(DBResult:dbresult);
+native db_num_fields(DBResult:dbresult);
+native db_field_name(DBResult:dbresult, field, result[], maxlength);
+native db_get_field(DBResult:dbresult, field, result[], maxlength);
+native db_get_field_int(DBResult:result, field = 0);
+native Float:db_get_field_float(DBResult:result, field = 0);
+native db_get_field_assoc(DBResult:dbresult, const field[], result[], maxlength);
+native db_get_field_assoc_int(DBResult:result, const field[]);
+native Float:db_get_field_assoc_float(DBResult:result, const field[]);
+native db_get_mem_handle(DB:db);
+native db_get_result_mem_handle(DBResult:result);
 
-#if defined OPEN_MP_NO_WRAPPER_WARNING
-	#include <open.mp>
-	#endinput
-#endif
-
-#if !defined __PawnBuild
-	// Doesn't support `#warning`.
-	static Using_a_sampdb_legacy_wrapper;
-	static Include_open@mp_directly;
-	static Also_update_your_compiler;
-	#include <open.mp>
-	// The old compiler doesn't like `#warning`, even within `#if`.
-	#endinput
-#endif
-	
-// This is just a backwards-compatible wrapper.
-#warning Using <a_sampdb> legacy wrapper.  Include <open.mp> directly.
-#include <open.mp>
+native db_debug_openfiles();
+native db_debug_openresults();
