@@ -15,9 +15,15 @@
     "productName": "Unicate Gaming Launcher",
     "icon": "src/ug_icon.ico",
     "files": [
-      "src/**/*"
+      "src/**/*",
+      "ug_splash.bmp",
+      "cef_content/**/*"
     ],
     "extraResources": [
+      {
+        "from": "ug_splash.bmp",
+        "to": "ug_splash.bmp"
+      },
       {
         "from": "ug_samp.dll",
         "to": "ug_samp.dll"
