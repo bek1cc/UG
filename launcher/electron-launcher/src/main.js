@@ -800,8 +800,24 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
+  // AUTO-INSTALL: Check what's missing and install automatically
+  const status = getStatus(gtaPath);
+  if (status.missing.length > 0) {
+    log('Auto-install: Missing components detected: ' + status.missing.join(', '));
+    if (mainWindow) mainWindow.webContents.send('install-progress', {
+      component: 'Instalacija komponenti...', pct: 0, downloaded: 0, total: 0, speed: 0
+    });
+    try {
+      await autoInstall(gtaPath, status.missing);
+      log('Auto-install: All missing components installed!');
+    } catch (e) {
+      log('Auto-install: Failed: ' + e.message);
+      // Don't block - let user try anyway
+    }
+  }
+
   const sampExe = path.join(gtaPath, 'samp.exe');
-  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Instaliraj SA-MP klijent (R4/R5).' };
+  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela. Pokusaj rucno.' };
 
   // Check for samp.img - warn but don't block (some installs don't have it in GTA dir)
   const sampImg = path.join(gtaPath, 'samp.img');
