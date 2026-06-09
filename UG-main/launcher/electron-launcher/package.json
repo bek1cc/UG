@@ -1,0 +1,58 @@
+{
+  "name": "unicate-gaming-launcher",
+  "version": "3.8.0",
+  "description": "Unicate Gaming RPG - SAMP Launcher",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win",
+    "build:portable": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "com.unicategaming.launcher",
+    "productName": "Unicate Gaming Launcher",
+    "icon": "src/ug_icon.ico",
+    "files": [
+      "src/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "ug_samp.dll",
+        "to": "ug_samp.dll"
+      },
+      {
+        "from": "cef_content",
+        "to": "cef_content"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/ug_icon.ico"
+    },
+    "portable": {
+      "artifactName": "UnicateGamingLauncher.exe"
+    }
+  },
+  "keywords": [
+    "samp",
+    "launcher",
+    "unicate",
+    "gaming"
+  ],
+  "author": "Unicate Gaming",
+  "license": "MIT",
+  "dependencies": {
+    "adm-zip": "^0.5.17"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^26.0.0"
+  }
+}

@@ -1,0 +1,2648 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unicate Gaming RPG - Phone</title>
+<style>
+/* ========== RESET & BASE ========== */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100%;
+  background: transparent;
+  display:flex; align-items:flex-end; justify-content:flex-end;
+  padding: 30px 30px 30px 30px;
+  font-family: -apple-system, 'SF Pro Display', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  overflow:hidden;
+  -webkit-user-select:none; user-select:none;
+}
+
+/* ========== EXPANDED MODE (via URL param) ========== */
+body.expanded {
+  padding: 20px;
+  align-items:center;
+  justify-content:center;
+}
+body.expanded .phone-frame {
+  width: 420px;
+  height: 820px;
+  border-radius: 54px;
+}
+body.expanded .phone-frame::before {
+  width: 120px;
+  height: 32px;
+  top: 12px;
+}
+body.expanded .phone-frame::after {
+  top: 20px;
+  left: calc(50% + 38px);
+  width: 11px;
+  height: 11px;
+}
+body.expanded .phone-volume-up { top: 155px; height: 40px; }
+body.expanded .phone-volume-down { top: 210px; height: 40px; }
+body.expanded .phone-power-btn { top: 180px; height: 55px; }
+body.expanded .phone-home-bar { width: 150px; height: 5px; bottom: 8px; }
+
+/* ========== PHONE FRAME — iPhone 16 Style ========== */
+.phone-frame {
+  position:relative;
+  width:320px; height:620px;
+  border-radius:48px;
+  background:#0a192f;
+  box-shadow:
+    /* Titanium outer bezel */
+    0 0 0 2px #4a5568,
+    0 0 0 3px #2d3748,
+    0 0 0 5px #1a202c,
+    /* Ambient glow */
+    0 0 30px rgba(59,130,246,0.12),
+    /* Drop shadow */
+    0 15px 40px rgba(0,0,0,0.5),
+    0 5px 15px rgba(0,0,0,0.3);
+  overflow:hidden;
+}
+/* Dynamic Island (iPhone 16 style pill) */
+.phone-frame::before {
+  content:'';
+  position:absolute;
+  top:10px; left:50%; transform:translateX(-50%);
+  width:100px; height:28px;
+  background:#000;
+  border-radius:20px;
+  z-index:100;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+}
+/* Dynamic Island camera dot */
+.phone-frame::after {
+  content:'';
+  position:absolute;
+  top:17px; left:calc(50% + 30px); 
+  width:9px; height:9px;
+  background: radial-gradient(circle, #1a2a44 20%, #0a0f1a 60%, #000 100%);
+  border-radius:50%;
+  border:1px solid #1e3050;
+  z-index:101;
+}
+/* Side buttons - Volume */
+.phone-volume-up {
+  position:absolute;
+  left:-3px; top:120px;
+  width:3px; height:35px;
+  background:linear-gradient(180deg,#4a5568,#2d3748,#4a5568);
+  border-radius:1px 0 0 1px;
+}
+.phone-volume-down {
+  position:absolute;
+  left:-3px; top:170px;
+  width:3px; height:35px;
+  background:linear-gradient(180deg,#4a5568,#2d3748,#4a5568);
+  border-radius:1px 0 0 1px;
+}
+/* Side button - Power */
+.phone-power-btn {
+  position:absolute;
+  right:-3px; top:140px;
+  width:3px; height:50px;
+  background:linear-gradient(180deg,#4a5568,#2d3748,#4a5568);
+  border-radius:0 1px 1px 0;
+}
+/* Home indicator bar at bottom */
+.phone-home-bar {
+  position:absolute;
+  bottom:6px; left:50%; transform:translateX(-50%);
+  width:120px; height:4px;
+  background:rgba(148,163,184,0.3);
+  border-radius:4px;
+  z-index:200;
+  pointer-events:none;
+}
+
+/* ========== SCREENS CONTAINER ========== */
+.screens-container {
+  position:relative;
+  width:100%; height:100%;
+  overflow:hidden;
+}
+.screen {
+  position:absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  display:flex; flex-direction:column;
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+  will-change: transform, opacity;
+}
+.screen.hidden-left  { transform:translateX(-100%); opacity:0; pointer-events:none; }
+.screen.hidden-right { transform:translateX(100%);  opacity:0; pointer-events:none; }
+.screen.hidden-up    { transform:translateY(-100%); opacity:0; pointer-events:none; }
+.screen.hidden-down  { transform:translateY(100%);  opacity:0; pointer-events:none; }
+.screen.active       { transform:translateX(0);     opacity:1; pointer-events:auto; }
+
+/* ========== STATUS BAR ========== */
+.status-bar {
+  flex-shrink:0;
+  height:44px;
+  padding:12px 20px 0;
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12px; font-weight:600;
+  color:#94a3b8;
+  z-index:50;
+}
+.status-bar .left { display:flex; align-items:center; gap:6px; }
+.status-bar .right { display:flex; align-items:center; gap:8px; }
+.signal-bars { display:flex; align-items:flex-end; gap:1.5px; height:12px; }
+.signal-bars span {
+  width:3px; background:#3b82f6; border-radius:1px;
+}
+.signal-bars span:nth-child(1){ height:3px; }
+.signal-bars span:nth-child(2){ height:5px; }
+.signal-bars span:nth-child(3){ height:8px; }
+.signal-bars span:nth-child(4){ height:11px; }
+.signal-bars span:nth-child(5){ height:11px; }
+.battery-icon {
+  display:flex; align-items:center; gap:1px;
+}
+.battery-body {
+  width:22px; height:10px;
+  border:1.5px solid #94a3b8;
+  border-radius:2px;
+  padding:1px;
+  position:relative;
+}
+.battery-fill {
+  height:100%; background:#22c55e; border-radius:1px;
+  transition: width 0.3s;
+}
+.battery-tip {
+  width:2px; height:5px; background:#94a3b8; border-radius:0 1px 1px 0;
+}
+
+/* ========== LOCK SCREEN ========== */
+#lockScreen {
+  background: linear-gradient(160deg, #0a192f 0%, #0f2744 40%, #0a192f 100%);
+  align-items:center; justify-content:center;
+  cursor:pointer;
+}
+.lock-wallpaper {
+  position:absolute; inset:0;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(139,92,246,0.06) 0%, transparent 50%);
+}
+.lock-time {
+  font-size:64px; font-weight:200; color:#e2e8f0;
+  letter-spacing:2px;
+  text-shadow: 0 0 30px rgba(59,130,246,0.3);
+  z-index:1;
+}
+.lock-date {
+  font-size:15px; color:#64748b; margin-top:6px;
+  font-weight:400; letter-spacing:0.5px;
+  z-index:1;
+}
+.lock-unlock {
+  position:absolute;
+  bottom:50px;
+  font-size:14px; color:#475569;
+  letter-spacing:1px;
+  animation: pulse-text 2.5s ease-in-out infinite;
+  z-index:1;
+}
+@keyframes pulse-text {
+  0%,100% { opacity:0.4; }
+  50% { opacity:1; color:#94a3b8 }
+}
+.lock-icon-wrap {
+  position:absolute; bottom:80px;
+  z-index:1;
+}
+.lock-icon-wrap svg {
+  width:24px; height:24px;
+  fill:none; stroke:#475569; stroke-width:1.5;
+  animation: pulse-text 2.5s ease-in-out infinite;
+}
+
+/* ========== PIN SCREEN ========== */
+.pin-overlay {
+  position:absolute; inset:0; z-index:180;
+  background:linear-gradient(160deg, #0a192f 0%, #0f2744 40%, #0a192f 100%);
+  display:flex; flex-direction:column; align-items:center;
+  transform:translateY(100%); opacity:0; pointer-events:none;
+  transition:transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+}
+.pin-overlay.active {
+  transform:translateY(0); opacity:1; pointer-events:auto;
+}
+.pin-close-btn {
+  position:absolute; top:50px; right:16px;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; z-index:181;
+  transition:background 0.15s, transform 0.1s;
+}
+.pin-close-btn:hover { background:rgba(255,255,255,0.15); }
+.pin-close-btn:active { transform:scale(0.9); background:rgba(239,68,68,0.3); }
+.pin-close-btn svg { width:16px; height:16px; fill:none; stroke:#94a3b8; stroke-width:2.5; stroke-linecap:round; }
+.pin-lock-icon {
+  width:50px; height:50px; border-radius:50%;
+  background:linear-gradient(135deg,#1e3a5f,#172554);
+  display:flex; align-items:center; justify-content:center;
+  margin-top:80px; margin-bottom:16px;
+  box-shadow:0 0 20px rgba(59,130,246,0.2);
+}
+.pin-lock-icon svg { width:24px; height:24px; fill:none; stroke:#3b82f6; stroke-width:1.8; }
+.pin-title {
+  font-size:18px; font-weight:600; color:#e2e8f0;
+  margin-bottom:4px;
+}
+.pin-subtitle {
+  font-size:12px; color:#64748b;
+  margin-bottom:28px;
+}
+.pin-dots {
+  display:flex; gap:16px;
+  margin-bottom:32px;
+}
+.pin-dot {
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid #3b82f6;
+  background:transparent;
+  transition:background 0.2s, transform 0.15s, border-color 0.2s;
+}
+.pin-dot.filled {
+  background:#3b82f6;
+  border-color:#3b82f6;
+  transform:scale(1.1);
+}
+.pin-dot.error {
+  border-color:#ef4444;
+  background:#ef4444;
+}
+.pin-dot.success {
+  border-color:#22c55e;
+  background:#22c55e;
+}
+.pin-pad {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  width:100%; max-width:240px;
+}
+.pin-key {
+  height:56px;
+  border-radius:50%;
+  background:rgba(17,29,51,0.6);
+  border:1px solid rgba(59,130,246,0.15);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:background 0.15s, transform 0.1s, border-color 0.15s;
+  margin:0 auto; width:56px;
+}
+.pin-key:active { background:rgba(59,130,246,0.2); transform:scale(0.92); border-color:rgba(59,130,246,0.4); }
+.pin-key .digit { font-size:22px; color:#e2e8f0; font-weight:400; }
+.pin-key .letters { font-size:7px; color:#475569; letter-spacing:2px; margin-top:-2px; }
+.pin-key-empty {
+  height:56px; width:56px;
+}
+.pin-delete {
+  height:56px; width:56px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; margin:0 auto;
+  transition:background 0.15s;
+}
+.pin-delete:hover { background:rgba(255,255,255,0.05); }
+.pin-delete:active { background:rgba(255,255,255,0.1); }
+.pin-delete svg { width:22px; height:22px; fill:none; stroke:#64748b; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.pin-error-msg {
+  font-size:12px; color:#ef4444;
+  margin-top:16px;
+  min-height:18px;
+  transition:opacity 0.3s;
+}
+@keyframes pin-shake {
+  0%,100% { transform:translateX(0); }
+  20% { transform:translateX(-8px); }
+  40% { transform:translateX(8px); }
+  60% { transform:translateX(-6px); }
+  80% { transform:translateX(6px); }
+}
+.pin-shake { animation:pin-shake 0.4s ease-in-out; }
+
+/* ========== HOME SCREEN ========== */
+#homeScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.home-content {
+  flex:1; overflow-y:auto; padding:8px 16px 8px;
+  -webkit-overflow-scrolling:touch;
+}
+.home-content::-webkit-scrollbar { display:none; }
+
+.app-grid {
+  display:grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap:18px 12px;
+  padding:8px 0;
+}
+.app-item {
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer;
+  transition: transform 0.15s;
+}
+.app-item:active { transform:scale(0.9); }
+.app-icon {
+  width:56px; height:56px;
+  border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+  transition: box-shadow 0.2s;
+}
+.app-icon svg { width:28px; height:28px; fill:#fff; }
+.app-item:active .app-icon { box-shadow: 0 0 20px var(--glow-color); }
+.app-label {
+  font-size:11px; color:#94a3b8; font-weight:500;
+  text-align:center; line-height:1.2;
+  max-width:70px;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+
+/* App colors */
+.app-telefon   { background:linear-gradient(135deg,#16a34a,#15803d); --glow-color:rgba(22,163,74,0.5); }
+.app-poruke    { background:linear-gradient(135deg,#3b82f6,#2563eb); --glow-color:rgba(59,130,246,0.5); }
+.app-kontakti  { background:linear-gradient(135deg,#f97316,#ea580c); --glow-color:rgba(249,115,22,0.5); }
+.app-bounty    { background:linear-gradient(135deg,#ef4444,#dc2626); --glow-color:rgba(239,68,68,0.5); }
+.app-banka     { background:linear-gradient(135deg,#8b5cf6,#7c3aed); --glow-color:rgba(139,92,246,0.5); }
+.app-taksi     { background:linear-gradient(135deg,#eab308,#ca8a04); --glow-color:rgba(234,179,8,0.5); }
+.app-hitna     { background:linear-gradient(135deg,#ef4444,#b91c1c); --glow-color:rgba(239,68,68,0.5); }
+.app-mehanicar { background:linear-gradient(135deg,#6b7280,#4b5563); --glow-color:rgba(107,114,128,0.5); }
+.app-podesavanja { background:linear-gradient(135deg,#1e3a5f,#172554); --glow-color:rgba(30,58,95,0.5); }
+.app-appstore   { background:linear-gradient(135deg,#0ea5e9,#0284c7); --glow-color:rgba(14,165,233,0.5); }
+.app-kamera     { background:linear-gradient(135deg,#334155,#1e293b); --glow-color:rgba(51,65,85,0.5); }
+.app-instalife  { background:linear-gradient(135deg,#e1306c,#c13584,#f77737); --glow-color:rgba(225,48,108,0.5); }
+.app-tikvid     { background:linear-gradient(135deg,#000,#111,#ff0050); --glow-color:rgba(255,0,80,0.5); }
+
+/* Hidden apps (not yet installed) */
+.app-item.app-hidden { display:none; }
+
+/* ========== APP STORE SCREEN ========== */
+#appstoreScreen { background:linear-gradient(180deg,#0a192f 0%,#0d1f3c 100%); }
+.appstore-header {
+  flex-shrink:0; padding:44px 16px 12px;
+  background:linear-gradient(135deg,rgba(14,165,233,0.15),rgba(59,130,246,0.05));
+  border-bottom:1px solid rgba(14,165,233,0.1);
+}
+.appstore-title { font-size:24px; font-weight:700; color:#e2e8f0; }
+.appstore-subtitle { font-size:12px; color:#64748b; margin-top:2px; }
+.appstore-list { flex:1; overflow-y:auto; padding:12px 16px; }
+.appstore-list::-webkit-scrollbar { display:none; }
+.appstore-card {
+  display:flex; align-items:center; gap:14px;
+  padding:14px; margin-bottom:10px;
+  background:rgba(17,29,51,0.8);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(59,130,246,0.08);
+  border-radius:16px;
+  transition: transform 0.15s, border-color 0.2s;
+  cursor:pointer;
+}
+.appstore-card:hover { border-color:rgba(14,165,233,0.3); }
+.appstore-card:active { transform:scale(0.97); }
+.appstore-card-icon {
+  width:52px; height:52px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.appstore-card-icon svg { width:26px; height:26px; fill:#fff; }
+.appstore-card-info { flex:1; min-width:0; }
+.appstore-card-name { font-size:14px; font-weight:600; color:#e2e8f0; }
+.appstore-card-desc { font-size:11px; color:#64748b; margin-top:2px; }
+.appstore-card-btn {
+  padding:7px 16px; border-radius:20px; border:none;
+  font-size:12px; font-weight:700; color:#fff; cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  flex-shrink:0;
+}
+.appstore-card-btn:active { transform:scale(0.92); }
+.appstore-btn-install {
+  background:linear-gradient(135deg,#0ea5e9,#0284c7);
+  box-shadow:0 2px 10px rgba(14,165,233,0.3);
+}
+.appstore-btn-installed {
+  background:rgba(34,197,94,0.15); color:#22c55e;
+  box-shadow:none;
+}
+
+/* ========== CAMERA SCREEN ========== */
+#cameraScreen { background:#000; }
+.camera-viewfinder {
+  flex:1; position:relative; overflow:hidden;
+  background:linear-gradient(180deg,#0a0a0a,#111);
+}
+.camera-vf-overlay {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+}
+.camera-crosshair {
+  width:200px; height:200px; position:relative;
+}
+.camera-crosshair::before,.camera-crosshair::after {
+  content:''; position:absolute;
+  background:rgba(255,255,255,0.15);
+}
+.camera-crosshair::before { top:0; left:50%; width:1px; height:100%; transform:translateX(-50%); }
+.camera-crosshair::after { left:0; top:50%; height:1px; width:100%; transform:translateY(-50%); }
+.camera-corner { position:absolute; width:20px; height:20px; border:2px solid rgba(255,255,255,0.5); }
+.camera-corner.tl { top:0; left:0; border-right:none; border-bottom:none; border-radius:4px 0 0 0; }
+.camera-corner.tr { top:0; right:0; border-left:none; border-bottom:none; border-radius:0 4px 0 0; }
+.camera-corner.bl { bottom:0; left:0; border-right:none; border-top:none; border-radius:0 0 0 4px; }
+.camera-corner.br { bottom:0; right:0; border-left:none; border-top:none; border-radius:0 0 4px 0; }
+.camera-location {
+  position:absolute; top:12px; left:12px;
+  display:flex; align-items:center; gap:4px;
+  padding:4px 10px; border-radius:8px;
+  background:rgba(0,0,0,0.5); backdrop-filter:blur(8px);
+  font-size:10px; color:#94a3b8;
+}
+.camera-location svg { width:12px; height:12px; fill:#3b82f6; }
+.camera-flash {
+  position:absolute; inset:0; background:#fff;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.08s;
+}
+.camera-flash.flash { opacity:1; }
+.camera-controls {
+  flex-shrink:0; height:100px;
+  display:flex; align-items:center; justify-content:center; gap:36px;
+  background:rgba(0,0,0,0.9);
+  padding-bottom:10px;
+}
+.camera-shutter {
+  width:64px; height:64px; border-radius:50%;
+  border:3px solid #fff; background:transparent;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition: transform 0.1s;
+  position:relative;
+}
+.camera-shutter::after {
+  content:''; width:52px; height:52px; border-radius:50%;
+  background:#fff; transition: transform 0.1s;
+}
+.camera-shutter:active { transform:scale(0.92); }
+.camera-shutter:active::after { transform:scale(0.85); }
+.camera-side-btn {
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(255,255,255,0.1);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition: background 0.15s;
+}
+.camera-side-btn:hover { background:rgba(255,255,255,0.2); }
+.camera-side-btn svg { width:20px; height:20px; fill:#fff; }
+
+/* ========== INSTALIFE SCREEN ========== */
+#instalifeScreen { background:#000; }
+.instalife-topbar {
+  flex-shrink:0; height:50px;
+  display:flex; align-items:center; padding:0 12px;
+  background:rgba(0,0,0,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.instalife-logo { font-size:18px; font-weight:700; color:#fff; flex:1; letter-spacing:-0.5px; }
+.instalife-logo span { background:linear-gradient(90deg,#f77737,#e1306c,#c13584); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.instalife-top-btn {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:background 0.15s;
+}
+.instalife-top-btn:hover { background:rgba(255,255,255,0.08); }
+.instalife-top-btn svg { width:20px; height:20px; fill:#fff; }
+.instalife-stories {
+  flex-shrink:0; height:80px;
+  display:flex; align-items:center; gap:10px;
+  padding:8px 12px; overflow-x:auto;
+  background:rgba(0,0,0,0.95);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.instalife-stories::-webkit-scrollbar { display:none; }
+.instalife-story {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  cursor:pointer; flex-shrink:0;
+}
+.instalife-story-ring {
+  width:50px; height:50px; border-radius:50%;
+  padding:2px;
+  background:linear-gradient(135deg,#f77737,#e1306c,#c13584);
+}
+.instalife-story-avatar {
+  width:100%; height:100%; border-radius:50%;
+  background:#111; border:2px solid #000;
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; font-weight:700; color:#fff;
+}
+.instalife-story-name { font-size:9px; color:#94a3b8; max-width:54px; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.instalife-feed { flex:1; overflow-y:auto; }
+.instalife-feed::-webkit-scrollbar { display:none; }
+.instalife-post {
+  background:#000; margin-bottom:6px;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+}
+.instalife-post-header {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 12px;
+}
+.instalife-post-avatar {
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:#fff;
+}
+.instalife-post-user { font-size:13px; font-weight:600; color:#fff; }
+.instalife-post-location { font-size:10px; color:#64748b; }
+.instalife-post-image {
+  width:100%; aspect-ratio:1; position:relative;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+}
+.instalife-post-img-inner {
+  width:100%; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:20px;
+  font-size:13px; color:#94a3b8; line-height:1.4;
+}
+.instalife-post-img-inner .photo-title { font-size:16px; font-weight:600; color:#e2e8f0; margin-bottom:6px; }
+.instalife-post-img-inner .photo-loc { font-size:11px; color:#64748b; }
+.instalife-post-actions {
+  display:flex; align-items:center; gap:14px;
+  padding:8px 12px;
+}
+.instalife-action {
+  width:28px; height:28px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition: transform 0.15s;
+}
+.instalife-action:active { transform:scale(0.85); }
+.instalife-action svg { width:22px; height:22px; fill:#fff; }
+.instalife-action.liked svg { fill:#ed4956; }
+.instalife-action-spacer { flex:1; }
+.instalife-post-likes { font-size:12px; font-weight:600; color:#fff; padding:0 12px; }
+.instalife-post-caption { font-size:12px; color:#fff; padding:2px 12px 10px; }
+.instalife-post-caption b { font-weight:600; }
+.instalife-post-comments { font-size:11px; color:#64748b; padding:0 12px 10px; cursor:pointer; }
+.instalife-post-time { font-size:10px; color:#475569; padding:0 12px 10px; text-transform:uppercase; letter-spacing:0.3px; }
+
+/* InstaLife new post */
+.instalife-newpost {
+  position:absolute; inset:0; z-index:160;
+  background:#000;
+  display:flex; flex-direction:column;
+  transform:translateY(100%); opacity:0; pointer-events:none;
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s ease;
+}
+.instalife-newpost.active { transform:translateY(0); opacity:1; pointer-events:auto; }
+.instalife-newpost-header {
+  flex-shrink:0; height:50px;
+  display:flex; align-items:center; padding:0 12px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.instalife-newpost-title { flex:1; text-align:center; font-size:15px; font-weight:600; color:#fff; margin-right:36px; }
+.instalife-newpost-body { flex:1; overflow-y:auto; padding:16px; }
+.instalife-newpost-body::-webkit-scrollbar { display:none; }
+.instalife-photo-preview {
+  width:100%; aspect-ratio:1; border-radius:12px;
+  background:linear-gradient(135deg,#111,#1a1a1a);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  margin-bottom:16px; border:1px solid rgba(255,255,255,0.06);
+  position:relative; overflow:hidden;
+}
+.instalife-photo-preview .photo-title { font-size:16px; font-weight:600; color:#e2e8f0; margin-bottom:4px; }
+.instalife-photo-preview .photo-loc { font-size:12px; color:#64748b; }
+.instalife-caption-input {
+  width:100%; padding:12px 14px;
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px; color:#fff; font-size:13px;
+  outline:none; resize:none; min-height:60px;
+  transition:border-color 0.2s;
+}
+.instalife-caption-input:focus { border-color:rgba(225,48,108,0.5); }
+.instalife-caption-input::placeholder { color:#475569; }
+.instalife-share-btn {
+  width:100%; padding:12px; margin-top:12px;
+  background:linear-gradient(135deg,#f77737,#e1306c);
+  border:none; border-radius:10px;
+  color:#fff; font-size:14px; font-weight:700;
+  cursor:pointer; transition:transform 0.15s;
+}
+.instalife-share-btn:active { transform:scale(0.97); }
+
+/* ========== TIKVID SCREEN ========== */
+#tikvidScreen { background:#000; }
+.tikvid-topbar {
+  flex-shrink:0; height:50px;
+  display:flex; align-items:center; justify-content:center; gap:20px;
+  background:rgba(0,0,0,0.95);
+  padding-top:4px;
+}
+.tikvid-tab { font-size:14px; color:#64748b; font-weight:500; cursor:pointer; position:relative; padding-bottom:4px; transition:color 0.2s; }
+.tikvid-tab.active { color:#fff; font-weight:700; }
+.tikvid-tab.active::after { content:''; position:absolute; bottom:0; left:25%; width:50%; height:2px; background:#ff0050; border-radius:2px; }
+.tikvid-feed { flex:1; overflow-y:auto; scroll-snap-type:y mandatory; }
+.tikvid-feed::-webkit-scrollbar { display:none; }
+.tikvid-card {
+  height:100%; min-height:100%; scroll-snap-align:start;
+  position:relative; display:flex; flex-direction:column; justify-content:flex-end;
+  padding:12px;
+}
+.tikvid-card-bg {
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+}
+.tikvid-card-visual {
+  width:100%; height:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:40px 20px;
+}
+.tikvid-card-visual .video-title { font-size:16px; font-weight:600; color:#fff; margin-bottom:8px; text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+.tikvid-card-visual .video-desc { font-size:12px; color:rgba(255,255,255,0.7); line-height:1.4; text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+.tikvid-card-overlay {
+  position:relative; z-index:1;
+  display:flex; align-items:flex-end; gap:12px;
+}
+.tikvid-card-info { flex:1; min-width:0; }
+.tikvid-card-user { font-size:14px; font-weight:700; color:#fff; text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+.tikvid-card-caption { font-size:12px; color:rgba(255,255,255,0.8); margin-top:4px; text-shadow:0 2px 8px rgba(0,0,0,0.5); }
+.tikvid-card-music { font-size:10px; color:rgba(255,255,255,0.5); margin-top:4px; display:flex; align-items:center; gap:4px; }
+.tikvid-card-actions {
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  flex-shrink:0;
+}
+.tikvid-action {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  cursor:pointer; transition:transform 0.15s;
+}
+.tikvid-action:active { transform:scale(0.85); }
+.tikvid-action-icon {
+  width:40px; height:40px; border-radius:50%;
+  background:rgba(255,255,255,0.1); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+}
+.tikvid-action-icon svg { width:20px; height:20px; fill:#fff; }
+.tikvid-action.liked .tikvid-action-icon svg { fill:#ff0050; }
+.tikvid-action-count { font-size:10px; color:#fff; font-weight:500; }
+.tikvid-disc {
+  width:36px; height:36px; border-radius:50%;
+  border:8px solid #1a1a1a;
+  background:linear-gradient(135deg,#333,#111);
+  animation: spin-disc 3s linear infinite;
+}
+@keyframes spin-disc { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+
+/* TikVid gradients for cards */
+.tv-grad-1 { background:linear-gradient(160deg,#1a0030,#2d0050,#0a001a); }
+.tv-grad-2 { background:linear-gradient(160deg,#001a33,#003366,#000d1a); }
+.tv-grad-3 { background:linear-gradient(160deg,#1a0a00,#331a00,#0a0500); }
+.tv-grad-4 { background:linear-gradient(160deg,#001a0a,#00331a,#000a05); }
+.tv-grad-5 { background:linear-gradient(160deg,#1a0011,#330022,#0a0008); }
+
+/* ========== BOTTOM DOCK ========== */
+.bottom-dock {
+  flex-shrink:0;
+  height:72px;
+  background: rgba(10,25,47,0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top:1px solid rgba(59,130,246,0.1);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:0 24px 8px;
+}
+.dock-item {
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  cursor:pointer;
+  transition: transform 0.15s;
+}
+.dock-item:active { transform:scale(0.88); }
+.dock-icon {
+  width:44px; height:44px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.dock-icon svg { width:22px; height:22px; fill:#fff; }
+.dock-label { font-size:10px; color:#64748b; font-weight:500; }
+.dock-item.active .dock-label { color:#3b82f6; }
+
+/* ========== NAVIGATION HEADER ========== */
+.nav-header {
+  flex-shrink:0;
+  height:50px;
+  display:flex; align-items:center;
+  padding:0 12px;
+  position:relative;
+}
+.nav-back {
+  width:36px; height:36px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  border-radius:50%;
+  transition: background 0.2s;
+}
+.nav-back:hover { background:rgba(59,130,246,0.1); }
+.nav-back:active { background:rgba(59,130,246,0.2); }
+.nav-back svg { width:20px; height:20px; fill:none; stroke:#94a3b8; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.nav-title {
+  flex:1; text-align:center;
+  font-size:16px; font-weight:600; color:#e2e8f0;
+  margin-right:36px;
+}
+
+/* ========== CALL SCREEN ========== */
+#callScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+  align-items:center;
+}
+.call-avatar {
+  width:80px; height:80px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#1e3a5f,#172554);
+  display:flex; align-items:center; justify-content:center;
+  margin-top:60px;
+  box-shadow: 0 0 30px rgba(59,130,246,0.2);
+}
+.call-avatar svg { width:40px; height:40px; fill:#3b82f6; }
+.call-number {
+  margin-top:20px;
+  font-size:22px; font-weight:300; color:#e2e8f0;
+  letter-spacing:1px;
+}
+.call-status {
+  margin-top:10px;
+  font-size:14px; color:#64748b;
+}
+.call-dots {
+  display:inline-flex; gap:4px; margin-left:4px;
+}
+.call-dots span {
+  width:4px; height:4px; background:#3b82f6; border-radius:50%;
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+.call-dots span:nth-child(2) { animation-delay:0.2s; }
+.call-dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes dot-pulse {
+  0%,80%,100% { opacity:0.3; transform:scale(0.8); }
+  40% { opacity:1; transform:scale(1.2); }
+}
+.call-end-btn {
+  margin-top:auto; margin-bottom:60px;
+  width:64px; height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  box-shadow: 0 0 20px rgba(239,68,68,0.3);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.call-end-btn:active {
+  transform:scale(0.9);
+  box-shadow: 0 0 30px rgba(239,68,68,0.5);
+}
+.call-end-btn svg { width:28px; height:28px; fill:#fff; }
+
+/* ========== MESSAGES SCREEN ========== */
+#messagesScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.msg-list {
+  flex:1; overflow-y:auto; padding:8px 16px;
+  -webkit-overflow-scrolling:touch;
+}
+.msg-list::-webkit-scrollbar { display:none; }
+.msg-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(59,130,246,0.06);
+  cursor:pointer;
+  transition: background 0.15s;
+  border-radius:8px;
+  padding:10px 8px;
+}
+.msg-item:hover { background:rgba(59,130,246,0.04); }
+.msg-item:active { background:rgba(59,130,246,0.08); }
+.msg-avatar {
+  width:42px; height:42px; border-radius:50%;
+  background:linear-gradient(135deg,#1e3a5f,#172554);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.msg-avatar svg { width:20px; height:20px; fill:#3b82f6; }
+.msg-info { flex:1; min-width:0; }
+.msg-name { font-size:14px; font-weight:600; color:#e2e8f0; }
+.msg-preview { font-size:12px; color:#64748b; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.msg-time { font-size:11px; color:#475569; flex-shrink:0; }
+.msg-unread { width:8px; height:8px; border-radius:50%; background:#3b82f6; flex-shrink:0; }
+
+.msg-input-bar {
+  flex-shrink:0;
+  display:flex; align-items:center; gap:8px;
+  padding:10px 12px 14px;
+  background:rgba(10,25,47,0.95);
+  border-top:1px solid rgba(59,130,246,0.1);
+}
+.msg-to-input {
+  width:70px; padding:8px 10px;
+  background:#111d33; border:1px solid #1e3a5f;
+  border-radius:10px; color:#e2e8f0; font-size:13px;
+  outline:none;
+  transition: border-color 0.2s;
+}
+.msg-to-input:focus { border-color:#3b82f6; }
+.msg-to-input::placeholder { color:#475569; }
+.msg-text-input {
+  flex:1; padding:8px 12px;
+  background:#111d33; border:1px solid #1e3a5f;
+  border-radius:10px; color:#e2e8f0; font-size:13px;
+  outline:none;
+  transition: border-color 0.2s;
+}
+.msg-text-input:focus { border-color:#3b82f6; }
+.msg-text-input::placeholder { color:#475569; }
+.msg-send-btn {
+  width:38px; height:38px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+.msg-send-btn:active { transform:scale(0.9); box-shadow:0 0 15px rgba(59,130,246,0.4); }
+.msg-send-btn svg { width:18px; height:18px; fill:#fff; }
+
+/* ========== CONTACTS SCREEN ========== */
+#contactsScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.contact-list {
+  flex:1; overflow-y:auto; padding:8px 16px;
+}
+.contact-list::-webkit-scrollbar { display:none; }
+.contact-item {
+  display:flex; align-items:center; gap:12px;
+  padding:10px 8px;
+  border-bottom:1px solid rgba(59,130,246,0.06);
+  cursor:pointer;
+  border-radius:8px;
+  transition: background 0.15s;
+}
+.contact-item:hover { background:rgba(59,130,246,0.04); }
+.contact-item:active { background:rgba(59,130,246,0.08); }
+.contact-avatar {
+  width:40px; height:40px; border-radius:50%;
+  background:linear-gradient(135deg,#f97316,#ea580c);
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+  font-size:16px; font-weight:700; color:#fff;
+}
+.contact-name { flex:1; font-size:14px; color:#e2e8f0; font-weight:500; }
+.contact-number { font-size:12px; color:#64748b; }
+.contact-call-btn {
+  width:34px; height:34px; border-radius:50%;
+  background:rgba(22,163,74,0.15);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition: background 0.2s;
+}
+.contact-call-btn:hover { background:rgba(22,163,74,0.3); }
+.contact-call-btn svg { width:16px; height:16px; fill:#22c55e; }
+
+/* ========== SERVICES SCREEN ========== */
+#servicesScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.services-grid {
+  flex:1; display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:14px;
+  padding:16px;
+  align-content:start;
+}
+.service-btn {
+  border-radius:16px;
+  padding:24px 16px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:10px;
+  cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  border:none;
+}
+.service-btn:active { transform:scale(0.94); }
+.service-btn svg { width:32px; height:32px; fill:#fff; }
+.service-btn-label { font-size:13px; font-weight:600; color:#fff; letter-spacing:0.3px; }
+.service-btn-sub { font-size:11px; color:rgba(255,255,255,0.6); }
+
+.svc-hitna { background:linear-gradient(135deg,#ef4444,#b91c1c); box-shadow:0 4px 20px rgba(239,68,68,0.25); }
+.svc-hitna:active { box-shadow:0 4px 30px rgba(239,68,68,0.45); }
+.svc-taksi { background:linear-gradient(135deg,#eab308,#a16207); box-shadow:0 4px 20px rgba(234,179,8,0.25); }
+.svc-taksi:active { box-shadow:0 4px 30px rgba(234,179,8,0.45); }
+.svc-mehanicar { background:linear-gradient(135deg,#6b7280,#374151); box-shadow:0 4px 20px rgba(107,114,128,0.25); }
+.svc-mehanicar:active { box-shadow:0 4px 30px rgba(107,114,128,0.45); }
+.svc-policija { background:linear-gradient(135deg,#3b82f6,#1d4ed8); box-shadow:0 4px 20px rgba(59,130,246,0.25); }
+.svc-policija:active { box-shadow:0 4px 30px rgba(59,130,246,0.45); }
+
+/* ========== BOUNTY SCREEN ========== */
+#bountyScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.bounty-content {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:24px;
+}
+.bounty-icon {
+  width:70px; height:70px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:20px;
+  box-shadow:0 0 30px rgba(239,68,68,0.2);
+}
+.bounty-icon svg { width:36px; height:36px; fill:#fff; }
+.bounty-title { font-size:20px; font-weight:700; color:#e2e8f0; margin-bottom:6px; }
+.bounty-subtitle { font-size:13px; color:#64748b; margin-bottom:24px; }
+.bounty-field {
+  width:100%; margin-bottom:14px;
+}
+.bounty-field label { display:block; font-size:12px; color:#64748b; margin-bottom:6px; font-weight:500; }
+.bounty-field input {
+  width:100%; padding:12px 14px;
+  background:#111d33; border:1px solid #1e3a5f;
+  border-radius:12px; color:#e2e8f0; font-size:14px;
+  outline:none; transition: border-color 0.2s;
+}
+.bounty-field input:focus { border-color:#ef4444; }
+.bounty-field input::placeholder { color:#475569; }
+.bounty-submit {
+  width:100%; padding:14px;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  border:none; border-radius:14px;
+  color:#fff; font-size:15px; font-weight:700;
+  cursor:pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+  margin-top:8px;
+  letter-spacing:0.5px;
+}
+.bounty-submit:active { transform:scale(0.97); box-shadow:0 0 25px rgba(239,68,68,0.4); }
+
+/* ========== BANK SCREEN ========== */
+#bankScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.bank-content {
+  flex:1; display:flex; flex-direction:column; align-items:center;
+  padding:24px;
+}
+.bank-card {
+  width:100%; max-width:280px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5,#6d28d9);
+  padding:24px;
+  margin-bottom:24px;
+  box-shadow:0 8px 30px rgba(124,58,237,0.25);
+  position:relative;
+  overflow:hidden;
+}
+.bank-card::before {
+  content:''; position:absolute;
+  top:-30px; right:-30px;
+  width:120px; height:120px;
+  background:rgba(255,255,255,0.05);
+  border-radius:50%;
+}
+.bank-card::after {
+  content:''; position:absolute;
+  bottom:-40px; left:-20px;
+  width:150px; height:150px;
+  background:rgba(255,255,255,0.03);
+  border-radius:50%;
+}
+.bank-card-label { font-size:11px; color:rgba(255,255,255,0.6); letter-spacing:1px; margin-bottom:4px; }
+.bank-card-name { font-size:14px; color:#fff; font-weight:600; margin-bottom:16px; }
+.bank-card-balance { font-size:28px; font-weight:200; color:#fff; letter-spacing:1px; }
+.bank-card-number { font-size:12px; color:rgba(255,255,255,0.4); margin-top:12px; letter-spacing:2px; }
+.bank-quick-actions {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px;
+  width:100%;
+}
+.bank-action {
+  padding:16px;
+  border-radius:12px;
+  background:#111d33;
+  border:1px solid #1e3a5f;
+  display:flex; flex-direction:column; align-items:center; gap:6px;
+  cursor:pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.bank-action:hover { border-color:#3b82f6; }
+.bank-action:active { transform:scale(0.96); }
+.bank-action svg { width:22px; height:22px; fill:#8b5cf6; }
+.bank-action span { font-size:12px; color:#94a3b8; font-weight:500; }
+
+/* ========== SETTINGS SCREEN ========== */
+#settingsScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.settings-content {
+  flex:1; overflow-y:auto; padding:8px 16px;
+}
+.settings-content::-webkit-scrollbar { display:none; }
+.settings-section {
+  margin-bottom:16px;
+}
+.settings-section-title {
+  font-size:11px; color:#475569; font-weight:600;
+  letter-spacing:1px; text-transform:uppercase;
+  margin-bottom:8px; padding-left:4px;
+}
+.settings-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 10px;
+  background:#111d33;
+  border-radius:10px;
+  margin-bottom:6px;
+  cursor:pointer;
+  transition: background 0.15s;
+}
+.settings-item:hover { background:#152238; }
+.settings-item:active { background:#1a2a44; }
+.settings-item svg { width:20px; height:20px; fill:#64748b; flex-shrink:0; }
+.settings-item-text { flex:1; }
+.settings-item-text .label { font-size:14px; color:#e2e8f0; }
+.settings-item-text .sublabel { font-size:11px; color:#475569; margin-top:1px; }
+.settings-item .chevron { width:16px; height:16px; fill:none; stroke:#475569; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+.settings-player-info {
+  display:flex; flex-direction:column; align-items:center;
+  padding:20px 16px 16px;
+}
+.settings-player-avatar {
+  width:60px; height:60px; border-radius:50%;
+  background:linear-gradient(135deg,#1e3a5f,#172554);
+  display:flex; align-items:center; justify-content:center;
+  margin-bottom:10px;
+}
+.settings-player-avatar svg { width:30px; height:30px; fill:#3b82f6; }
+.settings-player-name { font-size:16px; font-weight:600; color:#e2e8f0; }
+.settings-player-number { font-size:13px; color:#64748b; margin-top:2px; }
+
+/* ========== DIALER SCREEN ========== */
+#dialerScreen {
+  background: linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+}
+.dialer-content {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; padding:8px 20px;
+}
+.dialer-display {
+  width:100%;
+  padding:20px 0;
+  text-align:center;
+  font-size:28px; font-weight:300; color:#e2e8f0;
+  letter-spacing:2px;
+  min-height:60px;
+  word-break:break-all;
+}
+.dialer-display.has-number { font-size:26px; }
+.dialer-pad {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  width:100%; max-width:260px;
+}
+.dialer-key {
+  height:52px;
+  border-radius:50%;
+  background:#111d33;
+  border:1px solid #1e3a5f;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition: background 0.15s, transform 0.1s;
+  margin:0 auto;
+  width:52px;
+}
+.dialer-key:active { background:#1a2a44; transform:scale(0.92); }
+.dialer-key .digit { font-size:20px; color:#e2e8f0; font-weight:400; }
+.dialer-key .letters { font-size:8px; color:#475569; letter-spacing:2px; margin-top:-2px; }
+.dialer-actions {
+  display:flex; align-items:center; gap:24px;
+  margin-top:16px;
+}
+.dialer-call-btn {
+  width:56px; height:56px; border-radius:50%;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  box-shadow:0 0 20px rgba(34,197,94,0.2);
+  transition: transform 0.15s;
+}
+.dialer-call-btn:active { transform:scale(0.9); box-shadow:0 0 30px rgba(34,197,94,0.4); }
+.dialer-call-btn svg { width:26px; height:26px; fill:#fff; }
+.dialer-delete-btn {
+  width:40px; height:40px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition: background 0.15s;
+}
+.dialer-delete-btn:hover { background:rgba(59,130,246,0.1); }
+.dialer-delete-btn svg { width:22px; height:22px; fill:none; stroke:#64748b; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ========== TOAST NOTIFICATION ========== */
+.toast-container {
+  position:absolute;
+  top:36px; left:16px; right:16px;
+  z-index:200;
+  pointer-events:none;
+}
+.toast {
+  padding:12px 16px;
+  background:rgba(17,29,51,0.95);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(59,130,246,0.2);
+  border-radius:12px;
+  font-size:13px; color:#e2e8f0;
+  box-shadow:0 8px 24px rgba(0,0,0,0.4);
+  transform:translateY(-20px);
+  opacity:0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events:auto;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.hide { transform:translateY(-20px); opacity:0; }
+
+/* ========== INCOMING CALL OVERLAY ========== */
+.incoming-call-overlay {
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg, #0a192f 0%, #0d1f3c 100%);
+  z-index:150;
+  display:flex; flex-direction:column; align-items:center;
+  transform:translateY(100%);
+  opacity:0;
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+  pointer-events:none;
+}
+.incoming-call-overlay.active {
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.incoming-call-ring {
+  width:100px; height:100px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex; align-items:center; justify-content:center;
+  margin-top:80px;
+  box-shadow:0 0 40px rgba(34,197,94,0.3);
+  animation: ring-pulse 1.5s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%,100% { box-shadow:0 0 40px rgba(34,197,94,0.3); }
+  50% { box-shadow:0 0 60px rgba(34,197,94,0.5); }
+}
+.incoming-call-ring svg { width:48px; height:48px; fill:#fff; }
+.incoming-call-name {
+  margin-top:24px; font-size:22px; font-weight:300; color:#e2e8f0;
+}
+.incoming-call-number {
+  margin-top:6px; font-size:14px; color:#64748b;
+}
+.incoming-call-label {
+  margin-top:8px; font-size:13px; color:#3b82f6;
+  animation: pulse-text 2s ease-in-out infinite;
+}
+.incoming-call-actions {
+  margin-top:auto; margin-bottom:50px;
+  display:flex; gap:50px; align-items:center;
+}
+.incoming-accept {
+  width:64px; height:64px; border-radius:50%;
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  box-shadow:0 0 20px rgba(34,197,94,0.3);
+  transition:transform 0.15s;
+}
+.incoming-accept:active { transform:scale(0.9); }
+.incoming-accept svg { width:28px; height:28px; fill:#fff; }
+.incoming-reject {
+  width:64px; height:64px; border-radius:50%;
+  background:linear-gradient(135deg,#ef4444,#dc2626);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  box-shadow:0 0 20px rgba(239,68,68,0.3);
+  transition:transform 0.15s;
+}
+.incoming-reject:active { transform:scale(0.9); }
+.incoming-reject svg { width:28px; height:28px; fill:#fff; }
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- iPhone 16 Side Buttons -->
+  <div class="phone-volume-up"></div>
+  <div class="phone-volume-down"></div>
+  <div class="phone-power-btn"></div>
+  <!-- Home Indicator Bar -->
+  <div class="phone-home-bar"></div>
+  <div class="screens-container">
+
+    <!-- ========== LOCK SCREEN ========== -->
+    <div id="lockScreen" class="screen active">
+      <div class="lock-wallpaper"></div>
+      <div class="lock-time" id="lockTime">00:00</div>
+      <div class="lock-date" id="lockDate">Ponedeljak, 1. Januar</div>
+      <div class="lock-icon-wrap">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="lock-unlock">Dodirnite za otključavanje</div>
+    </div>
+
+    <!-- ========== PIN OVERLAY ========== -->
+    <div id="pinOverlay" class="pin-overlay">
+      <!-- X Close Button -->
+      <div class="pin-close-btn" onclick="pinClose()">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div class="pin-lock-icon">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </div>
+      <div class="pin-title" id="pinTitle">Unesite PIN</div>
+      <div class="pin-subtitle" id="pinSubtitle">4-znamenkasti kod za pristup</div>
+      <div class="pin-dots" id="pinDots">
+        <div class="pin-dot" id="pinDot0"></div>
+        <div class="pin-dot" id="pinDot1"></div>
+        <div class="pin-dot" id="pinDot2"></div>
+        <div class="pin-dot" id="pinDot3"></div>
+      </div>
+      <div class="pin-pad">
+        <div class="pin-key" onclick="pinPress('1')"><span class="digit">1</span></div>
+        <div class="pin-key" onclick="pinPress('2')"><span class="digit">2</span><span class="letters">ABC</span></div>
+        <div class="pin-key" onclick="pinPress('3')"><span class="digit">3</span><span class="letters">DEF</span></div>
+        <div class="pin-key" onclick="pinPress('4')"><span class="digit">4</span><span class="letters">GHI</span></div>
+        <div class="pin-key" onclick="pinPress('5')"><span class="digit">5</span><span class="letters">JKL</span></div>
+        <div class="pin-key" onclick="pinPress('6')"><span class="digit">6</span><span class="letters">MNO</span></div>
+        <div class="pin-key" onclick="pinPress('7')"><span class="digit">7</span><span class="letters">PQRS</span></div>
+        <div class="pin-key" onclick="pinPress('8')"><span class="digit">8</span><span class="letters">TUV</span></div>
+        <div class="pin-key" onclick="pinPress('9')"><span class="digit">9</span><span class="letters">WXYZ</span></div>
+        <div class="pin-key-empty"></div>
+        <div class="pin-key" onclick="pinPress('0')"><span class="digit">0</span></div>
+        <div class="pin-delete" onclick="pinDelete()">
+          <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>
+        </div>
+      </div>
+      <div class="pin-error-msg" id="pinErrorMsg"></div>
+    </div>
+
+    <!-- ========== HOME SCREEN ========== -->
+    <div id="homeScreen" class="screen hidden-left">
+      <div class="status-bar">
+        <div class="left">
+          <div class="signal-bars"><span></span><span></span><span></span><span></span><span></span></div>
+          <span>UG 4G</span>
+        </div>
+        <div class="center" id="statusTime">00:00</div>
+        <div class="right">
+          <span id="batteryPct">100%</span>
+          <div class="battery-icon">
+            <div class="battery-body"><div class="battery-fill" id="batteryFill" style="width:100%"></div></div>
+            <div class="battery-tip"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-content">
+        <div class="app-grid">
+          <!-- TELEFON -->
+          <div class="app-item" onclick="openScreen('dialerScreen','right')">
+            <div class="app-icon app-telefon">
+              <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="app-label">Telefon</div>
+          </div>
+          <!-- PORUKE -->
+          <div class="app-item" onclick="openScreen('messagesScreen','right')">
+            <div class="app-icon app-poruke">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="app-label">Poruke</div>
+          </div>
+          <!-- KONTAKTI -->
+          <div class="app-item" onclick="openScreen('contactsScreen','right')">
+            <div class="app-icon app-kontakti">
+              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div class="app-label">Kontakti</div>
+          </div>
+          <!-- BOUNTY -->
+          <div class="app-item" onclick="openScreen('bountyScreen','right')">
+            <div class="app-icon app-bounty">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="6" stroke="#fff" stroke-width="1.5"/><line x1="12" y1="18" x2="12" y2="22" stroke="#fff" stroke-width="1.5"/><line x1="2" y1="12" x2="6" y2="12" stroke="#fff" stroke-width="1.5"/><line x1="18" y1="12" x2="22" y2="12" stroke="#fff" stroke-width="1.5"/></svg>
+            </div>
+            <div class="app-label">Bounty</div>
+          </div>
+          <!-- BANKA -->
+          <div class="app-item" onclick="openScreen('bankScreen','right')">
+            <div class="app-icon app-banka">
+              <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10" stroke="#fff" stroke-width="1.5"/><line x1="6" y1="14" x2="10" y2="14" stroke="#fff" stroke-width="1.5"/><line x1="14" y1="14" x2="18" y2="14" stroke="#fff" stroke-width="1.5"/></svg>
+            </div>
+            <div class="app-label">Banka</div>
+          </div>
+          <!-- TAKSI -->
+          <div class="app-item" onclick="emitService('phone:callTaxi')">
+            <div class="app-icon app-taksi">
+              <svg viewBox="0 0 24 24"><path d="M5 17h2m10 0h2M3 11l1.5-5h15L21 11M3 11v6h18v-6M3 11h18"/><rect x="6" y="6" width="12" height="5" rx="1"/><circle cx="7" cy="17" r="1.5" fill="#fff"/><circle cx="17" cy="17" r="1.5" fill="#fff"/></svg>
+            </div>
+            <div class="app-label">Taksi</div>
+          </div>
+          <!-- HITNA -->
+          <div class="app-item" onclick="emitService('phone:call911')">
+            <div class="app-icon app-hitna">
+              <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/><rect x="11" y="8" width="2" height="6" rx="1" fill="#0a192f"/><rect x="9" y="10" width="6" height="2" rx="1" fill="#0a192f"/></svg>
+            </div>
+            <div class="app-label">Hitna</div>
+          </div>
+          <!-- MEHANIČAR -->
+          <div class="app-item" onclick="emitService('phone:callMehanicar')">
+            <div class="app-icon app-mehanicar">
+              <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div class="app-label">Mehaničar</div>
+          </div>
+          <!-- PODEŠAVANJA -->
+          <div class="app-item" onclick="openScreen('settingsScreen','right')">
+            <div class="app-icon app-podesavanja">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div class="app-label">Podešavanja</div>
+          </div>
+          <!-- APP STORE -->
+          <div class="app-item" onclick="openScreen('appstoreScreen','right')">
+            <div class="app-icon app-appstore">
+              <svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+            </div>
+            <div class="app-label">App Store</div>
+          </div>
+          <!-- KAMERA (hidden until installed) -->
+          <div class="app-item app-hidden" id="appItemKamera" onclick="openScreen('cameraScreen','right')">
+            <div class="app-icon app-kamera">
+              <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4" fill="#0a192f"/></svg>
+            </div>
+            <div class="app-label">Kamera</div>
+          </div>
+          <!-- INSTALIFE (hidden until installed) -->
+          <div class="app-item app-hidden" id="appItemInstalife" onclick="openScreen('instalifeScreen','right')">
+            <div class="app-icon app-instalife">
+              <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5" fill="#0a192f"/><circle cx="17.5" cy="6.5" r="1.5" fill="#0a192f"/></svg>
+            </div>
+            <div class="app-label">InstaLife</div>
+          </div>
+          <!-- TIKVID (hidden until installed) -->
+          <div class="app-item app-hidden" id="appItemTikvid" onclick="openScreen('tikvidScreen','right')">
+            <div class="app-icon app-tikvid">
+              <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2 6.34 6.34 0 0 0 9.49 21.5a6.34 6.34 0 0 0 6.34-6.34V8.72a8.2 8.2 0 0 0 3.76.93V6.2a4.83 4.83 0 0 1-3.77.49z"/></svg>
+            </div>
+            <div class="app-label">TikVid</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-dock">
+        <div class="dock-item" onclick="openScreen('dialerScreen','right')">
+          <div class="dock-icon app-telefon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="dock-label">Telefon</div>
+        </div>
+        <div class="dock-item" onclick="openScreen('messagesScreen','right')">
+          <div class="dock-icon app-poruke">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div class="dock-label">Poruke</div>
+        </div>
+        <div class="dock-item" onclick="openScreen('contactsScreen','right')">
+          <div class="dock-icon app-kontakti">
+            <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div class="dock-label">Kontakti</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CALL SCREEN ========== -->
+    <div id="callScreen" class="screen hidden-right">
+      <div class="status-bar">
+        <div class="left">
+          <div class="signal-bars"><span></span><span></span><span></span><span></span><span></span></div>
+          <span>UG 4G</span>
+        </div>
+        <div class="center" id="callStatusTime">00:00</div>
+        <div class="right">
+          <span id="callBatteryPct">100%</span>
+          <div class="battery-icon">
+            <div class="battery-body"><div class="battery-fill" id="callBatteryFill" style="width:100%"></div></div>
+            <div class="battery-tip"></div>
+          </div>
+        </div>
+      </div>
+      <div class="call-avatar">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div class="call-number" id="callNumber">Unknown</div>
+      <div class="call-status">
+        Pozivam <span class="call-dots"><span></span><span></span><span></span></span>
+      </div>
+      <div class="call-end-btn" onclick="endCall()">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"/></svg>
+      </div>
+    </div>
+
+    <!-- ========== MESSAGES SCREEN ========== -->
+    <div id="messagesScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Poruke</div>
+      </div>
+      <div class="msg-list" id="msgList">
+        <!-- Populated by JS -->
+      </div>
+      <div class="msg-input-bar">
+        <input type="text" class="msg-to-input" id="smsTo" placeholder="Broj" maxlength="20">
+        <input type="text" class="msg-text-input" id="smsText" placeholder="Unesi poruku..." maxlength="160">
+        <div class="msg-send-btn" onclick="sendSMS()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13" stroke="#fff" stroke-width="2" stroke-linecap="round"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CONTACTS SCREEN ========== -->
+    <div id="contactsScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Kontakti</div>
+      </div>
+      <div class="contact-list" id="contactList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- ========== SERVICES SCREEN ========== -->
+    <div id="servicesScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Usluge</div>
+      </div>
+      <div class="services-grid">
+        <div class="service-btn svc-hitna" onclick="emitService('phone:call911')">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/><rect x="11" y="8" width="2" height="6" rx="1" fill="rgba(10,25,47,0.8)"/><rect x="9" y="10" width="6" height="2" rx="1" fill="rgba(10,25,47,0.8)"/></svg>
+          <div class="service-btn-label">Hitna Pomoć</div>
+          <div class="service-btn-sub">911</div>
+        </div>
+        <div class="service-btn svc-taksi" onclick="emitService('phone:callTaxi')">
+          <svg viewBox="0 0 24 24"><path d="M5 17h2m10 0h2M3 11l1.5-5h15L21 11M3 11v6h18v-6M3 11h18"/><circle cx="7" cy="17" r="1.5" fill="#fff"/><circle cx="17" cy="17" r="1.5" fill="#fff"/></svg>
+          <div class="service-btn-label">Taksi</div>
+          <div class="service-btn-sub">Prevoz</div>
+        </div>
+        <div class="service-btn svc-mehanicar" onclick="emitService('phone:callMehanicar')">
+          <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <div class="service-btn-label">Mehaničar</div>
+          <div class="service-btn-sub">Popravka</div>
+        </div>
+        <div class="service-btn svc-policija" onclick="emitService('phone:call911')">
+          <svg viewBox="0 0 24 24"><path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z"/><path d="M12 8v4M12 16h.01" stroke="rgba(10,25,47,0.8)" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+          <div class="service-btn-label">Policija</div>
+          <div class="service-btn-sub">911</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BOUNTY SCREEN ========== -->
+    <div id="bountyScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Bounty</div>
+      </div>
+      <div class="bounty-content">
+        <div class="bounty-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="6" stroke="#fff" stroke-width="1.5"/><line x1="12" y1="18" x2="12" y2="22" stroke="#fff" stroke-width="1.5"/><line x1="2" y1="12" x2="6" y2="12" stroke="#fff" stroke-width="1.5"/><line x1="18" y1="12" x2="22" y2="12" stroke="#fff" stroke-width="1.5"/></svg>
+        </div>
+        <div class="bounty-title">Postavi Bounty</div>
+        <div class="bounty-subtitle">Nagrada za hvatanje igrača</div>
+        <div class="bounty-field">
+          <label>Ime igrača</label>
+          <input type="text" id="bountyTarget" placeholder="npr. Nikola_Ristic" maxlength="30">
+        </div>
+        <div class="bounty-field">
+          <label>Iznos ($)</label>
+          <input type="number" id="bountyAmount" placeholder="npr. 5000" min="1" max="9999999">
+        </div>
+        <button class="bounty-submit" onclick="placeBounty()">POSTAVI BOUNTY</button>
+      </div>
+    </div>
+
+    <!-- ========== BANK SCREEN ========== -->
+    <div id="bankScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Banka</div>
+      </div>
+      <div class="bank-content">
+        <div class="bank-card">
+          <div class="bank-card-label">UNICATE BANK</div>
+          <div class="bank-card-name" id="bankPlayerName">Igrač</div>
+          <div class="bank-card-balance" id="bankBalance">$0</div>
+          <div class="bank-card-number" id="bankCardNumber">**** **** **** 0000</div>
+        </div>
+        <div class="bank-quick-actions">
+          <div class="bank-action" onclick="emitService('phone:bounty:check')">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="2" y1="10" x2="22" y2="10" stroke="#8b5cf6" stroke-width="1.5"/></svg>
+            <span>Stanje</span>
+          </div>
+          <div class="bank-action" onclick="emitService('phone:bank:transfer')">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"/><polyline points="19 12 12 19 5 12" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Prebaci</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== SETTINGS SCREEN ========== -->
+    <div id="settingsScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Podešavanja</div>
+      </div>
+      <div class="settings-content">
+        <div class="settings-player-info">
+          <div class="settings-player-avatar">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="settings-player-name" id="settingsPlayerName">Igrač</div>
+          <div class="settings-player-number" id="settingsPhoneNumber">Broj: ---</div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Opšte</div>
+          <div class="settings-item" onclick="emitService('phone:close')">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="settings-item-text">
+              <div class="label">Zatvori telefon</div>
+              <div class="sublabel">Sakrij interfejs</div>
+            </div>
+            <svg class="chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-section-title">Informacije</div>
+          <div class="settings-item">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#64748b" stroke-width="2"/><line x1="12" y1="16" x2="12" y2="12" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="8" x2="12.01" y2="8" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="settings-item-text">
+              <div class="label">Unicate Gaming RPG</div>
+              <div class="sublabel">Verzija 1.0.0</div>
+            </div>
+          </div>
+          <div class="settings-item">
+            <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="#64748b" stroke-width="2"/><line x1="2" y1="10" x2="22" y2="10" stroke="#64748b" stroke-width="2"/></svg>
+            <div class="settings-item-text">
+              <div class="label">Stanje računa</div>
+              <div class="sublabel" id="settingsMoney">$0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== DIALER SCREEN ========== -->
+    <div id="dialerScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">Telefon</div>
+      </div>
+      <div class="dialer-content">
+        <div class="dialer-display" id="dialerDisplay">&nbsp;</div>
+        <div class="dialer-pad">
+          <div class="dialer-key" onclick="dialPress('1')"><span class="digit">1</span><span class="letters">&nbsp;</span></div>
+          <div class="dialer-key" onclick="dialPress('2')"><span class="digit">2</span><span class="letters">ABC</span></div>
+          <div class="dialer-key" onclick="dialPress('3')"><span class="digit">3</span><span class="letters">DEF</span></div>
+          <div class="dialer-key" onclick="dialPress('4')"><span class="digit">4</span><span class="letters">GHI</span></div>
+          <div class="dialer-key" onclick="dialPress('5')"><span class="digit">5</span><span class="letters">JKL</span></div>
+          <div class="dialer-key" onclick="dialPress('6')"><span class="digit">6</span><span class="letters">MNO</span></div>
+          <div class="dialer-key" onclick="dialPress('7')"><span class="digit">7</span><span class="letters">PQRS</span></div>
+          <div class="dialer-key" onclick="dialPress('8')"><span class="digit">8</span><span class="letters">TUV</span></div>
+          <div class="dialer-key" onclick="dialPress('9')"><span class="digit">9</span><span class="letters">WXYZ</span></div>
+          <div class="dialer-key" onclick="dialPress('*')"><span class="digit">*</span><span class="letters">&nbsp;</span></div>
+          <div class="dialer-key" onclick="dialPress('0')"><span class="digit">0</span><span class="letters">+</span></div>
+          <div class="dialer-key" onclick="dialPress('#')"><span class="digit">#</span><span class="letters">&nbsp;</span></div>
+        </div>
+        <div class="dialer-actions">
+          <div class="dialer-delete-btn" onclick="dialDelete()">
+            <svg viewBox="0 0 24 24"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15" stroke="#64748b" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="9" x2="18" y2="15" stroke="#64748b" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="dialer-call-btn" onclick="dialCall()">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div style="width:40px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== APP STORE SCREEN ========== -->
+    <div id="appstoreScreen" class="screen hidden-right">
+      <div class="nav-header">
+        <div class="nav-back" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="nav-title">App Store</div>
+      </div>
+      <div class="appstore-header">
+        <div class="appstore-title">UG App Store</div>
+        <div class="appstore-subtitle">Preuzmi aplikacije za tvoj telefon</div>
+      </div>
+      <div class="appstore-list" id="appstoreList">
+        <!-- Kamera -->
+        <div class="appstore-card" id="appstoreCardKamera">
+          <div class="appstore-card-icon app-kamera">
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4" fill="rgba(10,25,47,0.8)"/></svg>
+          </div>
+          <div class="appstore-card-info">
+            <div class="appstore-card-name">Kamera</div>
+            <div class="appstore-card-desc">Fotografisi trenutke u igri</div>
+          </div>
+          <button class="appstore-card-btn appstore-btn-install" id="btnInstallKamera" onclick="installApp('kamera')">INSTALIRAJ</button>
+        </div>
+        <!-- InstaLife -->
+        <div class="appstore-card" id="appstoreCardInstalife">
+          <div class="appstore-card-icon app-instalife">
+            <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5" fill="rgba(10,25,47,0.8)"/><circle cx="17.5" cy="6.5" r="1.5" fill="rgba(10,25,47,0.8)"/></svg>
+          </div>
+          <div class="appstore-card-info">
+            <div class="appstore-card-name">InstaLife</div>
+            <div class="appstore-card-desc">Dijeli fotografije i prica jos</div>
+          </div>
+          <button class="appstore-card-btn appstore-btn-install" id="btnInstallInstalife" onclick="installApp('instalife')">INSTALIRAJ</button>
+        </div>
+        <!-- TikVid -->
+        <div class="appstore-card" id="appstoreCardTikvid">
+          <div class="appstore-card-icon app-tikvid">
+            <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2 6.34 6.34 0 0 0 9.49 21.5a6.34 6.34 0 0 0 6.34-6.34V8.72a8.2 8.2 0 0 0 3.76.93V6.2a4.83 4.83 0 0 1-3.77.49z" fill="#fff"/></svg>
+          </div>
+          <div class="appstore-card-info">
+            <div class="appstore-card-name">TikVid</div>
+            <div class="appstore-card-desc">Kratki video zapisi i trendovi</div>
+          </div>
+          <button class="appstore-card-btn appstore-btn-install" id="btnInstallTikvid" onclick="installApp('tikvid')">INSTALIRAJ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CAMERA SCREEN ========== -->
+    <div id="cameraScreen" class="screen hidden-right">
+      <div class="camera-viewfinder">
+        <div class="camera-vf-overlay">
+          <div class="camera-crosshair">
+            <div class="camera-corner tl"></div>
+            <div class="camera-corner tr"></div>
+            <div class="camera-corner bl"></div>
+            <div class="camera-corner br"></div>
+          </div>
+        </div>
+        <div class="camera-location" id="cameraLocation">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="rgba(0,0,0,0.5)"/></svg>
+          <span id="cameraLocText">Lociranje...</span>
+        </div>
+        <div class="camera-flash" id="cameraFlash"></div>
+      </div>
+      <div class="camera-controls">
+        <div class="camera-side-btn" onclick="goHome()">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="camera-shutter" onclick="takePhoto()"></div>
+        <div class="camera-side-btn" onclick="switchCameraFilter()">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M14.31 8l5.74 9.94M9.69 8h11.48M7.38 12l5.74-9.94M9.69 16L3.95 6.06M14.31 16H2.83M16.62 12l-5.74 9.94" stroke="#fff" stroke-width="1.5" fill="none"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== INSTALIFE SCREEN ========== -->
+    <div id="instalifeScreen" class="screen hidden-right">
+      <div class="instalife-topbar">
+        <div class="nav-back" onclick="goHome()" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="instalife-logo"><span>InstaLife</span></div>
+        <div class="instalife-top-btn" onclick="openInstalifeNewPost()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="#fff" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="16" stroke="#fff" stroke-width="2" stroke-linecap="round"/><line x1="8" y1="12" x2="16" y2="12" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </div>
+      </div>
+      <div class="instalife-stories" id="instalifeStories">
+        <!-- Populated by JS -->
+      </div>
+      <div class="instalife-feed" id="instalifeFeed">
+        <!-- Populated by JS -->
+      </div>
+      <!-- New Post Overlay -->
+      <div class="instalife-newpost" id="instalifeNewpost">
+        <div class="instalife-newpost-header">
+          <div class="nav-back" onclick="closeInstalifeNewPost()" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;">
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="15 18 9 12 15 6"/></svg>
+          </div>
+          <div class="instalife-newpost-title">Novi post</div>
+        </div>
+        <div class="instalife-newpost-body">
+          <div class="instalife-photo-preview" id="ilNewPhotoPreview">
+            <div class="photo-title" id="ilNewPhotoTitle">Nema fotografije</div>
+            <div class="photo-loc" id="ilNewPhotoLoc">Otvori kameru prvo</div>
+          </div>
+          <textarea class="instalife-caption-input" id="ilNewCaption" placeholder="Napisati opis..." maxlength="200"></textarea>
+          <button class="instalife-share-btn" onclick="shareInstalifePost()">PODELE</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TIKVID SCREEN ========== -->
+    <div id="tikvidScreen" class="screen hidden-right">
+      <div class="tikvid-topbar">
+        <div class="nav-back" onclick="goHome()" style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;position:absolute;left:8px;">
+          <svg viewBox="0 0 24 24" style="width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><polyline points="15 18 9 12 15 6"/></svg>
+        </div>
+        <div class="tikvid-tab" onclick="setTikvidTab(this,'following')">Following</div>
+        <div class="tikvid-tab active" onclick="setTikvidTab(this,'trending')">Trending</div>
+      </div>
+      <div class="tikvid-feed" id="tikvidFeed">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- ========== INCOMING CALL OVERLAY ========== -->
+    <div class="incoming-call-overlay" id="incomingCallOverlay">
+      <div class="status-bar" style="position:relative;z-index:160;">
+        <div class="left">
+          <div class="signal-bars"><span></span><span></span><span></span><span></span><span></span></div>
+          <span>UG 4G</span>
+        </div>
+        <div class="center" id="incomingStatusTime">00:00</div>
+        <div class="right">
+          <span id="incomingBatteryPct">100%</span>
+          <div class="battery-icon">
+            <div class="battery-body"><div class="battery-fill" id="incomingBatteryFill" style="width:100%"></div></div>
+            <div class="battery-tip"></div>
+          </div>
+        </div>
+      </div>
+      <div class="incoming-call-ring">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      </div>
+      <div class="incoming-call-name" id="incomingCallerName">Nepoznat</div>
+      <div class="incoming-call-number" id="incomingCallerNumber">---</div>
+      <div class="incoming-call-label">Dolazni poziv</div>
+      <div class="incoming-call-actions">
+        <div class="incoming-accept" onclick="acceptIncomingCall()">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div class="incoming-reject" onclick="rejectIncomingCall()">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" transform="rotate(135 12 12)"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== TOAST CONTAINER ========== -->
+    <div class="toast-container" id="toastContainer"></div>
+
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   UNICATE GAMING RPG - PHONE CEF INTERFACE
+   ================================================================ */
+
+// ==================== EXPANDED MODE DETECTION ====================
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('expanded') === '1') {
+    document.body.classList.add('expanded');
+  }
+})();
+
+// ==================== STATE ====================
+let state = {
+  locked: true,
+  currentScreen: 'lockScreen',
+  previousScreen: null,
+  playerName: 'Igrač',
+  phoneNumber: '---',
+  money: 0,
+  battery: 100,
+  dialerNumber: '',
+  inCall: false,
+  callNumber: '',
+  incomingCall: null,
+  messages: [],
+  contacts: []
+};
+
+// Default placeholder data
+const defaultContacts = [
+  { name: 'Hitna Pomoć', number: '911' },
+  { name: 'Taksi Služba', number: '444' },
+  { name: 'Mehaničar', number: '555' },
+  { name: 'Policija', number: '911' },
+  { name: 'Banka Info', number: '800' }
+];
+const defaultMessages = [
+  { name: 'Hitna Pomoć', number: '911', preview: 'Hvala na pozivu, pomoć je na putu.', time: '12:30', unread: false },
+  { name: 'Taksi Služba', number: '444', preview: 'Vozilo stiže za 2 minuta.', time: '11:45', unread: true },
+  { name: 'Mehaničar', number: '555', preview: 'Popravka završena, vozilo spremno.', time: '10:20', unread: false }
+];
+
+// ==================== CEF BRIDGE ====================
+// The cef object is injected by omp-cef plugin at runtime.
+// For browser testing, we provide a safe fallback.
+const cef = window.cef || {
+  emit: function() { console.log('[CEF EMIT]', arguments); },
+  on: function(event, fn) { console.log('[CEF ON]', event); }
+};
+
+// ==================== HELPERS ====================
+function $(id) { return document.getElementById(id); }
+
+// ==================== TIME ====================
+const srDays = ['Nedelja','Ponedeljak','Utorak','Sreda','Četvrtak','Petak','Subota'];
+const srMonths = ['Januar','Februar','Mart','April','Maj','Jun','Jul','Avgust','Septembar','Oktobar','Novembar','Decembar'];
+
+function updateTime() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const t = h + ':' + m;
+
+  $('lockTime').textContent = t;
+  $('lockDate').textContent = srDays[now.getDay()] + ', ' + now.getDate() + '. ' + srMonths[now.getMonth()];
+  $('statusTime').textContent = t;
+  $('callStatusTime').textContent = t;
+  $('incomingStatusTime').textContent = t;
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// ==================== BATTERY ====================
+function updateBatteryUI() {
+  const pct = Math.max(0, Math.min(100, state.battery));
+  const pctStr = pct + '%';
+  const color = pct > 50 ? '#22c55e' : pct > 20 ? '#eab308' : '#ef4444';
+  $('batteryPct').textContent = pctStr;
+  $('callBatteryPct').textContent = pctStr;
+  $('incomingBatteryPct').textContent = pctStr;
+  $('batteryFill').style.width = pctStr;
+  $('batteryFill').style.background = color;
+  $('callBatteryFill').style.width = pctStr;
+  $('callBatteryFill').style.background = color;
+  $('incomingBatteryFill').style.width = pctStr;
+  $('incomingBatteryFill').style.background = color;
+}
+
+// ==================== SCREEN MANAGEMENT ====================
+function openScreen(targetId, direction) {
+  const current = $(state.currentScreen);
+  const target = $(targetId);
+  if (!current || !target || state.currentScreen === targetId) return;
+
+  state.previousScreen = state.currentScreen;
+
+  // Determine hide/show directions
+  const hideDir = direction === 'right' ? 'hidden-left' : direction === 'left' ? 'hidden-right' : direction === 'down' ? 'hidden-up' : 'hidden-down';
+  const oppositeDir = direction === 'right' ? 'hidden-right' : direction === 'left' ? 'hidden-left' : direction === 'down' ? 'hidden-down' : 'hidden-up';
+
+  current.classList.remove('active');
+  current.classList.add(hideDir);
+
+  target.classList.remove('hidden-left','hidden-right','hidden-up','hidden-down');
+  target.classList.add(oppositeDir);
+  // Force reflow
+  void target.offsetWidth;
+  target.classList.remove(oppositeDir);
+  target.classList.add('active');
+
+  state.currentScreen = targetId;
+}
+
+function goHome() {
+  if (state.currentScreen === 'homeScreen') return;
+  openScreen('homeScreen', 'left');
+}
+
+// ==================== LOCK SCREEN ====================
+$('lockScreen').addEventListener('click', function() {
+  state.locked = false;
+  // Pokazi PIN ekran
+  $('pinOverlay').classList.add('active');
+  // NE zovemo pinReset() - to bi pregazilo pinMode koji je server postavio
+  // Samo resetujemo vizuelno stanje:
+  pinCode = '';
+  pinFirstCode = '';
+  pinProcessing = false;
+  pinUpdateDots();
+  $('pinErrorMsg').textContent = '';
+  // pinMode ostaje kakav je (login ili register - postavljen od phone:pinRegister eventa)
+});
+
+// ==================== PIN SYSTEM ====================
+let pinCode = '';
+let pinMode = 'login'; // 'login' = unos postojeceg PIN-a, 'register' = novi PIN, 'confirm' = potvrda novog PIN-a
+let pinFirstCode = ''; // Za potvrdu registracije
+let pinProcessing = false;
+let pinTimeout = null; // za timeout handler
+
+function pinPress(digit) {
+  if (pinProcessing) return;
+  if (pinCode.length >= 4) return;
+  pinCode += digit;
+  pinUpdateDots();
+
+  if (pinCode.length === 4) {
+    pinProcessing = true;
+    if (pinMode === 'register') {
+      // Prvi unos - spremi i pitaj potvrdu
+      pinFirstCode = pinCode;
+      pinCode = '';
+      pinMode = 'confirm';
+      $('pinTitle').textContent = 'Potvrdite PIN';
+      $('pinSubtitle').textContent = 'Unesite isti kod ponovo';
+      pinUpdateDots();
+      pinProcessing = false;
+    } else if (pinMode === 'confirm') {
+      // Potvrda - provjeri da li se poklapa
+      if (pinCode === pinFirstCode) {
+        // Poklapa se - posalji na server za registraciju
+        pinShowSuccess();
+        cef.emit('phone:pin', pinCode);
+        // Timeout - ako server ne odgovori u 5 sekundi
+        pinTimeout = setTimeout(function() {
+          if (pinProcessing) {
+            pinShowError('Server ne odgovara. Pokusajte ponovo.');
+            pinCode = '';
+            pinUpdateDots();
+            pinProcessing = false;
+          }
+        }, 5000);
+      } else {
+        // Ne poklapa se
+        pinShowError('PIN se ne poklapa! Pokusajte ponovo.');
+        pinCode = '';
+        pinFirstCode = '';
+        pinMode = 'register';
+        $('pinTitle').textContent = 'Novi PIN';
+        $('pinSubtitle').textContent = 'Izaberite 4-znamenkasti kod';
+        setTimeout(function() { pinUpdateDots(); pinProcessing = false; }, 600);
+      }
+    } else {
+      // Login mode - posalji PIN na server
+      cef.emit('phone:pin', pinCode);
+      // Timeout - ako server ne odgovori u 5 sekundi, resetuj
+      pinTimeout = setTimeout(function() {
+        if (pinProcessing) {
+          pinShowError('Server ne odgovara. Pokusajte ponovo.');
+          pinCode = '';
+          pinUpdateDots();
+          pinProcessing = false;
+        }
+      }, 5000);
+    }
+  }
+}
+
+function pinDelete() {
+  if (pinProcessing) return;
+  if (pinCode.length > 0) {
+    pinCode = pinCode.slice(0, -1);
+    pinUpdateDots();
+  }
+}
+
+function pinUpdateDots() {
+  for (var i = 0; i < 4; i++) {
+    var dot = $('pinDot' + i);
+    if (i < pinCode.length) {
+      dot.classList.add('filled');
+      dot.classList.remove('error', 'success');
+    } else {
+      dot.classList.remove('filled', 'error', 'success');
+    }
+  }
+}
+
+function pinShowError(msg) {
+  var dots = $('pinDots');
+  for (var i = 0; i < 4; i++) {
+    $('pinDot' + i).classList.add('error');
+    $('pinDot' + i).classList.remove('filled', 'success');
+  }
+  $('pinErrorMsg').textContent = msg || 'Pogresan PIN!';
+  dots.classList.add('pin-shake');
+  setTimeout(function() { dots.classList.remove('pin-shake'); }, 500);
+}
+
+function pinShowSuccess() {
+  for (var i = 0; i < 4; i++) {
+    $('pinDot' + i).classList.add('success');
+    $('pinDot' + i).classList.remove('filled', 'error');
+  }
+  $('pinErrorMsg').textContent = '';
+}
+
+function pinReset() {
+  if (pinTimeout) { clearTimeout(pinTimeout); pinTimeout = null; }
+  pinCode = '';
+  pinFirstCode = '';
+  pinMode = 'login';
+  pinProcessing = false;
+  pinUpdateDots();
+  $('pinTitle').textContent = 'Unesite PIN';
+  $('pinSubtitle').textContent = '4-znamenkasti kod za pristup';
+  $('pinErrorMsg').textContent = '';
+}
+
+function pinClose() {
+  // Zatvori PIN i cijeli telefon
+  cef.emit('phone:close');
+}
+
+// Server odgovor na PIN
+cef.on('phone:pinResult', function(success, isNewPlayer) {
+  // Otkazi ghost timeout
+  if (pinTimeout) { clearTimeout(pinTimeout); pinTimeout = null; }
+  
+  if (success) {
+    pinShowSuccess();
+    pinProcessing = false;
+    pinCode = '';
+    setTimeout(function() {
+      $('pinOverlay').classList.remove('active');
+      openScreen('homeScreen', 'right');
+    }, 400);
+  } else {
+    pinShowError('Pogresan PIN! Pokusajte ponovo.');
+    pinCode = '';
+    setTimeout(function() { pinUpdateDots(); pinProcessing = false; }, 600);
+  }
+});
+
+// Server kaze da igrac nema PIN (novi igrac)
+cef.on('phone:pinRegister', function() {
+  pinMode = 'register';
+  $('pinTitle').textContent = 'Novi PIN';
+  $('pinSubtitle').textContent = 'Izaberite 4-znamenkasti kod';
+  pinCode = '';
+  pinUpdateDots();
+});
+
+// ==================== DIALER ====================
+function dialPress(key) {
+  if (state.dialerNumber.length >= 20) return;
+  state.dialerNumber += key;
+  updateDialerDisplay();
+}
+
+function dialDelete() {
+  state.dialerNumber = state.dialerNumber.slice(0, -1);
+  updateDialerDisplay();
+}
+
+function updateDialerDisplay() {
+  const d = $('dialerDisplay');
+  if (state.dialerNumber.length > 0) {
+    d.textContent = state.dialerNumber;
+    d.classList.add('has-number');
+  } else {
+    d.innerHTML = '&nbsp;';
+    d.classList.remove('has-number');
+  }
+}
+
+function dialCall() {
+  if (!state.dialerNumber || state.dialerNumber.length < 1) {
+    showToast('Unesite broj');
+    return;
+  }
+  makeCall(state.dialerNumber);
+}
+
+// ==================== CALL ====================
+function makeCall(number) {
+  state.callNumber = number;
+  state.inCall = true;
+  $('callNumber').textContent = number;
+  openScreen('callScreen', 'right');
+  cef.emit('phone:call', number);
+}
+
+function endCall() {
+  state.inCall = false;
+  state.callNumber = '';
+  cef.emit('phone:close');
+  goHome();
+}
+
+function acceptIncomingCall() {
+  if (!state.incomingCall) return;
+  state.inCall = true;
+  state.callNumber = state.incomingCall.number;
+  $('callNumber').textContent = state.incomingCall.number;
+  $('incomingCallOverlay').classList.remove('active');
+  openScreen('callScreen', 'right');
+  state.incomingCall = null;
+}
+
+function rejectIncomingCall() {
+  $('incomingCallOverlay').classList.remove('active');
+  state.incomingCall = null;
+}
+
+// ==================== SMS ====================
+function sendSMS() {
+  const to = $('smsTo').value.trim();
+  const msg = $('smsText').value.trim();
+  if (!to) { showToast('Unesite broj primaoca'); return; }
+  if (!msg) { showToast('Unesite poruku'); return; }
+  cef.emit('phone:sms', JSON.stringify({ to: to, message: msg }));
+  addMessageToUI(to, to, 'Ja: ' + msg, getCurrentTime(), false);
+  $('smsText').value = '';
+  showToast('Poruka poslata');
+}
+
+function addMessageToUI(name, number, preview, time, unread) {
+  state.messages.unshift({ name, number, preview, time, unread });
+  renderMessages();
+}
+
+function renderMessages() {
+  const list = $('msgList');
+  const msgs = state.messages.length > 0 ? state.messages : defaultMessages;
+  list.innerHTML = msgs.map(function(m) {
+    return '<div class="msg-item" onclick="openChat(\'' + m.number + '\')">' +
+      '<div class="msg-avatar"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>' +
+      '<div class="msg-info"><div class="msg-name">' + escHTML(m.name) + '</div><div class="msg-preview">' + escHTML(m.preview) + '</div></div>' +
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">' +
+        '<span class="msg-time">' + escHTML(m.time) + '</span>' +
+        (m.unread ? '<span class="msg-unread"></span>' : '') +
+      '</div></div>';
+  }).join('');
+}
+
+function openChat(number) {
+  $('smsTo').value = number;
+  $('smsText').focus();
+}
+
+// ==================== CONTACTS ====================
+function renderContacts() {
+  const list = $('contactList');
+  const contacts = state.contacts.length > 0 ? state.contacts : defaultContacts;
+  list.innerHTML = contacts.map(function(c) {
+    const initial = c.name.charAt(0).toUpperCase();
+    return '<div class="contact-item">' +
+      '<div class="contact-avatar">' + initial + '</div>' +
+      '<div style="flex:1"><div class="contact-name">' + escHTML(c.name) + '</div><div class="contact-number">' + escHTML(c.number) + '</div></div>' +
+      '<div class="contact-call-btn" onclick="makeCall(\'' + c.number + '\')">' +
+        '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ==================== BOUNTY ====================
+function placeBounty() {
+  const target = $('bountyTarget').value.trim();
+  const amount = parseInt($('bountyAmount').value);
+  if (!target) { showToast('Unesite ime igrača'); return; }
+  if (!amount || amount < 1) { showToast('Unesite ispravan iznos'); return; }
+  cef.emit('phone:bounty:place', JSON.stringify({ targetName: target, amount: amount }));
+  showToast('Bounty postavljen na ' + target + ' ($' + amount.toLocaleString() + ')');
+  $('bountyTarget').value = '';
+  $('bountyAmount').value = '';
+  setTimeout(goHome, 1200);
+}
+
+// ==================== SERVICE EMIT ====================
+function emitService(event) {
+  cef.emit(event);
+  showToast('Poziv u toku...');
+}
+
+// ==================== TOAST ====================
+function showToast(msg) {
+  const container = $('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  container.appendChild(toast);
+
+  // Animate in
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      toast.classList.add('show');
+    });
+  });
+
+  // Auto dismiss
+  setTimeout(function() {
+    toast.classList.remove('show');
+    toast.classList.add('hide');
+    setTimeout(function() { toast.remove(); }, 350);
+  }, 2500);
+}
+
+// ==================== UTILITIES ====================
+function escHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function getCurrentTime() {
+  const now = new Date();
+  return String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+
+function formatMoney(n) {
+  return '$' + Number(n).toLocaleString();
+}
+
+// ==================== CEF EVENT LISTENERS ====================
+cef.on('phone:init', function(playerName, phoneNumber, money, battery) {
+  state.playerName = playerName || 'Igrač';
+  state.phoneNumber = phoneNumber || '---';
+  state.money = money || 0;
+  state.battery = battery != null ? battery : 100;
+
+  // Update all UI elements
+  $('settingsPlayerName').textContent = state.playerName;
+  $('settingsPhoneNumber').textContent = 'Broj: ' + state.phoneNumber;
+  $('settingsMoney').textContent = formatMoney(state.money);
+  $('bankPlayerName').textContent = state.playerName;
+  $('bankBalance').textContent = formatMoney(state.money);
+  $('bankCardNumber').textContent = '**** **** **** ' + String(state.phoneNumber).slice(-4);
+  updateBatteryUI();
+});
+
+cef.on('phone:toast', function(msg) {
+  showToast(msg);
+});
+
+cef.on('phone:incomingCall', function(callerName, callerNumber) {
+  state.incomingCall = { name: callerName, number: callerNumber };
+  $('incomingCallerName').textContent = callerName;
+  $('incomingCallerNumber').textContent = callerNumber;
+  $('incomingCallOverlay').classList.add('active');
+});
+
+cef.on('phone:callEnded', function() {
+  state.inCall = false;
+  state.callNumber = '';
+  if (state.currentScreen === 'callScreen') {
+    showToast('Poziv završen');
+    setTimeout(goHome, 1000);
+  }
+  $('incomingCallOverlay').classList.remove('active');
+  state.incomingCall = null;
+});
+
+cef.on('phone:sms:received', function(from, message) {
+  addMessageToUI(from, from, message, getCurrentTime(), true);
+  showToast('Nova poruka od ' + from);
+});
+
+// ==================== INIT ====================
+function init() {
+  state.messages = [];
+  state.contacts = [];
+  renderMessages();
+  renderContacts();
+  updateBatteryUI();
+}
+
+init();
+
+// ========== APP STORE ==========
+let installedApps = { kamera: false, instalife: false, tikvid: false };
+
+function installApp(appId) {
+  if (installedApps[appId]) return;
+  installedApps[appId] = true;
+  
+  // Show app on home screen
+  var appItem = document.getElementById('appItem' + appId.charAt(0).toUpperCase() + appId.slice(1));
+  if (appItem) appItem.classList.remove('app-hidden');
+  
+  // Update button in App Store
+  var btn = document.getElementById('btnInstall' + appId.charAt(0).toUpperCase() + appId.slice(1));
+  if (btn) {
+    btn.textContent = 'INSTALIRANO';
+    btn.className = 'appstore-card-btn appstore-btn-installed';
+  }
+  
+  showToast(appId.charAt(0).toUpperCase() + appId.slice(1) + ' instalirana!');
+  cef.emit('phone:appInstalled', appId);
+}
+
+// ========== CAMERA ==========
+let lastPhoto = null;
+let cameraFilter = 0;
+const cameraFilters = ['Normalno', 'Noir', 'Vivid', 'Retro', 'Cinematic'];
+
+function takePhoto() {
+  // Flash effect
+  var flash = document.getElementById('cameraFlash');
+  flash.classList.add('flash');
+  setTimeout(function() { flash.classList.remove('flash'); }, 150);
+  
+  // Request game state from server
+  cef.emit('phone:takePhoto');
+  showToast('Fotografija snimljena!');
+}
+
+function switchCameraFilter() {
+  cameraFilter = (cameraFilter + 1) % cameraFilters.length;
+  showToast('Filter: ' + cameraFilters[cameraFilter]);
+}
+
+// Called from Pawn: phone:photoData
+cef.on('phone:photoData', function(location, nearby, skin, vehicle, time) {
+  lastPhoto = {
+    location: location || 'Nepoznato',
+    nearby: nearby || '',
+    skin: skin || '',
+    vehicle: vehicle || '',
+    time: time || getCurrentTime(),
+    filter: cameraFilters[cameraFilter]
+  };
+  // Update camera location text
+  var locEl = document.getElementById('cameraLocText');
+  if (locEl) locEl.textContent = lastPhoto.location;
+});
+
+// ========== INSTALIFE ==========
+let instalifePosts = [];
+let instalifeFollowing = [];
+
+function renderInstalifeStories() {
+  var container = document.getElementById('instalifeStories');
+  if (!container) return;
+  var html = '';
+  // Your story
+  html += '<div class="instalife-story" onclick="openInstalifeNewPost()">';
+  html += '<div class="instalife-story-ring" style="background:linear-gradient(135deg,#0ea5e9,#3b82f6);"><div class="instalife-story-avatar">+</div></div>';
+  html += '<div class="instalife-story-name">Tvoja prica</div></div>';
+  // Demo stories from contacts
+  var storyUsers = ['Marko', 'Ana', 'Luka', 'Mia', 'Ivan', 'Ela'];
+  var colors = ['#e1306c','#f77737','#8b5cf6','#22c55e','#ef4444','#3b82f6'];
+  for (var i = 0; i < storyUsers.length; i++) {
+    html += '<div class="instalife-story">';
+    html += '<div class="instalife-story-ring"><div class="instalife-story-avatar" style="background:' + colors[i] + ';">' + storyUsers[i].charAt(0) + '</div></div>';
+    html += '<div class="instalife-story-name">' + storyUsers[i] + '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function renderInstalifeFeed() {
+  var container = document.getElementById('instalifeFeed');
+  if (!container) return;
+  var html = '';
+  var posts = instalifePosts.length > 0 ? instalifePosts : getDefaultInstalifePosts();
+  for (var i = 0; i < posts.length; i++) {
+    var p = posts[i];
+    var avatarColors = ['#e1306c','#f77737','#8b5cf6','#22c55e','#3b82f6','#ef4444'];
+    var avatarColor = avatarColors[i % avatarColors.length];
+    html += '<div class="instalife-post">';
+    html += '<div class="instalife-post-header">';
+    html += '<div class="instalife-post-avatar" style="background:' + avatarColor + ';">' + p.user.charAt(0) + '</div>';
+    html += '<div><div class="instalife-post-user">' + p.user + '</div>';
+    html += '<div class="instalife-post-location">' + p.location + '</div></div></div>';
+    html += '<div class="instalife-post-image">';
+    html += '<div class="instalife-post-img-inner" style="background:' + p.bgColor + ';">';
+    html += '<div class="photo-title">' + p.title + '</div>';
+    html += '<div class="photo-loc">' + p.location + '</div></div></div>';
+    html += '<div class="instalife-post-actions">';
+    html += '<div class="instalife-action ' + (p.liked ? 'liked' : '') + '" onclick="toggleInstalifeLike(' + i + ')"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>';
+    html += '<div class="instalife-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>';
+    html += '<div class="instalife-action-spacer"></div>';
+    html += '<div class="instalife-action"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div></div>';
+    html += '<div class="instalife-post-likes">' + p.likes.toLocaleString() + ' svidjanja</div>';
+    html += '<div class="instalife-post-caption"><b>' + p.user + '</b> ' + p.caption + '</div>';
+    html += '<div class="instalife-post-comments">Pogledaj sve komentare</div>';
+    html += '<div class="instalife-post-time">' + p.time + '</div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function getDefaultInstalifePosts() {
+  return [
+    { user:'Marko_DRIFT', location:'Vinewood Hills', title:'Sunset over LS', caption:'Ovaj pogled je nesto posebno #LS #sunset', likes:1247, liked:false, time:'PRIJE 2 SATA', bgColor:'linear-gradient(135deg,#1a0a2e,#2d1b69,#0a1628)' },
+    { user:'Ana_XO', location:'Santa Monica Pier', title:'Night vibes', caption:'Grad nikad ne spava #nightlife #LS', likes:834, liked:false, time:'PRIJE 4 SATA', bgColor:'linear-gradient(135deg,#0a1628,#1a2a4a,#0a0a1a)' },
+    { user:'Luka_TURBO', location:'Rodeo Strip', title:'Nova maszina', caption:'Finally upgrade #turbo #brzina', likes:2156, liked:false, time:'PRIJE 6 SATA', bgColor:'linear-gradient(135deg,#1a1a0a,#2a2a1a,#0a0a05)' },
+    { user:'Mia_BABE', location:'Ganton', title:'Street life', caption:'Svaki dan je nova prilika #hustle', likes:567, liked:false, time:'PRIJE 8 SATA', bgColor:'linear-gradient(135deg,#1a0a0a,#2a1a1a,#0a0505)' },
+    { user:'Ivan_BOSS', location:'City Hall', title:'Business meeting', caption:'Posao prije svega #boss #business', likes:1890, liked:false, time:'JUCE', bgColor:'linear-gradient(135deg,#0a0a1a,#1a1a3a,#050510)' }
+  ];
+}
+
+function toggleInstalifeLike(index) {
+  var posts = instalifePosts.length > 0 ? instalifePosts : getDefaultInstalifePosts();
+  if (index < posts.length) {
+    posts[index].liked = !posts[index].liked;
+    posts[index].likes += posts[index].liked ? 1 : -1;
+    if (instalifePosts.length === 0) instalifePosts = posts;
+    renderInstalifeFeed();
+  }
+}
+
+function openInstalifeNewPost() {
+  var overlay = document.getElementById('instalifeNewpost');
+  if (overlay) {
+    // Update photo preview with last photo data
+    var titleEl = document.getElementById('ilNewPhotoTitle');
+    var locEl = document.getElementById('ilNewPhotoLoc');
+    var previewEl = document.getElementById('ilNewPhotoPreview');
+    if (lastPhoto) {
+      if (titleEl) titleEl.textContent = lastPhoto.location;
+      if (locEl) locEl.textContent = lastPhoto.time + ' | ' + lastPhoto.filter;
+      if (previewEl) previewEl.style.background = 'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)';
+    } else {
+      if (titleEl) titleEl.textContent = 'Nema fotografije';
+      if (locEl) locEl.textContent = 'Otvori kameru prvo';
+      if (previewEl) previewEl.style.background = 'linear-gradient(135deg,#111,#1a1a1a)';
+    }
+    overlay.classList.add('active');
+  }
+}
+
+function closeInstalifeNewPost() {
+  var overlay = document.getElementById('instalifeNewpost');
+  if (overlay) overlay.classList.remove('active');
+}
+
+function shareInstalifePost() {
+  var caption = document.getElementById('ilNewCaption') ? document.getElementById('ilNewCaption').value.trim() : '';
+  if (!lastPhoto && caption === '') {
+    showToast('Napravi foto ili dodaj opis!');
+    return;
+  }
+  
+  var newPost = {
+    user: state.playerName || 'Ja',
+    location: lastPhoto ? lastPhoto.location : 'Los Santos',
+    title: lastPhoto ? lastPhoto.location : 'Novi post',
+    caption: caption || 'Novi moment #UG',
+    likes: 0,
+    liked: false,
+    time: 'UPRAVO',
+    bgColor: 'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)'
+  };
+  
+  instalifePosts.unshift(newPost);
+  renderInstalifeFeed();
+  closeInstalifeNewPost();
+  
+  // Clear form
+  if (document.getElementById('ilNewCaption')) document.getElementById('ilNewCaption').value = '';
+  
+  // Emit to server
+  cef.emit('phone:instalife:post', JSON.stringify({ caption: caption, location: newPost.location }));
+  showToast('Post objavljen na InstaLife!');
+}
+
+// ========== TIKVID ==========
+let tikvidPosts = [];
+
+function renderTikvidFeed() {
+  var container = document.getElementById('tikvidFeed');
+  if (!container) return;
+  var html = '';
+  var posts = tikvidPosts.length > 0 ? tikvidPosts : getDefaultTikvidPosts();
+  var grads = ['tv-grad-1','tv-grad-2','tv-grad-3','tv-grad-4','tv-grad-5'];
+  var musics = ['Original Sound - DJ LS','Beat Drop - MC Groove','Night Drive - SynthWave','Drift Mode - Turbo','Street Vibes - Urban'];
+  for (var i = 0; i < posts.length; i++) {
+    var p = posts[i];
+    html += '<div class="tikvid-card">';
+    html += '<div class="tikvid-card-bg ' + grads[i % grads.length] + '">';
+    html += '<div class="tikvid-card-visual">';
+    html += '<div class="video-title">' + p.title + '</div>';
+    html += '<div class="video-desc">' + p.desc + '</div></div></div>';
+    html += '<div class="tikvid-card-overlay">';
+    html += '<div class="tikvid-card-info">';
+    html += '<div class="tikvid-card-user">@' + p.user + '</div>';
+    html += '<div class="tikvid-card-caption">' + p.caption + '</div>';
+    html += '<div class="tikvid-card-music"><svg viewBox="0 0 24 24" style="width:10px;height:10px;fill:rgba(255,255,255,0.5);"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill="rgba(255,255,255,0.3)"/><circle cx="18" cy="16" r="3" fill="rgba(255,255,255,0.3)"/></svg>' + musics[i % musics.length] + '</div></div>';
+    html += '<div class="tikvid-card-actions">';
+    html += '<div class="tikvid-action ' + (p.liked ? 'liked' : '') + '" onclick="toggleTikvidLike(' + i + ')">';
+    html += '<div class="tikvid-action-icon"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>';
+    html += '<div class="tikvid-action-count">' + formatTikvidCount(p.likes) + '</div></div>';
+    html += '<div class="tikvid-action"><div class="tikvid-action-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>';
+    html += '<div class="tikvid-action-count">' + formatTikvidCount(p.comments) + '</div></div>';
+    html += '<div class="tikvid-action"><div class="tikvid-action-icon"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>';
+    html += '<div class="tikvid-action-count">' + formatTikvidCount(p.saves) + '</div></div>';
+    html += '<div class="tikvid-action"><div class="tikvid-disc"></div></div></div></div></div>';
+  }
+  container.innerHTML = html;
+}
+
+function getDefaultTikvidPosts() {
+  return [
+    { user:'Marko_DRIFT', title:'Drift King LS', desc:'Najbolji drift u gradu', caption:'Ko moze bolje? #drift #LS', likes:45200, comments:1230, saves:890, liked:false },
+    { user:'Ana_XO', title:'Night Vibes', desc:'Grad po noći je nesto posebno', caption:'Ne spavam nikad #nightlife', likes:32100, comments:890, saves:560, liked:false },
+    { user:'Luka_TURBO', title:'Car Meet', desc:'Nedjeljni car meet', caption:'Svaka cast decko #cars #meet', likes:28700, comments:2100, saves:1400, liked:false },
+    { user:'Mia_BABE', title:'Ganton Life', desc:'Svaki dan nova avantura', caption:'Zivot je kratak #hustle', likes:15600, comments:670, saves:340, liked:false },
+    { user:'Ivan_BOSS', title:'Hustle Hard', desc:'Od nule do vrha', caption:'Samo naprijed #boss #motivacija', likes:67800, comments:4500, saves:3200, liked:false }
+  ];
+}
+
+function formatTikvidCount(num) {
+  if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+  return num.toString();
+}
+
+function toggleTikvidLike(index) {
+  var posts = tikvidPosts.length > 0 ? tikvidPosts : getDefaultTikvidPosts();
+  if (index < posts.length) {
+    posts[index].liked = !posts[index].liked;
+    posts[index].likes += posts[index].liked ? 1 : -1;
+    if (tikvidPosts.length === 0) tikvidPosts = posts;
+    renderTikvidFeed();
+  }
+}
+
+function setTikvidTab(el, tab) {
+  var tabs = document.querySelectorAll('.tikvid-tab');
+  for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove('active');
+  el.classList.add('active');
+  // Refresh feed (could load different data per tab)
+  renderTikvidFeed();
+}
+
+// ========== INIT SOCIAL APPS ==========
+// Render feeds when screens are first opened
+var _origOpenScreen = typeof openScreen === 'function' ? openScreen : null;
+
+// Override openScreen to init feeds
+(function() {
+  var origOpen = window.openScreen;
+  window.openScreen = function(targetId, direction) {
+    if (origOpen) origOpen(targetId, direction);
+    // Initialize feeds when opening for first time
+    if (targetId === 'instalifeScreen') {
+      renderInstalifeStories();
+      renderInstalifeFeed();
+    }
+    if (targetId === 'tikvidScreen') {
+      renderTikvidFeed();
+    }
+    if (targetId === 'cameraScreen') {
+      // Request location from server
+      cef.emit('phone:requestLocation');
+    }
+  };
+})();
+
+// CEF handler: receive installed apps from server
+cef.on('phone:installedApps', function(appsJson) {
+  try {
+    var apps = JSON.parse(appsJson);
+    for (var i = 0; i < apps.length; i++) {
+      if (apps[i] && !installedApps[apps[i]]) installApp(apps[i]);
+    }
+  } catch(e) {}
+});
+
+// CEF handler: receive InstaLife posts from server
+cef.on('phone:instalife:feed', function(postsJson) {
+  try {
+    instalifePosts = JSON.parse(postsJson);
+    renderInstalifeFeed();
+  } catch(e) {}
+});
+
+// CEF handler: receive TikVid posts from server
+cef.on('phone:tikvid:feed', function(postsJson) {
+  try {
+    tikvidPosts = JSON.parse(postsJson);
+    renderTikvidFeed();
+  } catch(e) {}
+});
+
+</script>
+</body>
+</html>
