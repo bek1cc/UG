@@ -652,6 +652,169 @@ function removeCompatibilityMode(gtaPath) {
   return fixed;
 }
 
+// ============================================================
+//  UG SPLASH SCREEN PATCHER
+//  Automatically patches samp.dll to show UG splash bitmap
+//  Uses Resource Hacker CLI to replace the bitmap resource
+//  Player doesn't need to do anything - launcher handles it all
+// ============================================================
+const RH_URL = 'http://www.angusj.com/resourcehacker/resource_hacker.zip';
+
+async function patchSampSplash(gtaPath) {
+  const ugSplashBmp = path.join(LAUNCHER_DIR, 'ug_splash.bmp');
+  const targetDll = path.join(gtaPath, 'samp.dll');
+  const backupDll = path.join(gtaPath, 'samp.dll.ug_backup');
+  const patchedDll = path.join(LAUNCHER_DIR, 'ug_samp.dll');
+  const rhExe = path.join(LAUNCHER_DIR, 'ResourceHacker.exe');
+
+  // Step 1: If we already have a patched DLL, just use it
+  if (fs.existsSync(patchedDll)) {
+    if (fs.existsSync(targetDll) && !fs.existsSync(backupDll)) {
+      fs.copyFileSync(targetDll, backupDll);
+      log('UG Splash: Original samp.dll backed up');
+    }
+    fs.copyFileSync(patchedDll, targetDll);
+    log('UG Splash: Pre-patched DLL installed');
+    return true;
+  }
+
+  // Step 2: Check prerequisites
+  if (!fs.existsSync(ugSplashBmp)) {
+    log('UG Splash: ug_splash.bmp not found in launcher dir, skipping');
+    return false;
+  }
+  if (!fs.existsSync(targetDll)) {
+    log('UG Splash: samp.dll not found in GTA dir, skipping');
+    return false;
+  }
+
+  // Step 3: Verify BMP format (must be 24-bit BMP, not PNG renamed to BMP)
+  try {
+    const bmpHeader = fs.readFileSync(ugSplashBmp, { start: 0, end: 2 });
+    const isBmp = bmpHeader[0] === 0x42 && bmpHeader[1] === 0x4D; // "BM"
+    if (!isBmp) {
+      log('UG Splash: ug_splash.bmp is not a valid BMP file! Must be 24-bit BMP format.');
+      return false;
+    }
+    const bmpInfo = fs.readFileSync(ugSplashBmp, { start: 28, end: 30 });
+    const bitsPerPixel = bmpInfo.readUInt16LE(0);
+    log('UG Splash: BMP format = ' + bitsPerPixel + '-bit');
+    if (bitsPerPixel !== 24) {
+      log('UG Splash: WARNING: BMP is ' + bitsPerPixel + '-bit, 24-bit recommended for best compatibility');
+    }
+  } catch (e) {
+    log('UG Splash: Could not verify BMP format: ' + e.message);
+  }
+
+  // Step 4: Download Resource Hacker if needed
+  if (!fs.existsSync(rhExe)) {
+    log('UG Splash: Downloading Resource Hacker...');
+    try {
+      const tmpZip = path.join(LAUNCHER_DIR, 'tmp_rh.zip');
+      await downloadFile(RH_URL, tmpZip, (pct) => {
+        if (mainWindow) mainWindow.webContents.send('install-progress', {
+          component: 'UG Splash Patcher', pct, downloaded: 0, total: 0, speed: 0
+        });
+      });
+      const zip = new AdmZip(tmpZip);
+      // Extract only ResourceHacker.exe
+      const entries = zip.getEntries();
+      for (const entry of entries) {
+        const fileName = entry.entryName.split('/').pop();
+        if (fileName.toLowerCase() === 'resourcehacker.exe' && !entry.isDirectory) {
+          fs.writeFileSync(rhExe, entry.getData());
+          log('UG Splash: ResourceHacker.exe extracted');
+          break;
+        }
+      }
+      try { fs.unlinkSync(tmpZip); } catch (e) {}
+    } catch (e) {
+      log('UG Splash: Failed to download Resource Hacker: ' + e.message);
+      return false;
+    }
+  }
+
+  if (!fs.existsSync(rhExe)) {
+    log('UG Splash: ResourceHacker.exe not found after download');
+    return false;
+  }
+
+  // Step 5: Backup original samp.dll
+  if (!fs.existsSync(backupDll)) {
+    fs.copyFileSync(targetDll, backupDll);
+    log('UG Splash: Original samp.dll backed up to samp.dll.ug_backup');
+  }
+
+  // Step 6: Patch samp.dll - replace bitmap resource with UG splash
+  // SA-MP splash bitmap resources are typically at BITMAP,100,0 or BITMAP,101,0
+  // We try multiple resource IDs to ensure we get the right one
+  let patched = false;
+
+  // First, extract existing resources list to find the correct bitmap ID
+  try {
+    const resourceListFile = path.join(LAUNCHER_DIR, 'samp_resources.txt');
+    try {
+      execSync(`"${rhExe}" -open "${targetDll}" -save "${resourceListFile}" -action list -mask ,,-log`, {
+        timeout: 15000, windowsHide: true
+      });
+    } catch (e) {
+      // Resource Hacker sometimes returns non-zero exit code but still creates the file
+    }
+
+    // Try to find the bitmap resource IDs
+    let bitmapIds = [100, 101, 102, 103]; // Default IDs to try
+    if (fs.existsSync(resourceListFile)) {
+      try {
+        const resList = fs.readFileSync(resourceListFile, 'utf8');
+        const bitmapMatches = [...resList.matchAll(/BITMAP.*?(\d+)/gi)];
+        if (bitmapMatches.length > 0) {
+          bitmapIds = bitmapMatches.map(m => parseInt(m[1]));
+          log('UG Splash: Found bitmap resources: ' + bitmapIds.join(', '));
+        }
+      } catch (e) { /* use defaults */ }
+      try { fs.unlinkSync(resourceListFile); } catch (e) {}
+    }
+
+    // Patch: replace the first bitmap resource (SA-MP splash)
+    for (const resId of bitmapIds) {
+      try {
+        execSync(`"${rhExe}" -open "${targetDll}" -save "${patchedDll}" -action addoverwrite -res "${ugSplashBmp}" -mask BITMAP,${resId},0`, {
+          timeout: 30000, windowsHide: true
+        });
+        if (fs.existsSync(patchedDll)) {
+          // Verify the patched DLL is valid (not empty)
+          const stat = fs.statSync(patchedDll);
+          if (stat.size > 10000) {
+            fs.copyFileSync(patchedDll, targetDll);
+            log('UG Splash: samp.dll patched successfully! (resource ID: ' + resId + ')');
+            patched = true;
+            break;
+          } else {
+            log('UG Splash: Patched DLL too small (' + stat.size + ' bytes), trying next ID...');
+            try { fs.unlinkSync(patchedDll); } catch (e) {}
+          }
+        }
+      } catch (e) {
+        log('UG Splash: Resource Hacker failed for ID ' + resId + ': ' + e.message);
+        // Clean up failed patch attempt
+        try { if (fs.existsSync(patchedDll)) fs.unlinkSync(patchedDll); } catch (e2) {}
+      }
+    }
+  } catch (e) {
+    log('UG Splash: Patching error: ' + e.message);
+  }
+
+  if (!patched) {
+    // Fallback: restore original if we messed something up
+    if (fs.existsSync(backupDll)) {
+      log('UG Splash: Restoring original samp.dll (patch failed)');
+      fs.copyFileSync(backupDll, targetDll);
+    }
+  }
+
+  return patched;
+}
+
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
@@ -708,22 +871,11 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     }
   }
 
-  // === UG SPLASH: Install custom samp.dll with UG splash bitmap ===
+  // === UG SPLASH: Automatically patch samp.dll with UG splash bitmap ===
   try {
-    const ugSampDll = path.join(LAUNCHER_DIR, 'ug_samp.dll');
-    const targetDll = path.join(gtaPath, 'samp.dll');
-    const backupDll = path.join(gtaPath, 'samp.dll.ug_backup');
-    if (fs.existsSync(ugSampDll)) {
-      // Backup original if not already backed up
-      if (fs.existsSync(targetDll) && !fs.existsSync(backupDll)) {
-        fs.copyFileSync(targetDll, backupDll);
-        log('UG Splash: Original samp.dll backed up');
-      }
-      fs.copyFileSync(ugSampDll, targetDll);
-      log('UG Splash: Custom samp.dll with UG splash installed');
-    }
+    await patchSampSplash(gtaPath);
   } catch (e) {
-    log('UG Splash: Could not install custom samp.dll: ' + e.message);
+    log('UG Splash: Error: ' + e.message);
   }
 
   // === CEF LOADING SCREEN + PORTAL: Copy to GTA/cef folder ===
