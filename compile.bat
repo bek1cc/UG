@@ -12,6 +12,24 @@ timeout /t 1 /nobreak >nul
 REM OpenMP folder name (with space and hash)
 set OMP=# open.mp
 
+REM === PATCH YSI y_hooks.inc (fix forward slash check) ===
+REM YSI y_hooks has a strict check that fails with pawncc 3.10.11
+REM We patch it to remove the error and make it a warning instead
+set YHOOKS=%OMP%\qawno\include\YSI\y_hooks.inc
+if exist "%YHOOKS%" (
+    find /c "Did you do" "%YHOOKS%" >nul 2>nul
+    if not errorlevel 1 (
+        echo [PATCH] Fixing YSI y_hooks.inc path check...
+        powershell -Command "(Get-Content '%YHOOKS%') -replace '#error Did you do.*', '//#error Did you do - patched by UG compile' | Set-Encoding utf8 | Out-File -Encoding utf8 '%YHOOKS%'" 2>nul
+        if errorlevel 1 (
+            REM Fallback: use sed-like approach
+            copy /Y "%YHOOKS%" "%YHOOKS%.ug_bak" >nul 2>nul
+            powershell -Command "$c = [IO.File]::ReadAllText('%YHOOKS%'); $c = $c -replace '#error Did you do[^']*', '//#error PATCHED'; [IO.File]::WriteAllText('%YHOOKS%', $c)" 2>nul
+        )
+        echo [PATCH] y_hooks.inc patched
+    )
+)
+
 REM === DELETE OLD .amx ===
 del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
 del /f /q "gamemodes\fg-ogc.amx" 2>nul
