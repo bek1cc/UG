@@ -27,7 +27,7 @@ stock bool:CEF_IsPhoneOpen(playerid)
 
 stock CEF_PhoneToggleExpand(playerid)
 {
-	// Toggle phone expand state - visual only
+	#pragma unused playerid
 }
 
 stock CEF_PhoneInitSubscriptions()
