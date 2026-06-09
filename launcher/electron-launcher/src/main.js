@@ -78,6 +78,12 @@ const SAMP_CLIENT_URL = 'https://files.sa-mp.com/sa-mp-0.3.7-R4-install.exe';
 const LAUNCHER_DIR = app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..');
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
+// CEF content is in extraResources when packaged (process.resourcesPath),
+// but in the project root when running in dev mode
+const CEF_CONTENT_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, 'cef_content')
+  : path.join(LAUNCHER_DIR, 'cef_content');
+
 let mainWindow = null;
 
 // ============================================================
@@ -723,8 +729,8 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   // === CEF LOADING SCREEN + PORTAL: Copy to GTA/cef folder ===
   try {
-    const cefLoadingSrc = path.join(LAUNCHER_DIR, 'cef_content', 'loading');
-    const cefPortalSrc = path.join(LAUNCHER_DIR, 'cef_content', 'portal');
+    const cefLoadingSrc = path.join(CEF_CONTENT_DIR, 'loading');
+    const cefPortalSrc = path.join(CEF_CONTENT_DIR, 'portal');
     const cefDest = path.join(gtaPath, 'cef');
 
     if (fs.existsSync(cefLoadingSrc) || fs.existsSync(cefPortalSrc)) {
