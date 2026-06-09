@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.11 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.12 ===\n'); } catch(e) {}
 
-log('Launcher v3.11 starting...');
+log('Launcher v3.12 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.11.0';
+const LAUNCHER_VERSION = '3.12.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -788,187 +788,131 @@ async function patchSampSplash(gtaPath) {
     return false;
   }
 
-  // IMPORTANT: Only patch samp.dll - patching samp.exe with Resource Hacker CORRUPTS it!
-  // The SA-MP splash bitmap is in samp.dll, not samp.exe.
-  // samp.exe must remain untouched or the game won't launch (0xC1 error).
-  const fname = 'samp.dll';
-  const fpath = path.join(gtaPath, fname);
+  // Try patching BOTH samp.exe and samp.dll
+  // The SA-MP splash bitmap is typically in samp.exe (the connection dialog).
+  // samp.dll might also have bitmaps.
+  // We try each file with PE signature verification - if patch corrupts it, we restore.
+  const filesToTry = ['samp.exe', 'samp.dll'];
+  let anyPatched = false;
 
-  if (!fs.existsSync(fpath)) {
-    log('UG Splash: samp.dll not found, skipping splash patch');
-    return false;
-  }
+  for (const fname of filesToTry) {
+    const fpath = path.join(gtaPath, fname);
+    if (!fs.existsSync(fpath)) {
+      log('Splash: ' + fname + ' not found, skipping');
+      continue;
+    }
 
-  // Verify samp.dll is a valid PE before touching it
-  if (!isValidPE(fpath)) {
-    log('UG Splash: samp.dll is not a valid PE file! Cannot patch.');
+    // Restore clean original from backup before patching
     const backup = fpath + '.ug_backup';
-    if (fs.existsSync(backup)) {
+    if (fs.existsSync(backup) && isValidPE(backup)) {
       fs.copyFileSync(backup, fpath);
-      log('UG Splash: Restored samp.dll from backup');
+      log('Splash: Restored clean ' + fname + ' from backup before patching');
+    } else if (!fs.existsSync(backup)) {
+      fs.copyFileSync(fpath, backup);
+      log('Splash: Created backup of ' + fname);
     }
-    return false;
-  }
 
-  log('UG Splash: Patching ' + fname + '...');
-
-  // Backup original (restore from backup first if exists, so we always patch clean original)
-  const backup = fpath + '.ug_backup';
-  if (fs.existsSync(backup)) {
-    fs.copyFileSync(backup, fpath);
-    log('UG Splash: Restored original from backup before patching');
-  } else {
-    fs.copyFileSync(fpath, backup);
-    log('UG Splash: Created backup of ' + fname);
-  }
-
-  // List bitmap resources using Resource Hacker
-  const resFile = path.join(LAUNCHER_DIR, fname + '_res.txt');
-  try { try { fs.unlinkSync(resFile); } catch(e) {} } catch(e) {}
-
-  // Try listing resources - but don't skip patching if it fails
-  let ids = [];
-  let listWorked = false;
-  const listCmd = '"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,';
-  log('Splash: RH list command: ' + listCmd);
-
-  try {
-    try {
-      const result = execSync(listCmd, {
-        timeout: 15000, windowsHide: true, encoding: 'utf8'
-      });
-      log('Splash: RH list stdout: ' + (result || '').substring(0, 500));
-    } catch (e) {
-      log('Splash: RH list exit code: ' + (e.status || 'unknown') + ' stderr: ' + (e.stderr || '').toString().substring(0, 200));
-      // RH sometimes returns non-zero but still creates the file
+    // Verify file is valid PE before touching it
+    if (!isValidPE(fpath)) {
+      log('Splash: ' + fname + ' is not a valid PE, skipping');
+      continue;
     }
-  } catch (e) {
-    log('Splash: RH list exception: ' + e.message);
-  }
 
-  if (fs.existsSync(resFile)) {
-    try {
-      const txt = fs.readFileSync(resFile, 'utf8');
-      log('Splash: RH resource list content: ' + txt.substring(0, 500));
-      const matches = [...txt.matchAll(/BITMAP[^\d]*(\d+)/gi)];
-      if (matches.length > 0) {
-        ids = matches.map(m => parseInt(m[1]));
-        log('Splash: ' + fname + ' bitmap IDs found: ' + ids.join(', '));
-        listWorked = true;
-      } else {
-        log('Splash: ' + fname + ' has NO bitmap resources in list output');
-      }
-    } catch (e) {
-      log('Splash: Could not parse resource list: ' + e.message);
-    }
-    try { fs.unlinkSync(resFile); } catch (e) {}
-  } else {
-    log('Splash: RH did not create resource list file');
-  }
+    log('Splash: Attempting to patch ' + fname + '...');
 
-  // If listing didn't find bitmaps, try common IDs anyway
-  // For samp.dll, this is safer than samp.exe because the DLL is loaded by the EXE
-  // and Windows is more lenient with DLL PE integrity
-  if (ids.length === 0) {
-    ids = [100, 101, 102, 103];
-    log('Splash: Listing failed or found no bitmaps - trying common IDs: ' + ids.join(', '));
-  }
+    // Try to list bitmap resources
+    const resFile = path.join(LAUNCHER_DIR, fname + '_res.txt');
+    try { try { fs.unlinkSync(resFile); } catch(e) {} } catch(e) {}
 
-  // Patch ONLY the first bitmap that works (the splash screen)
-  let patched = false;
-  for (const id of ids) {
-    const tmp = path.join(LAUNCHER_DIR, 'ug_tmp_' + fname);
-    try { try { fs.unlinkSync(tmp); } catch (e) {} } catch (e) {}
-
-    const patchCmd = '"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0';
-    log('Splash: RH patch command: ' + patchCmd);
-
+    let ids = [];
     try {
       try {
-        const result = execSync(patchCmd, {
-          timeout: 30000, windowsHide: true, encoding: 'utf8'
+        const result = execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,', {
+          timeout: 15000, windowsHide: true, encoding: 'utf8'
         });
-        log('Splash: RH patch stdout: ' + (result || '').substring(0, 200));
+        log('Splash: RH list for ' + fname + ': ' + (result || '').substring(0, 300));
       } catch (e) {
-        log('Splash: RH patch exit code: ' + (e.status || 'unknown'));
-        // RH might return non-zero but still create a valid output file
+        log('Splash: RH list for ' + fname + ' exit=' + (e.status || '?'));
       }
+    } catch (e) {}
 
-      // CRITICAL: Verify the patched file is still a valid PE executable!
-      if (fs.existsSync(tmp) && fs.statSync(tmp).size > 10000 && isValidPE(tmp)) {
-        // Extra check: verify the original file size and patched file size are similar
-        // (not drastically different - RH shouldn't add hundreds of KB)
-        const origSize = fs.statSync(fpath).size;
-        const patchSize = fs.statSync(tmp).size;
-        const sizeDiff = Math.abs(patchSize - origSize);
-        log('Splash: Original=' + origSize + ' Patched=' + patchSize + ' Diff=' + sizeDiff);
+    if (fs.existsSync(resFile)) {
+      try {
+        const txt = fs.readFileSync(resFile, 'utf8');
+        log('Splash: ' + fname + ' resources: ' + txt.substring(0, 500));
+        const matches = [...txt.matchAll(/BITMAP[^\d]*(\d+)/gi)];
+        if (matches.length > 0) ids = matches.map(m => parseInt(m[1]));
+      } catch (e) {}
+      try { fs.unlinkSync(resFile); } catch (e) {}
+    }
 
-        fs.copyFileSync(tmp, fpath);
-        log('Splash: Patched ' + fname + ' BITMAP,' + id + ' (PE verified OK)');
-        patched = true;
-        try { fs.unlinkSync(tmp); } catch (e) {}
-        break; // Only patch the first (splash) bitmap
-      } else {
-        log('Splash: Patched file FAILED PE verification!');
-        if (fs.existsSync(backup)) {
-          fs.copyFileSync(backup, fpath);
-          log('Splash: Restored ' + fname + ' from backup (patch corrupted it)');
+    if (ids.length === 0) {
+      // RH couldn't list or no bitmaps found - try common IDs
+      ids = [100, 101, 102, 103];
+      log('Splash: ' + fname + ' - trying common bitmap IDs: ' + ids.join(', '));
+    } else {
+      log('Splash: ' + fname + ' - found bitmap IDs: ' + ids.join(', '));
+    }
+
+    // Try patching each ID until one works
+    for (const id of ids) {
+      const tmp = path.join(LAUNCHER_DIR, 'ug_tmp_' + fname);
+      try { try { fs.unlinkSync(tmp); } catch(e) {} } catch(e) {}
+
+      try {
+        try {
+          execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0', {
+            timeout: 30000, windowsHide: true, encoding: 'utf8'
+          });
+        } catch (e) {
+          log('Splash: RH patch ' + fname + ' ID=' + id + ' exit=' + (e.status || '?'));
         }
-        try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e) {}
+
+        // CRITICAL: Verify PE signature after patching
+        if (fs.existsSync(tmp) && fs.statSync(tmp).size > 10000 && isValidPE(tmp)) {
+          const origSize = fs.statSync(fpath).size;
+          const patchSize = fs.statSync(tmp).size;
+          log('Splash: ' + fname + ' ID=' + id + ' PE OK (orig=' + origSize + ' patched=' + patchSize + ' diff=' + (patchSize - origSize) + ')');
+          fs.copyFileSync(tmp, fpath);
+          log('Splash: SUCCESS! Patched ' + fname + ' BITMAP,' + id);
+          anyPatched = true;
+          try { fs.unlinkSync(tmp); } catch (e) {}
+          break;
+        } else {
+          log('Splash: ' + fname + ' ID=' + id + ' FAILED PE check - restoring backup');
+          if (fs.existsSync(backup) && isValidPE(backup)) {
+            fs.copyFileSync(backup, fpath);
+          }
+          try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e) {}
+        }
+      } catch (e) {
+        log('Splash: ' + fname + ' ID=' + id + ' error: ' + e.message);
+        try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e2) {}
       }
-    } catch (e) {
-      log('Splash: Failed to patch ' + fname + ' ID ' + id + ': ' + e.message);
-      try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e2) {}
+    }
+
+    // If this file was patched successfully, no need to try the other
+    if (anyPatched) break;
+  }
+
+  if (!anyPatched) {
+    log('Splash: WARNING - could not patch splash in any file');
+    // Restore all from backup to be safe
+    for (const fname of filesToTry) {
+      const fpath = path.join(gtaPath, fname);
+      const backup = fpath + '.ug_backup';
+      if (fs.existsSync(backup) && isValidPE(backup)) {
+        fs.copyFileSync(backup, fpath);
+      }
     }
   }
 
-  if (!patched) {
-    log('UG Splash: Could not patch splash - restoring original ' + fname);
-    if (fs.existsSync(backup)) {
-      fs.copyFileSync(backup, fpath);
-    }
-  }
-
-  return patched;
+  return anyPatched;
 }
 
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
-
-  // FIRST: Restore clean original files from backup
-  // Since v3.9 no longer patches samp.exe, any backup is the ORIGINAL clean file
-  const restored = restoreFromBackup(gtaPath);
-  if (restored.length > 0) {
-    log('Launch: Restored clean files from backup: ' + restored.join(', '));
-  }
-
-  // Verify samp.exe is a valid PE (now checks PE signature, not just MZ header)
-  const sampExe = path.join(gtaPath, 'samp.exe');
-  if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
-    log('CRITICAL: samp.exe is corrupted! Attempting recovery...');
-    // Try backup first
-    const backup = sampExe + '.ug_backup';
-    if (fs.existsSync(backup) && isValidPE(backup)) {
-      fs.copyFileSync(backup, sampExe);
-      log('Recovered samp.exe from backup');
-    } else {
-      // No valid backup - need to reinstall SA-MP client automatically
-      log('No valid backup for samp.exe - auto-reinstalling SA-MP client...');
-      try { fs.unlinkSync(sampExe); } catch(e) {}
-      try { if (fs.existsSync(backup)) fs.unlinkSync(backup); } catch(e) {}
-      try {
-        await autoInstall(gtaPath, ['client']);
-        if (fs.existsSync(sampExe) && isValidPE(sampExe)) {
-          log('SA-MP client reinstalled successfully!');
-        } else {
-          return { error: 'samp.exe je pokvaren i ne moze se popraviti automatski. Reinstaliraj SA-MP rucno.' };
-        }
-      } catch(e) {
-        return { error: 'samp.exe je pokvaren! Auto-reinstalacija ne uspijeva: ' + e.message };
-      }
-    }
-  }
 
   // AUTO-INSTALL: Check what's missing and install automatically
   const status = getStatus(gtaPath);
@@ -982,27 +926,12 @@ ipcMain.handle('launch-game', async (event, nickname) => {
       log('Auto-install: All missing components installed!');
     } catch (e) {
       log('Auto-install: Failed: ' + e.message);
-      // Don't block - let user try anyway
     }
   }
 
-  // Verify samp.exe exists after auto-install
-  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela. Pokusaj rucno.' };
-
-  // Also verify samp.exe is a valid PE after auto-install
-  if (!isValidPE(sampExe)) {
-    log('samp.exe is still not a valid PE after auto-install - deleting and reinstalling...');
-    try { fs.unlinkSync(sampExe); } catch(e) {}
-    try { fs.unlinkSync(sampExe + '.ug_backup'); } catch(e) {}
-    try {
-      await autoInstall(gtaPath, ['client']);
-      if (!fs.existsSync(sampExe) || !isValidPE(sampExe)) {
-        return { error: 'samp.exe se ne moze popraviti. Reinstaliraj SA-MP rucno.' };
-      }
-    } catch(e) {
-      return { error: 'samp.exe se ne moze popraviti: ' + e.message };
-    }
-  }
+  // Verify samp.exe exists
+  const sampExe = path.join(gtaPath, 'samp.exe');
+  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela.' };
 
   // Check for samp.img - warn but don't block (some installs don't have it in GTA dir)
   const sampImg = path.join(gtaPath, 'samp.img');
@@ -1091,6 +1020,26 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   }
 
   log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname + ' cef=' + cefEnabled);
+
+  // FINAL CHECK: Verify samp.exe is still a valid PE after splash patching
+  // If splash patch corrupted it, restore backup before launching
+  if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
+    log('CRITICAL: samp.exe corrupted after splash patch! Restoring backup...');
+    const backup = sampExe + '.ug_backup';
+    if (fs.existsSync(backup) && isValidPE(backup)) {
+      fs.copyFileSync(backup, sampExe);
+      log('Restored samp.exe from backup before launch');
+    } else {
+      // Backup is also bad - reinstall SA-MP client
+      log('No valid backup - auto-reinstalling SA-MP client...');
+      try { fs.unlinkSync(sampExe); } catch(e) {}
+      try { if (fs.existsSync(backup)) fs.unlinkSync(backup); } catch(e) {}
+      await autoInstall(gtaPath, ['client']);
+      if (!fs.existsSync(sampExe) || !isValidPE(sampExe)) {
+        return { error: 'samp.exe je pokvaren i ne moze se popraviti!' };
+      }
+    }
+  }
 
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
