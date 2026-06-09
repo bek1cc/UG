@@ -9,7 +9,7 @@ REM Kill any running server
 taskkill /f /im omp-server.exe >nul 2>nul
 timeout /t 1 /nobreak >nul
 
-REM OpenMP folder name
+REM OpenMP folder name (with space and hash)
 set OMP=# open.mp
 
 REM === DELETE OLD .amx ===
@@ -17,10 +17,10 @@ del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
 del /f /q "gamemodes\fg-ogc.amx" 2>nul
 del /f /q "fg-ogc.amx" 2>nul
 
-REM === COMPILE (using pawno compiler) ===
-echo Compiling fg-ogc.pwn...
+REM === COMPILE (using qawno compiler from open.mp) ===
+echo Compiling fg-ogc.pwn with qawno...
 echo.
-pawno\pawncc.exe gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -ipawno\include -;+
+"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -i"%OMP%\qawno\upgrader" -;+
 
 echo.
 
@@ -41,9 +41,9 @@ if not exist "%OMP%\gamemodes" mkdir "%OMP%\gamemodes"
 copy /Y "gamemodes\fg-ogc.amx" "%OMP%\gamemodes\fg-ogc.amx" >nul
 echo [OK] fg-ogc.amx deployed to %OMP%\gamemodes\
 
-REM === COPY PLUGINS ===
+REM === COPY PLUGINS (including mysql and SKY) ===
 if not exist "%OMP%\plugins" mkdir "%OMP%\plugins"
-for %%p in (crashdetect streamer sscanf iTD MapAndreas) do (
+for %%p in (crashdetect streamer sscanf iTD MapAndreas mysql SKY) do (
     if exist "plugins\%%p.dll" copy /Y "plugins\%%p.dll" "%OMP%\plugins\" >nul 2>nul
 )
 echo [OK] Plugins deployed
@@ -65,13 +65,24 @@ for %%d in (Organizacije Dileri Firme AutoSaloni Garages Kontejneri Kapije Parki
 )
 
 REM === ENSURE RUNTIME DIRS EXIST ===
-for %%d in (Korisnici Igraci Admini Admins Helperi Multiacc Streljane Logovi Inventory) do (
+for %%d in (Korisnici Igraci Admini Admins Helperi Multiacc Streljane Logovi Inventory PhonePins) do (
     if not exist "%OMP%\scriptfiles\%%d" mkdir "%OMP%\scriptfiles\%%d" 2>nul
 )
 echo [OK] Scriptfiles synced
 
+REM === COPY MAP DATA FILES ===
+if exist "scriptfiles\SAmin.hmap" copy /Y "scriptfiles\SAmin.hmap" "%OMP%\scriptfiles\" >nul 2>nul
+if exist "scriptfiles\SAfull.hmap" copy /Y "scriptfiles\SAfull.hmap" "%OMP%\scriptfiles\" >nul 2>nul
+if exist "scriptfiles\skins.txt" copy /Y "scriptfiles\skins.txt" "%OMP%\scriptfiles\" >nul 2>nul
+echo [OK] Map data synced
+
 REM === VERIFY ===
 echo.
+if not exist "%OMP%\gamemodes\fg-ogc.amx" (
+    echo [ERROR] fg-ogc.amx not found in %OMP%\gamemodes\!
+    pause
+    exit /b 1
+)
 echo ============================================
 echo   Ready! Starting open.mp server...
 echo ============================================

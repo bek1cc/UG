@@ -1,6 +1,6 @@
 {
   "name": "unicate-gaming-launcher",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Unicate Gaming RPG - SAMP Launcher",
   "main": "src/main.js",
   "scripts": {
@@ -16,17 +16,18 @@
     "icon": "src/ug_icon.ico",
     "files": [
       "src/**/*",
+      "ug_splash.png",
       "ug_splash.bmp",
       "cef_content/**/*"
     ],
     "extraResources": [
       {
-        "from": "ug_splash.bmp",
-        "to": "ug_splash.bmp"
+        "from": "ug_splash.png",
+        "to": "ug_splash.png"
       },
       {
-        "from": "ug_samp.dll",
-        "to": "ug_samp.dll"
+        "from": "ug_splash.bmp",
+        "to": "ug_splash.bmp"
       },
       {
         "from": "cef_content",

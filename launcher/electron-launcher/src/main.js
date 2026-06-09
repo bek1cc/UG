@@ -12,14 +12,12 @@ const AdmZip = require('adm-zip');
 // ============================================================
 app.commandLine.appendSwitch('no-sandbox');
 app.commandLine.appendSwitch('disable-gpu-sandbox');
-// DO NOT disable hardware acceleration - it makes rendering 3x faster
-// app.disableHardwareAcceleration();  // REMOVED for speed
 app.commandLine.appendSwitch('enable-gpu-rasterization');
 app.commandLine.appendSwitch('enable-zero-copy');
 app.commandLine.appendSwitch('ignore-gpu-blocklist');
 
 // ============================================================
-//  ASYNC LOG (non-blocking) - sync writes slow down startup
+//  ASYNC LOG (non-blocking)
 // ============================================================
 const LOG_FILE = path.join(app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..'), 'launcher_debug.log');
 let logBuffer = [];
@@ -44,10 +42,8 @@ function flushLog() {
   });
 }
 
-// Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v4.0 ===\n'); } catch(e) {}
-
-log('Launcher v4.0 starting...');
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v5.0 ===\n'); } catch(e) {}
+log('Launcher v5.0 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,15 +68,13 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '4.0.0';
+const LAUNCHER_VERSION = '5.0.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
 const SAMP_CLIENT_URL = 'https://files.sa-mp.com/sa-mp-0.3.7-R4-install.exe';
 
-// In development (npm start), __dirname is src/ so we go up one level
-// In production (packaged), app.getPath('exe') is the correct dir
 const LAUNCHER_DIR = app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..');
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
 
@@ -119,6 +113,7 @@ function findGtaPath() {
     return _gtaPathCache;
   }
   const common = [
+    'D:\\GTASA',
     'C:\\Program Files (x86)\\Rockstar Games\\GTA San Andreas',
     'D:\\GTA San Andreas', 'D:\\GTA SA', 'D:\\Games\\GTA SA',
     'D:\\SAMP TEST SERVER',
@@ -136,7 +131,7 @@ function findGtaPath() {
 }
 
 // ============================================================
-//  STATUS CHECK (fast - uses cached path)
+//  STATUS CHECK
 // ============================================================
 function getStatus(gtaPath) {
   const settings = loadSettings();
@@ -176,7 +171,7 @@ function getStatus(gtaPath) {
 }
 
 // ============================================================
-//  SAMP SERVER QUERY (fixed parser + faster timeout)
+//  SAMP SERVER QUERY
 // ============================================================
 function querySampServer(ip, port) {
   return new Promise((resolve) => {
@@ -197,31 +192,18 @@ function querySampServer(ip, port) {
         clearTimeout(timeout);
         try { sock.close(); } catch(e) {}
         try {
-          // SA-MP 'i' (info) response format:
-          // Header: SAMP(4) + IP(4) + Port(2) + 'i'(1) = 11 bytes
-          // Then: IsPassworded(1) + Players(2) + MaxPlayers(2) + NameLen(4) + Name + ModeLen(4) + Mode + MapLen(4) + Map
           if (data.length < 11) { resolve({ online: false }); return; }
           let off = 11;
-
-          // IsPassworded: 1 byte (uint8) - NOT 2 bytes!
           if (off + 1 > data.length) { resolve({ online: false }); return; }
           const isPassworded = data.readUInt8(off); off += 1;
-
-          // Players: 2 bytes (uint16 LE)
           if (off + 2 > data.length) { resolve({ online: false }); return; }
           const players = data.readUInt16LE(off); off += 2;
-
-          // Max Players: 2 bytes (uint16 LE)
           if (off + 2 > data.length) { resolve({ online: false }); return; }
           const maxp = data.readUInt16LE(off); off += 2;
-
-          // Server Name: length(4) + string
           if (off + 4 > data.length) { resolve({ online: false }); return; }
           const nlen = data.readUInt32LE(off); off += 4;
           if (off + nlen > data.length) { resolve({ online: false }); return; }
           const name = data.slice(off, off + nlen).toString('latin1'); off += nlen;
-
-          // Game Mode: length(4) + string
           let mode = 'RPG';
           if (off + 4 <= data.length) {
             const mlen = data.readUInt32LE(off); off += 4;
@@ -229,12 +211,10 @@ function querySampServer(ip, port) {
               mode = data.slice(off, off + mlen).toString('latin1'); off += mlen;
             }
           }
-
           log('Query OK: ' + players + '/' + maxp + ' name=' + name + ' mode=' + mode);
           resolve({ players, max_players: maxp, name, gamemode: mode, online: true, password: isPassworded === 1 });
         } catch (parseErr) {
           log('Query parse error: ' + parseErr.message);
-          // Server responded but we couldn't parse - still online
           resolve({ players: 0, max_players: 200, name: 'SA-MP Server', gamemode: 'RPG', online: true });
         }
       });
@@ -251,27 +231,23 @@ function querySampServer(ip, port) {
 function downloadFile(url, dest, onProgress, maxRedirects = 10) {
   return new Promise((resolve, reject) => {
     if (maxRedirects <= 0) { reject(new Error('Too many redirects')); return; }
-
     const mod = url.startsWith('https') ? https : http;
     let totalBytes = 0;
     let downloadedBytes = 0;
     let startTime = Date.now();
 
-    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/3.3' } }, (response) => {
+    mod.get(url, { timeout: 60000, headers: { 'User-Agent': 'UnicateGamingLauncher/5.0' } }, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         const newUrl = response.headers.location;
         response.resume();
         return downloadFile(newUrl, dest, onProgress, maxRedirects - 1).then(resolve).catch(reject);
       }
-
       if (response.statusCode !== 200) {
         response.resume();
-        return reject(new Error(`HTTP ${response.statusCode} for ${url}`));
+        return reject(new Error('HTTP ' + response.statusCode + ' for ' + url));
       }
-
       const file = fs.createWriteStream(dest);
       totalBytes = parseInt(response.headers['content-length'] || '0', 10);
-
       response.pipe(file);
       response.on('data', (chunk) => {
         downloadedBytes += chunk.length;
@@ -280,7 +256,6 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
         const speed = elapsed > 0 ? (downloadedBytes / 1024) / elapsed : 0;
         if (onProgress) onProgress(pct, downloadedBytes, totalBytes, speed);
       });
-
       file.on('finish', () => {
         file.close();
         if (!fs.existsSync(dest) || fs.statSync(dest).size === 0) {
@@ -289,15 +264,12 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
         }
         resolve(dest);
       });
-
       file.on('error', (err) => {
         file.close();
         try { fs.unlinkSync(dest); } catch (e) {}
         reject(err);
       });
-    }).on('error', (err) => {
-      reject(err);
-    });
+    }).on('error', (err) => { reject(err); });
   });
 }
 
@@ -307,7 +279,6 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
 async function autoInstall(gtaPath, missing) {
   for (const comp of missing) {
     if (comp === 'client') {
-      // Delete corrupted samp.exe and its backup before reinstalling
       const sampExePath = path.join(gtaPath, 'samp.exe');
       const sampDllPath = path.join(gtaPath, 'samp.dll');
       try { if (fs.existsSync(sampExePath)) fs.unlinkSync(sampExePath); } catch(e) {}
@@ -323,8 +294,7 @@ async function autoInstall(gtaPath, missing) {
         });
       });
       try {
-        const { execSync } = require('child_process');
-        execSync(`"${tmpExe}" /S /D=${gtaPath}`, { timeout: 60000, windowsHide: true });
+        execSync('"' + tmpExe + '" /S /D=' + gtaPath, { timeout: 60000, windowsHide: true });
         log('SA-MP R4 installed silently');
       } catch (e) {
         log('Silent install failed, launching installer: ' + e.message);
@@ -374,32 +344,18 @@ async function autoInstall(gtaPath, missing) {
 }
 
 // ============================================================
-//  SA-MP REGISTRY SETUP (GENTLE - only touch what we need)
+//  SA-MP REGISTRY SETUP
 // ============================================================
 function setupSampRegistry(gtaPath, ip, port, nickname) {
   try {
-    const { execSync } = require('child_process');
-    
-    // GENTLE approach: Only set/update the values we need
-    // DO NOT nuke the entire registry key - SA-MP stores important
-    // settings there (audio, chat, display, etc.) that the game needs
-    
-    // Set PlayerName
-    execSync(`reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "${nickname}" /f`, { windowsHide: true });
-    // Set LastServer
-    execSync(`reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "${ip}:${port}" /f`, { windowsHide: true });
-    // Set gta_sa_exe path
-    execSync(`reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "${gtaPath}\\gta_sa.exe" /f`, { windowsHide: true });
-    
-    // ONLY delete the Password value (this is what causes "Wrong server password")
+    execSync('reg add "HKCU\\Software\\SAMP" /v "PlayerName" /t REG_SZ /d "' + nickname + '" /f', { windowsHide: true });
+    execSync('reg add "HKCU\\Software\\SAMP" /v "LastServer" /t REG_SZ /d "' + ip + ':' + port + '" /f', { windowsHide: true });
+    execSync('reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "' + gtaPath + '\\gta_sa.exe" /f', { windowsHide: true });
     try {
-      execSync(`reg delete "HKCU\\Software\\SAMP" /v "Password" /f`, { windowsHide: true, stdio: 'pipe' });
+      execSync('reg delete "HKCU\\Software\\SAMP" /v "Password" /f', { windowsHide: true, stdio: 'pipe' });
       log('Deleted Password value from registry');
-    } catch (e) { 
-      log('No Password value to delete (good)'); 
-    }
-    
-    log('Registry setup OK (gentle - only deleted Password)');
+    } catch (e) { log('No Password value to delete (good)'); }
+    log('Registry setup OK');
     return true;
   } catch (err) {
     log('Registry error: ' + err.message);
@@ -408,7 +364,7 @@ function setupSampRegistry(gtaPath, ip, port, nickname) {
 }
 
 // ============================================================
-//  CREATE WINDOW (optimized - show immediately, load async)
+//  CREATE WINDOW
 // ============================================================
 function createWindow() {
   try {
@@ -432,32 +388,26 @@ function createWindow() {
       title: 'Unicate Gaming - Launcher',
       backgroundColor: '#0b0f1a',
       icon: iconPath || undefined,
-      show: false,  // Don't show until ready - prevents white flash
+      show: false,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         preload: preloadPath,
         sandbox: false,
-        backgroundThrottling: false  // Keep fast even when minimized
+        backgroundThrottling: false
       }
     });
 
-    // Show window only when content is ready - eliminates white flash
     mainWindow.once('ready-to-show', () => {
       mainWindow.show();
       log('Window shown (ready-to-show)');
     });
 
     mainWindow.loadFile(indexPath);
-
     mainWindow.webContents.on('render-process-gone', (event, details) => {
       log('Renderer GONE! reason: ' + details.reason);
     });
-
-    mainWindow.on('closed', () => {
-      mainWindow = null;
-    });
-
+    mainWindow.on('closed', () => { mainWindow = null; });
     log('Window created');
   } catch (err) {
     log('ERROR creating window: ' + err.message);
@@ -472,8 +422,6 @@ ipcMain.handle('get-version', () => LAUNCHER_VERSION);
 ipcMain.handle('get-server-info', async () => {
   const srv = getActiveServer();
   const result = await querySampServer(srv.ip, srv.port);
-  
-  // TCP fallback for localhost (only if UDP query failed)
   if (!result.online && srv.mode === 'local') {
     const tcpCheck = await new Promise((resolve) => {
       try {
@@ -522,7 +470,7 @@ ipcMain.handle('browse-gta', async () => {
       const settings = loadSettings();
       settings.gta_path = selected;
       saveSettings(settings);
-      _gtaPathCache = selected; // Update cache
+      _gtaPathCache = selected;
       return { path: selected, status: getStatus(selected) };
     }
     return { error: 'U ovom folderu nije pronadjen gta_sa.exe!' };
@@ -531,9 +479,7 @@ ipcMain.handle('browse-gta', async () => {
 });
 
 // ============================================================
-//  RENAME CEF/ASI FILES (prevent crash in local mode)
-//  In local mode, CEF client files can crash SA-MP.
-//  We temporarily rename them before launch.
+//  CEF FILE TOGGLE
 // ============================================================
 function toggleCefFiles(gtaPath, disable) {
   const filesToToggle = [
@@ -550,23 +496,18 @@ function toggleCefFiles(gtaPath, disable) {
         if (fs.existsSync(normalPath) && !fs.existsSync(disabledPath)) {
           fs.renameSync(normalPath, disabledPath);
           toggled.push(f.name + ' -> ' + f.disabled);
-          log('Disabled: ' + f.name);
         }
       } else {
         if (fs.existsSync(disabledPath)) {
           fs.renameSync(disabledPath, normalPath);
           toggled.push(f.disabled + ' -> ' + f.name);
-          log('Re-enabled: ' + f.name);
         }
       }
-    } catch (e) {
-      log('Toggle error for ' + f.name + ': ' + e.message);
-    }
+    } catch (e) { log('Toggle error for ' + f.name + ': ' + e.message); }
   }
   return toggled;
 }
 
-// Check if CEF files are currently active or disabled
 function getCefState(gtaPath) {
   if (!gtaPath) return { enabled: false, files: {} };
   const cefAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
@@ -576,10 +517,8 @@ function getCefState(gtaPath) {
   const dinput = fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
   const dinputDis = fs.existsSync(path.join(gtaPath, 'dinput8.dll.disabled'));
   const cefFolder = fs.existsSync(path.join(gtaPath, 'cef'));
-
   const hasAnyActive = cefAsi || dsound || dinput;
   const hasAnyDisabled = cefAsiDis || dsoundDis || dinputDis;
-
   return {
     enabled: hasAnyActive,
     has_files: hasAnyActive || hasAnyDisabled,
@@ -589,10 +528,8 @@ function getCefState(gtaPath) {
 }
 
 // ============================================================
-//  PRE-LAUNCH FIXES (prevent common SA-MP crashes)
+//  PRE-LAUNCH FIXES
 // ============================================================
-
-// Kill any zombie gta_sa.exe processes (causes crash at 0x00746929)
 function killZombieProcesses() {
   try {
     const result = execSync('tasklist /FI "IMAGENAME eq gta_sa.exe" /NH', { encoding: 'utf8', windowsHide: true });
@@ -601,17 +538,13 @@ function killZombieProcesses() {
       try {
         execSync('taskkill /F /IM gta_sa.exe', { windowsHide: true });
         log('Killed zombie gta_sa.exe');
-      } catch (e) {
-        log('Could not kill gta_sa.exe: ' + e.message);
-      }
+      } catch (e) { log('Could not kill gta_sa.exe: ' + e.message); }
       return true;
     }
-  } catch (e) { /* tasklist not found or no processes */ }
+  } catch (e) {}
   return false;
 }
 
-// Delete gta_sa.set ONLY if it's corrupted (causes crash at 0x00746929)
-// But DON'T always delete it - valid settings help the game run stable
 function deleteGtaSetIfNeeded() {
   const paths = [
     path.join(process.env.USERPROFILE || '', 'Documents', 'GTA San Andreas User Files', 'gta_sa.set'),
@@ -622,24 +555,17 @@ function deleteGtaSetIfNeeded() {
     try {
       if (fs.existsSync(p)) {
         const stat = fs.statSync(p);
-        // Only delete if file is suspiciously small (< 100 bytes = likely corrupt)
-        // Normal gta_sa.set is several KB
         if (stat.size < 100) {
           fs.unlinkSync(p);
-          log('Deleted CORRUPT gta_sa.set (too small): ' + p);
+          log('Deleted CORRUPT gta_sa.set: ' + p);
           deleted = true;
-        } else {
-          log('Keeping valid gta_sa.set: ' + p + ' (' + stat.size + ' bytes)');
         }
       }
-    } catch (e) {
-      log('Could not check gta_sa.set: ' + e.message);
-    }
+    } catch (e) {}
   }
   return deleted;
 }
 
-// Remove compatibility mode from gta_sa.exe and samp.exe
 function removeCompatibilityMode(gtaPath) {
   const files = ['gta_sa.exe', 'samp.exe'];
   let fixed = false;
@@ -647,32 +573,30 @@ function removeCompatibilityMode(gtaPath) {
     const fullPath = path.join(gtaPath, f);
     if (!fs.existsSync(fullPath)) continue;
     try {
-      // Check and remove compatibility mode from registry
-      const { execSync } = require('child_process');
-      // Remove from HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers
-      try {
-        execSync(`reg delete "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "${fullPath}" /f`, { windowsHide: true, stdio: 'pipe' });
-        log('Removed compatibility mode for: ' + f);
-        fixed = true;
-      } catch (e) {
-        // No compat entry = good, nothing to remove
-      }
-    } catch (e) { /* ignore */ }
+      execSync('reg delete "HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\AppCompatFlags\\Layers" /v "' + fullPath + '" /f', { windowsHide: true, stdio: 'pipe' });
+      log('Removed compatibility mode for: ' + f);
+      fixed = true;
+    } catch (e) {}
   }
   return fixed;
 }
 
 // ============================================================
-//  UG SPLASH SCREEN - Electron overlay approach
-//  Resource Hacker CORRUPTS samp.exe (adds new resource section
-//  instead of replacing, breaks PE structure → 0xC1 error).
-//  Instead, we show a borderless Electron window with the UG splash
-//  that covers the SA-MP connection dialog. Clean, safe, no file patching.
+//  PE VALIDATION + BACKUP RESTORE
+//  Resource Hacker corrupted files by adding new resource
+//  sections. We detect this by checking file size - if samp.exe
+//  grew by ~450KB (the BMP size), it's corrupted.
 // ============================================================
-
-// Check if a file is a valid PE (MZ + PE signature)
 function isValidPE(fpath) {
   try {
+    const stat = fs.statSync(fpath);
+    // samp.exe should be ~412KB, samp.dll ~1.2MB
+    // If file is >2MB, definitely corrupted by Resource Hacker
+    if (stat.size > 2000000) {
+      log('isValidPE: ' + path.basename(fpath) + ' is ' + stat.size + ' bytes (>2MB) - CORRUPTED by Resource Hacker');
+      return false;
+    }
+
     const fd = fs.openSync(fpath, 'r');
     const buf = Buffer.alloc(512);
     fs.readSync(fd, buf, 0, 512, 0);
@@ -688,7 +612,6 @@ function isValidPE(fpath) {
   }
 }
 
-// Restore clean original files from .ug_backup
 function restoreFromBackup(gtaPath) {
   const filesToCheck = ['samp.exe', 'samp.dll'];
   let restored = [];
@@ -708,46 +631,52 @@ function restoreFromBackup(gtaPath) {
   return restored;
 }
 
-// Show UG splash as Electron overlay window
-function showUgSplash() {
-  const ugSplashBmp = path.join(LAUNCHER_DIR, 'ug_splash.bmp');
-  const ugSplashPng = path.join(LAUNCHER_DIR, 'ug_splash.png');
+// Check if gta_sa.exe is running
+function isGtaRunning() {
+  try {
+    const result = execSync('tasklist /FI "IMAGENAME eq gta_sa.exe" /NH', {
+      encoding: 'utf8', windowsHide: true, timeout: 3000
+    });
+    return result.includes('gta_sa.exe');
+  } catch (e) { return false; }
+}
 
-  // Find splash image (prefer PNG for Electron, fallback to BMP)
+// ============================================================
+//  UG SPLASH SCREEN - FULLSCREEN Electron overlay
+//  Completely covers the SA-MP connection dialog with our UG splash.
+//  Uses 'screen-saver' alwaysOnTop level to stay above EVERYTHING.
+//  Monitors for gta_sa.exe and auto-closes when game starts.
+// ============================================================
+function showUgSplash() {
+  const ugSplashPng = path.join(LAUNCHER_DIR, 'ug_splash.png');
+  const ugSplashBmp = path.join(LAUNCHER_DIR, 'ug_splash.bmp');
+
   let splashImg = null;
   if (fs.existsSync(ugSplashPng)) splashImg = ugSplashPng;
   else if (fs.existsSync(ugSplashBmp)) splashImg = ugSplashBmp;
 
-  if (!splashImg) {
-    log('Splash: No splash image found, skipping overlay');
-    return null;
-  }
-
-  log('Splash: Showing UG splash overlay: ' + path.basename(splashImg));
-
   try {
     const { screen } = require('electron');
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    const screenWidth = primaryDisplay.bounds.width || primaryDisplay.size.width;
+    const screenHeight = primaryDisplay.bounds.height || primaryDisplay.size.height;
 
-    // Splash window dimensions (centered, not fullscreen)
-    const splashW = 800;
-    const splashH = 600;
-    const splashX = Math.floor((screenWidth - splashW) / 2);
-    const splashY = Math.floor((screenHeight - splashH) / 2);
+    log('Splash: Screen ' + screenWidth + 'x' + screenHeight + ' Image: ' + (splashImg ? path.basename(splashImg) : 'text-only'));
 
+    // FULLSCREEN window - covers entire screen including taskbar
     const splashWindow = new BrowserWindow({
-      width: splashW,
-      height: splashH,
-      x: splashX,
-      y: splashY,
+      width: screenWidth,
+      height: screenHeight,
+      x: 0,
+      y: 0,
       frame: false,
-      transparent: true,
+      transparent: false,
       alwaysOnTop: true,
       resizable: false,
       skipTaskbar: true,
       show: false,
       focusable: false,
+      fullscreen: true,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -755,97 +684,124 @@ function showUgSplash() {
       }
     });
 
-    // HTML for the splash overlay
-    const splashHtml = `<!DOCTYPE html>
-<html>
-<head>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    background: #0b0f1a;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    box-shadow: 0 0 60px rgba(0,0,0,0.8);
-  }
-  img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: 12px;
-  }
-  .loading-bar {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px;
-    height: 4px;
-    background: rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .loading-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, #ff6b35, #f7c948);
-    border-radius: 2px;
-    animation: load 4s ease-in-out forwards;
-  }
-  @keyframes load {
-    0% { width: 0%; }
-    30% { width: 40%; }
-    60% { width: 70%; }
-    80% { width: 85%; }
-    100% { width: 95%; }
-  }
-</style>
-</head>
-<body>
-  <img src="file:///${splashImg.replace(/\\/g, '/')}" />
-  <div class="loading-bar"><div class="loading-bar-fill"></div></div>
-</body>
-</html>`;
+    // Highest z-order - stays above EVERYTHING including SA-MP dialog
+    splashWindow.setAlwaysOnTop(true, 'screen-saver');
+
+    // Build image tag if available
+    const imgTag = splashImg
+      ? '<img src="file:///' + splashImg.replace(/\\/g, '/') + '" style="max-width:85%;max-height:65%;object-fit:contain;filter:drop-shadow(0 0 40px rgba(0,180,255,0.3));" />'
+      : '';
+
+    const logoTextBlock = !splashImg
+      ? '<div class="logo-text">UG</div><div class="tagline">Underground Gaming</div>'
+      : '';
+
+    // Professional splash HTML - matches CEF loading screen style
+    const splashHtml = '<!DOCTYPE html>\
+<html><head><style>\
+@import url(\'https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap\');\
+*{margin:0;padding:0;box-sizing:border-box}\
+body{width:100vw;height:100vh;overflow:hidden;background:#0a0a12;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:\'Rajdhani\',\'Segoe UI\',sans-serif;color:#fff;user-select:none;cursor:none}\
+.bg-glow{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;background:radial-gradient(ellipse at 30% 40%,rgba(0,180,255,0.06) 0%,transparent 50%),radial-gradient(ellipse at 70% 60%,rgba(3,206,194,0.04) 0%,transparent 50%);animation:bgF 25s ease-in-out infinite}\
+@keyframes bgF{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(1%,-0.5%) scale(1.02)}}\
+.content{position:relative;z-index:10;text-align:center}\
+.logo-text{font-size:160px;font-weight:700;letter-spacing:20px;background:linear-gradient(135deg,#fff 0%,#00b4ff 50%,#03cec2 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 50px rgba(0,180,255,0.3));animation:lp 3s ease-in-out infinite;line-height:1;margin-bottom:8px}\
+@keyframes lp{0%,100%{filter:drop-shadow(0 0 50px rgba(0,180,255,0.3))}50%{filter:drop-shadow(0 0 70px rgba(0,180,255,0.5))}}\
+.tagline{font-size:18px;font-weight:500;letter-spacing:10px;text-transform:uppercase;color:rgba(0,180,255,0.5);margin-bottom:40px}\
+.status-text{font-size:16px;font-weight:600;letter-spacing:6px;text-transform:uppercase;color:#00b4ff;margin-top:30px;opacity:0;animation:fiu 0.6s 0.5s ease forwards}\
+@keyframes fiu{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}\
+.loading-bar{width:400px;height:3px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;margin-top:30px;position:relative}\
+.loading-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,#00b4ff,#03cec2);border-radius:3px;transition:width 0.5s ease;box-shadow:0 0 15px rgba(0,180,255,0.4)}\
+.loading-bar-glow{position:absolute;top:-4px;left:0;width:60px;height:11px;background:radial-gradient(ellipse,rgba(0,180,255,0.6),transparent);filter:blur(3px);animation:gm 2.5s ease-in-out infinite}\
+@keyframes gm{0%{left:-60px}100%{left:400px}}\
+.subtitle{font-size:14px;color:rgba(255,255,255,0.25);letter-spacing:4px;text-transform:uppercase;margin-top:15px;min-height:20px;transition:opacity 0.4s ease}\
+.version{position:fixed;bottom:15px;right:20px;font-size:11px;color:rgba(255,255,255,0.1);letter-spacing:1px}\
+</style></head><body>\
+<div class="bg-glow"></div>\
+<div class="content">' + imgTag + logoTextBlock + '\
+<div class="status-text" id="statusText">Spajanje na server...</div>\
+<div class="loading-bar"><div class="loading-bar-fill" id="loadingBar"></div><div class="loading-bar-glow"></div></div>\
+<div class="subtitle" id="subtitle">Dobrodo&#273;ao natrag</div>\
+</div>\
+<div class="version">UG Launcher v5.0</div>\
+<script>\
+var loadingBar=document.getElementById("loadingBar"),statusText=document.getElementById("statusText"),subtitleEl=document.getElementById("subtitle"),progress=0,phases=[{text:"Spajanje na server...",end:15},{text:"U\u010Ditavanje resursa...",end:35},{text:"Priprema mape...",end:55},{text:"Sinhronizacija...",end:75},{text:"Skoro gotovo...",end:90},{text:"Ulazim u igru...",end:100}];\
+function updateLoading(){progress=Math.min(progress+0.3,95);loadingBar.style.width=progress+"%";for(var i=phases.length-1;i>=0;i--)if(progress>=phases[i].end-10){statusText.textContent=phases[i].text;break}requestAnimationFrame(updateLoading)}\
+requestAnimationFrame(updateLoading);\
+var subtitles=["Dobrodo\u0111ao natrag","San Andreas te \u010Deka","Zajednica od 1000+ igra\u010Da","Novi eventi svaki dan","UG - Underground Gaming"],subIdx=0;\
+setInterval(function(){subIdx=(subIdx+1)%subtitles.length;subtitleEl.style.opacity="0";setTimeout(function(){subtitleEl.textContent=subtitles[subIdx];subtitleEl.style.opacity="1"},400)},4000);\
+</script></body></html>';
 
     splashWindow.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(splashHtml));
 
     splashWindow.once('ready-to-show', () => {
       splashWindow.show();
-      log('Splash: UG splash overlay visible');
+      splashWindow.setAlwaysOnTop(true, 'screen-saver');
+      log('Splash: FULLSCREEN UG splash visible (screen-saver level)');
     });
 
-    // Auto-close after 8 seconds (SA-MP should have connected by then)
-    setTimeout(() => {
+    // Re-assert always on top every 500ms
+    const topInterval = setInterval(() => {
       try {
         if (splashWindow && !splashWindow.isDestroyed()) {
-          splashWindow.close();
-          log('Splash: UG splash overlay closed (timeout)');
+          splashWindow.setAlwaysOnTop(true, 'screen-saver');
+        } else {
+          clearInterval(topInterval);
         }
-      } catch (e) {}
-    }, 8000);
+      } catch (e) { clearInterval(topInterval); }
+    }, 500);
+
+    // Monitor for GTA:SA process - close splash when game starts
+    let gtaCheckCount = 0;
+    const gtaCheckInterval = setInterval(() => {
+      gtaCheckCount++;
+      if (gtaCheckCount > 20) {
+        clearInterval(gtaCheckInterval);
+        clearInterval(topInterval);
+        try {
+          if (splashWindow && !splashWindow.isDestroyed()) {
+            splashWindow.close();
+            log('Splash: Closed (timeout 30s)');
+          }
+        } catch (e) {}
+        return;
+      }
+      if (isGtaRunning()) {
+        log('Splash: GTA:SA detected! Closing splash overlay...');
+        clearInterval(gtaCheckInterval);
+        clearInterval(topInterval);
+        setTimeout(() => {
+          try {
+            if (splashWindow && !splashWindow.isDestroyed()) {
+              splashWindow.close();
+              log('Splash: Closed (GTA:SA running)');
+            }
+          } catch (e) {}
+        }, 2000);
+      }
+    }, 1500);
 
     return splashWindow;
   } catch (e) {
-    log('Splash: Error showing overlay: ' + e.message);
+    log('Splash: Error showing fullscreen overlay: ' + e.message);
     return null;
   }
 }
 
+// ============================================================
+//  LAUNCH GAME
+// ============================================================
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
-  // Clean up: Restore any files corrupted by old launcher versions (Resource Hacker)
+  // Restore any files corrupted by old launcher versions (Resource Hacker)
   restoreFromBackup(gtaPath);
 
   // AUTO-INSTALL: Check what's missing and install automatically
   const status = getStatus(gtaPath);
   if (status.missing.length > 0) {
-    log('Auto-install: Missing components detected: ' + status.missing.join(', '));
+    log('Auto-install: Missing components: ' + status.missing.join(', '));
     if (mainWindow) mainWindow.webContents.send('install-progress', {
       component: 'Instalacija komponenti...', pct: 0, downloaded: 0, total: 0, speed: 0
     });
@@ -857,21 +813,10 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     }
   }
 
-  // Verify samp.exe exists
   const sampExe = path.join(gtaPath, 'samp.exe');
   if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela.' };
 
-  // Check for samp.img - warn but don't block (some installs don't have it in GTA dir)
-  const sampImg = path.join(gtaPath, 'samp.img');
-  const hasSampImg = fs.existsSync(sampImg);
-  if (!hasSampImg) {
-    log('WARNING: samp.img not found in GTA dir (may be OK for some installs)');
-  }
-
   if (!nickname || nickname.length < 3) nickname = 'Player';
-  // Samo filtriraj nedozvoljene znakove - BEZ ikakvih modifikacija imena!
-  // Ne dodajemo _Player, ne kapitaliziramo, ne mijenjamo nista.
-  // Igrac sam bira svoje ime tacno kako hoce.
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
 
@@ -884,34 +829,29 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   const settings = loadSettings();
   const srv = getActiveServer();
-  const cefEnabled = settings.cef_enabled !== false; // default: true
+  const cefEnabled = settings.cef_enabled !== false;
 
   if (srv.mode === 'production') {
     const prodStatus = getStatus(gtaPath);
     if (!prodStatus.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
-    // Production always needs CEF - make sure it's enabled
     if (!cefEnabled) {
       toggleCefFiles(gtaPath, false);
       log('Production mode: re-enabling CEF files');
     }
   } else {
-    // Local mode: respect user's CEF toggle setting
     if (!cefEnabled) {
-      log('Local mode: CEF disabled by user, disabling CEF/ASI files...');
       toggleCefFiles(gtaPath, true);
+      log('Local mode: CEF disabled by user');
     } else {
-      // CEF enabled - make sure files are active
       const cefState = getCefState(gtaPath);
       if (!cefState.enabled && cefState.has_files) {
-        log('Local mode: CEF enabled by user, re-enabling CEF/ASI files...');
         toggleCefFiles(gtaPath, false);
+        log('Local mode: re-enabling CEF files');
       }
-      log('Local mode: CEF enabled - all CEF features active (tablet, inventar, TD)');
     }
   }
 
-  // === UG SPLASH: Show Electron overlay instead of patching PE files ===
-  // Resource Hacker CORRUPTS samp.exe, so we use an overlay window instead
+  // === SHOW FULLSCREEN UG SPLASH (covers SA-MP dialog) ===
   const splashWin = showUgSplash();
 
   // === CEF LOADING SCREEN + PORTAL: Copy to GTA/cef folder ===
@@ -921,18 +861,13 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     const cefDest = path.join(gtaPath, 'cef');
 
     if (fs.existsSync(cefLoadingSrc) || fs.existsSync(cefPortalSrc)) {
-      // Ensure cef directory exists
       if (!fs.existsSync(cefDest)) fs.mkdirSync(cefDest, { recursive: true });
-
-      // Copy loading screen
       if (fs.existsSync(cefLoadingSrc)) {
         const loadingDest = path.join(cefDest, 'loading');
         if (fs.existsSync(loadingDest)) fs.rmSync(loadingDest, { recursive: true, force: true });
         fs.cpSync(cefLoadingSrc, loadingDest, { recursive: true });
         log('CEF: Loading screen installed to GTA/cef/loading/');
       }
-
-      // Copy portal
       if (fs.existsSync(cefPortalSrc)) {
         const portalDest = path.join(cefDest, 'portal');
         if (fs.existsSync(portalDest)) fs.rmSync(portalDest, { recursive: true, force: true });
@@ -946,12 +881,11 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname + ' cef=' + cefEnabled);
 
-  // Verify samp.exe is valid before launching (in case it was corrupted by old launcher versions)
+  // Verify samp.exe is valid before launching
   if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
     log('WARNING: samp.exe is not a valid PE, restoring from backup...');
     const restored = restoreFromBackup(gtaPath);
     if (restored.length === 0 || !isValidPE(sampExe)) {
-      // Backup also bad - reinstall SA-MP client
       log('Auto-reinstalling SA-MP client...');
       try { fs.unlinkSync(sampExe); } catch(e) {}
       try { if (fs.existsSync(sampExe + '.ug_backup')) fs.unlinkSync(sampExe + '.ug_backup'); } catch(e) {}
@@ -964,18 +898,14 @@ ipcMain.handle('launch-game', async (event, nickname) => {
 
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
-    
-    // samp:// protocol - ONLY method that doesn't cause "Wrong server password"
     await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const sampUrl = `samp://${srv.ip}:${srv.port}`;
+
+    const sampUrl = 'samp://' + srv.ip + ':' + srv.port;
     log('Launching via samp://: ' + sampUrl);
-    
     shell.openExternal(sampUrl);
-    
+
     log('Launch OK via samp://');
-    const msg = 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...';
-    return { success: true, message: msg };
+    return { success: true, message: 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...' };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };
@@ -987,9 +917,7 @@ ipcMain.handle('toggle-cef', (event, enabled) => {
   settings.cef_enabled = enabled;
   saveSettings(settings);
   const gtaPath = findGtaPath();
-  if (gtaPath) {
-    toggleCefFiles(gtaPath, !enabled);
-  }
+  if (gtaPath) toggleCefFiles(gtaPath, !enabled);
   log('CEF toggle: ' + (enabled ? 'ON' : 'OFF'));
   return { success: true, cef_enabled: enabled };
 });
@@ -1011,17 +939,14 @@ ipcMain.handle('auto-install', async () => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
 
-  // Restore clean original files from backup first
   const restored = restoreFromBackup(gtaPath);
   if (restored.length > 0) {
     log('Auto-install: Restored clean files from backup: ' + restored.join(', '));
   }
 
   const status = getStatus(gtaPath);
-  // Also check if samp.exe is corrupted even if it "exists"
   const sampExePath = path.join(gtaPath, 'samp.exe');
   if (fs.existsSync(sampExePath) && !isValidPE(sampExePath)) {
-    // samp.exe is corrupted - need to reinstall
     if (!status.missing.includes('client')) status.missing.push('client');
     log('Auto-install: samp.exe is corrupted, adding client to reinstall list');
   }

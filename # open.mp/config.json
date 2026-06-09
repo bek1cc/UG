@@ -33,11 +33,11 @@
         "bullet_sync_rate": 30,
         "carry_on_flag": false,
         "cookie_reseed_time": 30000,
-        "host": "127.0.0.1",
+        "host": "0.0.0.0",
         "in_car_sync_rate": 30,
         "lan_mode": false,
         "logging": true,
-        "max_players": 50,
+        "max_players": 200,
         "messages_limit": 500,
         "minimum_connection_time": 0,
         "mtu": 576,
@@ -46,9 +46,9 @@
         "player_marker_mode": 1,
         "player_timeout": 10000,
         "port": 7777,
-        "public_addr": "",
+        "public_addr": "135.125.156.197",
         "rcon": true,
-        "stream_distance": 200.0,
+        "stream_distance": 300.0,
         "stream_rate": 1000,
         "timestamp_duration": 30000,
         "unoccupied_sync_rate": 30,
@@ -56,7 +56,7 @@
     },
     "pawn": {
         "scripts": ["fg-ogc"],
-        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas"]
+        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas", "mysql", "SKY"]
     },
     "rcon": {
         "allow_teleport": false,
