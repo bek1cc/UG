@@ -43,8 +43,32 @@ if %errorLevel% equ 0 (
 )
 
 echo.
+echo [4/5] Dodavanje "cef" hostname u hosts file...
+findstr /C:"cef" %SystemRoot%\System32\drivers\etc\hosts >nul 2>&1
+if %errorLevel% equ 0 (
+    echo [OK] "cef" hostname vec postoji u hosts file-u!
+) else (
+    echo. >> %SystemRoot%\System32\drivers\etc\hosts
+    echo 127.0.0.1   cef >> %SystemRoot%\System32\drivers\etc\hosts
+    if %errorLevel% equ 0 (
+        echo [OK] "cef" hostname dodan u hosts file!
+    ) else (
+        echo [WARN] Nije moguce dodati "cef" u hosts file. Pokusaj rucno:
+        echo         Dodaj "127.0.0.1   cef" u %SystemRoot%\System32\drivers\etc\hosts
+    )
+)
+
+echo.
+echo [5/5] Flush DNS cache...
+ipconfig /flushdns >nul 2>&1
+echo [OK] DNS cache ociscen!
+
+echo.
 echo ============================================
-echo   Gotovo! CEF port 7779 UDP je otvoren.
+echo   Gotovo! CEF je potpuno konfigurisan:
+echo   - UDP port 7779 otvoren
+echo   - "cef" hostname registrovan
+echo   - DNS cache ociscen
 echo   Pokreni server i testiraj CEF!
 echo ============================================
 echo.

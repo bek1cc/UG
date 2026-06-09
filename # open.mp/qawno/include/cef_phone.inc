@@ -1,5 +1,5 @@
 #if defined _INC_cef_phone
-	#endinput
+        #endinput
 #endif
 #define _INC_cef_phone
 
@@ -10,46 +10,52 @@ static bool:PhoneOpen[MAX_PLAYERS];
 
 stock CEF_PhoneOpen(playerid)
 {
-	PhoneOpen[playerid] = true;
-	CEF_CreateBrowser(playerid, CEF_PHONE_BROWSER_ID, CEF_PHONE_URL, true);
+        PhoneOpen[playerid] = true;
+        CEF_CreateBrowser(playerid, CEF_PHONE_BROWSER_ID, CEF_PHONE_URL, true);
 }
 
 stock CEF_PhoneClose(playerid)
 {
-	PhoneOpen[playerid] = false;
-	CEF_DestroyBrowser(playerid, CEF_PHONE_BROWSER_ID);
+        PhoneOpen[playerid] = false;
+        CEF_DestroyBrowser(playerid, CEF_PHONE_BROWSER_ID);
 }
 
 stock bool:CEF_IsPhoneOpen(playerid)
 {
-	return PhoneOpen[playerid];
+        return PhoneOpen[playerid];
 }
 
 stock CEF_PhoneToggleExpand(playerid)
 {
-	#pragma unused playerid
+        #pragma unused playerid
 }
 
 stock CEF_PhoneInitSubscriptions()
 {
-	CEF_RegisterEvent("phone:call", "OnCefPhoneCall", Argument_String);
-	CEF_RegisterEvent("phone:sms", "OnCefPhoneSms", Argument_String, Argument_String);
-	CEF_RegisterEvent("phone:close", "OnCefPhoneClose");
+        CEF_RegisterEvent("phone:call", "OnCefPhoneCall", Argument_String);
+        CEF_RegisterEvent("phone:sms", "OnCefPhoneSms", Argument_String, Argument_String);
+        CEF_RegisterEvent("phone:close", "OnCefPhoneClose");
+}
+
+stock CEF_PhoneOnGameModeInit()
+{
+        CEF_AddResource("cef/phone");
+        printf("[CEF-PHONE] Resource registered: cef/phone -> cef://phone/index.html");
 }
 
 stock CEF_PhoneOnPlayerDisconnect(playerid)
 {
-	PhoneOpen[playerid] = false;
+        PhoneOpen[playerid] = false;
 }
 
 stock CefPhone_OnCefReady(playerid)
 {
-	#pragma unused playerid
+        #pragma unused playerid
 }
 
 stock CefPhone_OnBrowserCreated(playerid, browserid, bool:success)
 {
-	#pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid, success
 }
 
 forward OnCefPhoneCall(playerid, const number[]);

@@ -1,5 +1,5 @@
 #if defined _INC_cef_tablet
-	#endinput
+        #endinput
 #endif
 #define _INC_cef_tablet
 
@@ -10,37 +10,40 @@ static bool:TabletOpen[MAX_PLAYERS];
 
 stock CEF_TabletOpen(playerid)
 {
-	TabletOpen[playerid] = true;
-	CEF_CreateBrowser(playerid, CEF_TABLET_BROWSER_ID, CEF_TABLET_URL, true);
+        TabletOpen[playerid] = true;
+        CEF_CreateBrowser(playerid, CEF_TABLET_BROWSER_ID, CEF_TABLET_URL, true);
 }
 
 stock CEF_TabletClose(playerid)
 {
-	TabletOpen[playerid] = false;
-	CEF_DestroyBrowser(playerid, CEF_TABLET_BROWSER_ID);
+        TabletOpen[playerid] = false;
+        CEF_DestroyBrowser(playerid, CEF_TABLET_BROWSER_ID);
 }
 
 stock bool:CEF_IsTabletOpen(playerid)
 {
-	return TabletOpen[playerid];
+        return TabletOpen[playerid];
 }
 
-stock cef_subscribe(const eventName[], const callback[], E_CEF_ARGUMENT_TYPE:...)
-{
-	CEF_RegisterEvent(eventName, callback, E_CEF_ARGUMENT_TYPE:...);
-}
+// NOTE: cef_subscribe is already defined in cef.inc - do not redefine here
 
 stock CefTablet_OnCefReady(playerid)
 {
-	#pragma unused playerid
+        #pragma unused playerid
 }
 
 stock CefTablet_OnBrowserCreated(playerid, browserid, bool:success)
 {
-	#pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid, success
 }
 
 stock CefTablet_OnPlayerDisconnect(playerid)
 {
-	TabletOpen[playerid] = false;
+        TabletOpen[playerid] = false;
+}
+
+stock CefTablet_OnGameModeInit()
+{
+        CEF_AddResource("cef/tablet");
+        printf("[CEF-TABLET] Resource registered: cef/tablet -> cef://tablet/index.html");
 }

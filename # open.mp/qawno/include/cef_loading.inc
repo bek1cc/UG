@@ -41,8 +41,11 @@ stock CefLoading_InitSubscriptions()
 stock CefLoading_OnGameModeInit()
 {
         // Register loading screen resource so CEF can find it
+        // CEF_AddResource takes the path relative to scriptfiles/
+        // The cef:// URL protocol maps "cef://loading/" to this resource
         CEF_AddResource("cef/loading");
         CefLoading_InitSubscriptions();
+        printf("[CEF-LOADING] Resource registered: cef/loading -> cef://loading/index.html");
 }
 
 stock CefLoading_OnPlayerDisconnect(playerid)
