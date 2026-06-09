@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.9 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.10 ===\n'); } catch(e) {}
 
-log('Launcher v3.9 starting...');
+log('Launcher v3.10 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.9.0';
+const LAUNCHER_VERSION = '3.10.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -670,40 +670,56 @@ function removeCompatibilityMode(gtaPath) {
 // ============================================================
 const RH_URL = 'http://www.angusj.com/resourcehacker/resource_hacker.zip';
 
-// Check if a file is a valid PE (Portable Executable) by reading MZ header
+// Check if a file is a valid PE (Portable Executable)
+// Checks MZ header AND PE signature (Resource Hacker can corrupt
+// the internal PE structure while keeping the MZ header intact)
 function isValidPE(fpath) {
   try {
     const fd = fs.openSync(fpath, 'r');
-    const buf = Buffer.alloc(2);
-    fs.readSync(fd, buf, 0, 2, 0);
+    const buf = Buffer.alloc(512);
+    fs.readSync(fd, buf, 0, 512, 0);
     fs.closeSync(fd);
-    return buf[0] === 0x4D && buf[1] === 0x5A; // 'MZ' header
+
+    // Check MZ header (DOS header)
+    if (buf[0] !== 0x4D || buf[1] !== 0x5A) return false;
+
+    // Check PE signature - this is what Resource Hacker breaks!
+    // e_lfanew at offset 0x3C points to PE signature
+    const peOffset = buf.readUInt32LE(0x3C);
+    if (peOffset < 0x40 || peOffset > 400) return false;
+    if (buf[peOffset] !== 0x50 || buf[peOffset + 1] !== 0x45 ||
+        buf[peOffset + 2] !== 0x00 || buf[peOffset + 3] !== 0x00) return false;
+
+    return true;
   } catch (e) {
     return false;
   }
 }
 
-// Restore any corrupted files from their .ug_backup
-function restoreCorruptedFiles(gtaPath) {
+// Restore clean original files from .ug_backup
+// Since v3.9 no longer patches samp.exe with Resource Hacker,
+// ANY existing backup is the ORIGINAL clean file from before corruption.
+// We ALWAYS restore from backup if it exists - don't trust the current file.
+function restoreFromBackup(gtaPath) {
   const filesToCheck = ['samp.exe', 'samp.dll'];
   let restored = [];
   for (const fname of filesToCheck) {
     const fpath = path.join(gtaPath, fname);
     const backup = fpath + '.ug_backup';
-    if (!fs.existsSync(fpath) && fs.existsSync(backup)) {
-      // File is missing but backup exists - restore it
+
+    if (!fs.existsSync(backup)) continue;
+
+    // Always restore from backup if backup exists and is a valid PE
+    // The backup was created BEFORE any Resource Hacker patching,
+    // so it's always the clean original
+    if (isValidPE(backup)) {
       fs.copyFileSync(backup, fpath);
-      log('UG Splash: Restored missing ' + fname + ' from backup');
+      log('Restored ' + fname + ' from backup (clean original)');
       restored.push(fname);
-    } else if (fs.existsSync(fpath) && !isValidPE(fpath)) {
-      // File exists but is NOT a valid PE - corrupted! Restore from backup
-      if (fs.existsSync(backup)) {
-        fs.copyFileSync(backup, fpath);
-        log('UG Splash: RESTORED corrupted ' + fname + ' from backup (was not valid PE)');
-        restored.push(fname);
-      } else {
-        log('UG Splash: WARNING: ' + fname + ' is corrupted and NO backup exists!');
-      }
+    } else {
+      // Backup is also corrupted! Delete it and mark for reinstall
+      log('WARNING: Backup for ' + fname + ' is also corrupted! Will need reinstall.');
+      try { fs.unlinkSync(backup); } catch (e) {}
     }
   }
   return restored;
@@ -713,10 +729,10 @@ async function patchSampSplash(gtaPath) {
   const ugSplashBmp = path.join(LAUNCHER_DIR, 'ug_splash.bmp');
   const rhExe = path.join(LAUNCHER_DIR, 'ResourceHacker.exe');
 
-  // STEP 1: Always restore corrupted files first
-  const restored = restoreCorruptedFiles(gtaPath);
+  // STEP 1: Always restore clean files from backup first
+  const restored = restoreFromBackup(gtaPath);
   if (restored.length > 0) {
-    log('UG Splash: Restored corrupted files: ' + restored.join(', '));
+    log('Splash: Restored clean files from backup: ' + restored.join(', '));
   }
 
   // Check prerequisites
@@ -893,24 +909,37 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
-  // FIRST: Restore any corrupted PE files (e.g. samp.exe corrupted by Resource Hacker)
-  const restored = restoreCorruptedFiles(gtaPath);
+  // FIRST: Restore clean original files from backup
+  // Since v3.9 no longer patches samp.exe, any backup is the ORIGINAL clean file
+  const restored = restoreFromBackup(gtaPath);
   if (restored.length > 0) {
-    log('Launch: Restored corrupted files before proceeding: ' + restored.join(', '));
+    log('Launch: Restored clean files from backup: ' + restored.join(', '));
   }
 
-  // Verify samp.exe is a valid PE before doing anything
+  // Verify samp.exe is a valid PE (now checks PE signature, not just MZ header)
   const sampExe = path.join(gtaPath, 'samp.exe');
   if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
-    log('CRITICAL: samp.exe is corrupted (not valid PE)! Attempting recovery...');
+    log('CRITICAL: samp.exe is corrupted! Attempting recovery...');
+    // Try backup first
     const backup = sampExe + '.ug_backup';
     if (fs.existsSync(backup) && isValidPE(backup)) {
       fs.copyFileSync(backup, sampExe);
       log('Recovered samp.exe from backup');
     } else {
-      // No valid backup - need to reinstall SA-MP client
-      log('No valid backup for samp.exe - must reinstall SA-MP client');
-      return { error: 'samp.exe je pokvaren! Pokreni auto-instalaciju da ga popravimo.' };
+      // No valid backup - need to reinstall SA-MP client automatically
+      log('No valid backup for samp.exe - auto-reinstalling SA-MP client...');
+      try { fs.unlinkSync(sampExe); } catch(e) {}
+      try { if (fs.existsSync(backup)) fs.unlinkSync(backup); } catch(e) {}
+      try {
+        await autoInstall(gtaPath, ['client']);
+        if (fs.existsSync(sampExe) && isValidPE(sampExe)) {
+          log('SA-MP client reinstalled successfully!');
+        } else {
+          return { error: 'samp.exe je pokvaren i ne moze se popraviti automatski. Reinstaliraj SA-MP rucno.' };
+        }
+      } catch(e) {
+        return { error: 'samp.exe je pokvaren! Auto-reinstalacija ne uspijeva: ' + e.message };
+      }
     }
   }
 
@@ -1085,10 +1114,10 @@ ipcMain.handle('auto-install', async () => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
 
-  // Restore any corrupted PE files before checking status
-  const restored = restoreCorruptedFiles(gtaPath);
+  // Restore clean original files from backup first
+  const restored = restoreFromBackup(gtaPath);
   if (restored.length > 0) {
-    log('Auto-install: Restored corrupted files: ' + restored.join(', '));
+    log('Auto-install: Restored clean files from backup: ' + restored.join(', '));
   }
 
   const status = getStatus(gtaPath);
