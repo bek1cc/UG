@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UG Loading</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Inter:wght@300;400&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background: #0a0a12;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+        }
+
+        /* Animated background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(ellipse at 30% 40%, rgba(0, 180, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 60%, rgba(3, 206, 194, 0.04) 0%, transparent 50%);
+            animation: bgFloat 25s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(1%, -0.5%) rotate(0.5deg); }
+            66% { transform: translate(-0.5%, 0.5%) rotate(-0.3deg); }
+        }
+
+        /* Particle grid */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.02;
+            background-image: 
+                linear-gradient(rgba(0, 180, 255, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 180, 255, 0.5) 1px, transparent 1px);
+            background-size: 80px 80px;
+        }
+
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.02) 2px,
+                rgba(0, 0, 0, 0.02) 4px
+            );
+        }
+
+        /* Center content */
+        .loading-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        /* Logo with glitch effect */
+        .logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 140px;
+            font-weight: 700;
+            letter-spacing: 16px;
+            line-height: 1;
+            background: linear-gradient(135deg, #ffffff 0%, #00b4ff 50%, #03cec2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 40px rgba(0, 180, 255, 0.25));
+            margin-bottom: 8px;
+            animation: logoPulse 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { filter: drop-shadow(0 0 40px rgba(0, 180, 255, 0.25)); }
+            50% { filter: drop-shadow(0 0 60px rgba(0, 180, 255, 0.4)); }
+        }
+
+        /* Tagline */
+        .tagline {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            color: rgba(0, 180, 255, 0.5);
+            margin-bottom: 50px;
+        }
+
+        /* Animated subtitle text */
+        .subtitle-area {
+            height: 30px;
+            margin-bottom: 50px;
+            overflow: hidden;
+        }
+
+        .subtitle-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: #00b4ff;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+
+        .subtitle-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .subtitle-text.fade-out {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        /* Loading bar container */
+        .loading-bar-container {
+            width: 400px;
+            margin: 0 auto;
+        }
+
+        .loading-bar-bg {
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00b4ff, #03cec2);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 15px rgba(0, 180, 255, 0.4);
+        }
+
+        .loading-bar-glow {
+            position: absolute;
+            top: -4px;
+            left: 0;
+            width: 60px;
+            height: 11px;
+            background: radial-gradient(ellipse, rgba(0, 180, 255, 0.6), transparent);
+            filter: blur(3px);
+            animation: glowMove 2.5s ease-in-out infinite;
+        }
+
+        @keyframes glowMove {
+            0% { left: -60px; }
+            100% { left: 400px; }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.25);
+        }
+
+        /* Progress percentage */
+        .progress-percent {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px;
+            color: rgba(0, 180, 255, 0.4);
+            margin-top: 4px;
+            letter-spacing: 2px;
+        }
+
+        /* Tips area - bottom center */
+        .tips-area {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            text-align: center;
+            z-index: 20;
+        }
+
+        .tip-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: rgba(0, 180, 255, 0.3);
+            margin-bottom: 6px;
+        }
+
+        .tip-text {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.25);
+            line-height: 1.6;
+            transition: opacity 0.5s ease;
+        }
+
+        /* Decorative lines */
+        .deco-line-left {
+            position: absolute;
+            top: 50%;
+            left: -200px;
+            width: 120px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0, 180, 255, 0.3));
+        }
+
+        .deco-line-right {
+            position: absolute;
+            top: 50%;
+            right: -200px;
+            width: 120px;
+            height: 1px;
+            background: linear-gradient(270deg, transparent, rgba(0, 180, 255, 0.3));
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(0, 180, 255, 0.3);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+
+        /* Bottom version */
+        .version-text {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.1);
+            letter-spacing: 1px;
+        }
+
+        /* Sound toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 20;
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .sound-toggle:hover {
+            border-color: rgba(0, 180, 255, 0.3);
+            color: rgba(0, 180, 255, 0.6);
+        }
+
+        /* Horizontal divider above tips */
+        .tip-divider {
+            width: 60px;
+            height: 1px;
+            background: rgba(0, 180, 255, 0.15);
+            margin: 0 auto 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-container"></div>
+    <div class="grid-overlay"></div>
+    <div class="scanline"></div>
+
+    <!-- Floating particles -->
+    <div id="particles"></div>
+
+    <!-- Center content -->
+    <div class="loading-content">
+        <div class="deco-line-left"></div>
+        <div class="deco-line-right"></div>
+
+        <div class="logo">UG</div>
+        <div class="tagline">Underground Gaming</div>
+
+        <!-- Animated subtitle -->
+        <div class="subtitle-area">
+            <div class="subtitle-text" id="subtitleText">Dobrodošao natrag</div>
+        </div>
+
+        <div class="loading-bar-container">
+            <div class="loading-bar-bg">
+                <div class="loading-bar-fill" id="loadingBar"></div>
+                <div class="loading-bar-glow"></div>
+            </div>
+            <div class="loading-text" id="loadingText">Inicijalizacija</div>
+            <div class="progress-percent" id="progressPercent">0%</div>
+        </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="tips-area">
+        <div class="tip-divider"></div>
+        <div class="tip-label">Savjet</div>
+        <div class="tip-text" id="tipText">Koristi /help u igri za listu svih komandi</div>
+    </div>
+
+    <div class="version-text">v2.0</div>
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊 Zvuk</button>
+
+    <script>
+        // ===== Particles =====
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 25; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (8 + Math.random() * 15) + 's';
+            particle.style.animationDelay = (Math.random() * 10) + 's';
+            particle.style.width = (1 + Math.random() * 2) + 'px';
+            particle.style.height = particle.style.width;
+            particlesContainer.appendChild(particle);
+        }
+
+        // ===== Sound =====
+        let soundEnabled = true;
+        let bgMusic = null;
+
+        function initSound() {
+            try {
+                bgMusic = new Audio('song.mp3');
+                bgMusic.loop = true;
+                bgMusic.volume = 0.3;
+                bgMusic.play().catch(() => {
+                    // Autoplay blocked - will play on first interaction
+                    console.log('[Sound] Autoplay blocked, waiting for interaction');
+                });
+            } catch(e) {
+                console.log('[Sound] Could not init sound:', e);
+            }
+        }
+
+        function toggleSound() {
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                if (bgMusic) bgMusic.pause();
+                btn.textContent = '🔇 Zvuk';
+                soundEnabled = false;
+            } else {
+                if (bgMusic) {
+                    bgMusic.play().catch(() => {});
+                }
+                btn.textContent = '🔊 Zvuk';
+                soundEnabled = true;
+            }
+        }
+
+        // Init sound after first user interaction (browser policy)
+        document.addEventListener('click', () => {
+            if (!bgMusic && soundEnabled) initSound();
+        }, { once: true });
+
+        // Try to init immediately
+        initSound();
+
+        // ===== Subtitle Animation =====
+        const subtitles = [
+            'Dobrodošao natrag',
+            'San Andreas te čeka',
+            'Zajednica od 1000+ igrača',
+            'Novi eventi svaki dan',
+            'UG - Osnovan 2024'
+        ];
+        let currentSubtitle = 0;
+        const subtitleEl = document.getElementById('subtitleText');
+
+        function cycleSubtitle() {
+            subtitleEl.classList.remove('visible');
+            subtitleEl.classList.add('fade-out');
+
+            setTimeout(() => {
+                currentSubtitle = (currentSubtitle + 1) % subtitles.length;
+                subtitleEl.textContent = subtitles[currentSubtitle];
+                subtitleEl.classList.remove('fade-out');
+                subtitleEl.classList.add('visible');
+            }, 600);
+        }
+
+        // Start subtitle cycling
+        setTimeout(() => {
+            subtitleEl.classList.add('visible');
+        }, 500);
+        setInterval(cycleSubtitle, 4000);
+
+        // ===== Tips =====
+        const tips = [
+            'Koristi /help za listu svih komandi',
+            'Pridruži se frakciji sa /invite',
+            'Kupi vozilo u salonu sa /v buy',
+            'Zovi prijatelje sa /call [broj]',
+            'Postavi kuću sa /house buy',
+            'Gledaj statistike sa /stats',
+            'Promijeni šifru sa /changepass',
+            'Reportuj bug sa /bug [opis]',
+            'Koristi /pm za privatne poruke',
+            'Provjeri online igrače sa /online',
+            'Zaposli se na poslu sa /startjob',
+            'Kupi oružje u ammu sa /buygun'
+        ];
+        let currentTip = 0;
+        const tipEl = document.getElementById('tipText');
+
+        setInterval(() => {
+            tipEl.style.opacity = '0';
+            setTimeout(() => {
+                currentTip = (currentTip + 1) % tips.length;
+                tipEl.textContent = tips[currentTip];
+                tipEl.style.opacity = '1';
+            }, 500);
+        }, 6000);
+
+        // ===== Loading Animation - 25 seconds =====
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingText = document.getElementById('loadingText');
+        const progressPercent = document.getElementById('progressPercent');
+
+        const phases = [
+            { text: 'Inicijalizacija',            end: 8  },
+            { text: 'Učitavanje resursa',          end: 20 },
+            { text: 'Priprema servera',            end: 35 },
+            { text: 'Učitavanje mape',             end: 55 },
+            { text: 'Sinhronizacija igrača',       end: 70 },
+            { text: 'Učitavanje vozila',           end: 82 },
+            { text: 'Finalizacija',                end: 95 },
+            { text: 'Gotovo',                      end: 100 }
+        ];
+
+        let progress = 0;
+        const totalTime = 25000; // 25 seconds
+        const startTime = Date.now();
+
+        function getPhaseText(p) {
+            for (let i = phases.length - 1; i >= 0; i--) {
+                if (p >= phases[i].end - 5) return phases[i].text;
+            }
+            return phases[0].text;
+        }
+
+        function updateProgress() {
+            const elapsed = Date.now() - startTime;
+            const rawProgress = Math.min((elapsed / totalTime) * 100, 100);
+
+            // Smooth easing - slower at start, faster in middle, slower at end
+            // Use a custom easing curve for more natural feel
+            const t = rawProgress / 100;
+            const eased = t < 0.5 
+                ? 2 * t * t 
+                : 1 - Math.pow(-2 * t + 2, 2) / 2;
+            
+            progress += (eased * 100 - progress) * 0.04;
+            if (rawProgress >= 100 && progress > 99.5) progress = 100;
+
+            loadingBar.style.width = progress + '%';
+            loadingText.textContent = getPhaseText(progress);
+            progressPercent.textContent = Math.floor(progress) + '%';
+
+            if (progress < 100) {
+                requestAnimationFrame(updateProgress);
+            } else {
+                loadingBar.style.width = '100%';
+                loadingText.textContent = 'Gotovo';
+                progressPercent.textContent = '100%';
+
+                // Fade out sound when done
+                if (bgMusic && soundEnabled) {
+                    const fadeOut = setInterval(() => {
+                        if (bgMusic.volume > 0.02) {
+                            bgMusic.volume -= 0.02;
+                        } else {
+                            bgMusic.pause();
+                            clearInterval(fadeOut);
+                        }
+                    }, 50);
+                }
+
+                // Notify SA-MP server
+                setTimeout(() => {
+                    if (typeof cef !== 'undefined' && cef.emit) {
+                        cef.emit('OnLoadingComplete');
+                    }
+                }, 500);
+            }
+        }
+
+        // Start loading animation
+        setTimeout(() => {
+            requestAnimationFrame(updateProgress);
+        }, 300);
+    </script>
+</body>
+</html>

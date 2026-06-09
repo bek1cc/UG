@@ -1,0 +1,26 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('launcherAPI', {
+  getVersion: () => ipcRenderer.invoke('get-version'),
+  getServerInfo: () => ipcRenderer.invoke('get-server-info'),
+  getStatus: () => ipcRenderer.invoke('get-status'),
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  browseGta: () => ipcRenderer.invoke('browse-gta'),
+  launchGame: (nickname) => ipcRenderer.invoke('launch-game', nickname),
+  autoInstall: () => ipcRenderer.invoke('auto-install'),
+  setServerMode: (mode) => ipcRenderer.invoke('set-server-mode', mode),
+  toggleCef: (enabled) => ipcRenderer.invoke('toggle-cef', enabled),
+  getCefState: () => ipcRenderer.invoke('get-cef-state'),
+  openUrl: (url) => ipcRenderer.invoke('open-url', url),
+  minimizeWindow: () => ipcRenderer.invoke('minimize-window'),
+  maximizeWindow: () => ipcRenderer.invoke('maximize-window'),
+  closeWindow: () => ipcRenderer.invoke('close-window'),
+
+  // Event listeners
+  onInstallProgress: (callback) => {
+    ipcRenderer.on('install-progress', (event, data) => callback(data));
+  },
+  onInstallComplete: (callback) => {
+    ipcRenderer.on('install-complete', (event, data) => callback(data));
+  }
+});
