@@ -4,7 +4,7 @@
 #define _INC_cef_loading
 
 #define CEF_LOADING_BROWSER_ID  50
-#define CEF_LOADING_URL         "cef://loading/index.html"
+#define CEF_LOADING_URL         "http://cef/loading/index.html"
 
 stock CEF_LoadingOpen(playerid)
 {

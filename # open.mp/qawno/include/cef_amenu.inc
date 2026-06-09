@@ -4,7 +4,7 @@
 #define _INC_cef_amenu
 
 #define CEF_AMENU_BROWSER_ID    70
-#define CEF_AMENU_URL           "cef://amenu/index.html"
+#define CEF_AMENU_URL           "http://cef/amenu/index.html"
 
 stock CEF_AmenuOpen(playerid, targetid)
 {

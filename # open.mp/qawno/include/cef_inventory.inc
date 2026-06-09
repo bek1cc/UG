@@ -4,7 +4,7 @@
 #define _INC_cef_inventory
 
 #define CEF_INV_BROWSER_ID      30
-#define CEF_INV_URL             "cef://inventory/index.html"
+#define CEF_INV_URL             "http://cef/inventory/index.html"
 
 static bool:InventoryOpen[MAX_PLAYERS];
 

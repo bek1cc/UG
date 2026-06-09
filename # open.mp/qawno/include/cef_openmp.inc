@@ -216,6 +216,6 @@ forward OnCefInitialize(playerid, bool:success, E_CEF_INIT_REASON:reason, const 
 forward OnCefDownloadStart(playerid);
 forward OnCefDownloadFinish(playerid);
 forward OnCefReady(playerid);
-forward OnCefBrowserCreated(playerid, browserid, bool:success, E_CEF_CREATE_STATUS:code, const reason[]);
+forward OnCefBrowserCreated(playerid, browserid, status_code);
 forward OnCefPressKey(playerid, key, scancode, modifiers, bool:down, bool:repeat);
 forward OnCefChatInputState(playerid, bool:open);

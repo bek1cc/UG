@@ -4,7 +4,7 @@
 #define _INC_cef_laptop
 
 #define CEF_LAPTOP_BROWSER_ID   40
-#define CEF_LAPTOP_URL          "cef://laptop/index.html"
+#define CEF_LAPTOP_URL          "http://cef/laptop/index.html"
 
 static bool:LaptopOpen[MAX_PLAYERS];
 

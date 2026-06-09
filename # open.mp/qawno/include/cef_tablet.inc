@@ -4,7 +4,7 @@
 #define _INC_cef_tablet
 
 #define CEF_TABLET_BROWSER_ID   20
-#define CEF_TABLET_URL          "cef://tablet/index.html"
+#define CEF_TABLET_URL          "http://cef/tablet/index.html"
 
 static bool:TabletOpen[MAX_PLAYERS];
 

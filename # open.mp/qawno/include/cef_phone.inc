@@ -4,7 +4,7 @@
 #define _INC_cef_phone
 
 #define CEF_PHONE_BROWSER_ID    10
-#define CEF_PHONE_URL           "cef://phone/index.html"
+#define CEF_PHONE_URL           "http://cef/phone/index.html"
 
 static bool:PhoneOpen[MAX_PLAYERS];
 

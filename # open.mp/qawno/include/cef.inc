@@ -1,5 +1,5 @@
 #if defined _INC_cef
-	#endinput
+        #endinput
 #endif
 #define _INC_cef
 
@@ -302,7 +302,7 @@ native CEF_SetBrowserAudioMode(playerid, browserid, E_CEF_AUDIO_MODE:mode);
  * This function allows to define how a sound's volume attenuates over distance,
  * giving precise control over the audio experience for each world browser.
  *
- * @param playerid     			The ID of the player for whom the audio settings will be changed.
+ * @param playerid                      The ID of the player for whom the audio settings will be changed.
  * @param browserid             The ID of the browser to affect.
  * @param max_distance          The maximum distance (in meters) at which the sound can be heard.
  *                              Beyond this distance, the sound will be completely silent.
@@ -455,16 +455,11 @@ forward OnCefReady(playerid);
 /**
  * Called when a browser creation request is processed by the client.
  *
- * This callback is the unified response for any browser creation attempt.
- * It informs the scripter about the success or failure of the operation.
- *
  * @param playerid      The ID of the player for whom the browser was created.
  * @param browserid     The ID of the browser that was requested.
- * @param success       'true' if the browser was created successfully, 'false' otherwise.
- * @param code          A status code from the E_CEF_CREATE_STATUS enum.
- * @param reason        A string explaining the result (e.g., "Successfully created" or "ID already in use").
+ * @param status_code   0 if creation failed, HTTP-like code otherwise (e.g. 200 for success).
 */
-forward OnCefBrowserCreated(playerid, browserid, bool:success, E_CEF_CREATE_STATUS:code, const reason[]);
+forward OnCefBrowserCreated(playerid, browserid, status_code);
 
 /**
  * Called when the CEF input layer detects a keyboard event for a player.
@@ -500,25 +495,25 @@ forward OnCefChatInputState(playerid, bool:open);
 // UG Compatibility wrappers
 stock cef_emit_event(playerid, browserid, const eventName[], {E_CEF_ARGUMENT_TYPE, Float, _}:...)
 {
-	CEF_EmitEvent(playerid, browserid, eventName, E_CEF_ARGUMENT_TYPE:...);
+        CEF_EmitEvent(playerid, browserid, eventName, E_CEF_ARGUMENT_TYPE:...);
 }
 
 stock cef_subscribe(const eventName[], const callback[], E_CEF_ARGUMENT_TYPE:...)
 {
-	CEF_RegisterEvent(eventName, callback, E_CEF_ARGUMENT_TYPE:...);
+        CEF_RegisterEvent(eventName, callback, E_CEF_ARGUMENT_TYPE:...);
 }
 
 stock CEF_InitSubscriptions()
 {
-	// Called from OnGameModeInit - register all main CEF events
+        // Called from OnGameModeInit - register all main CEF events
 }
 
 stock CEF_OnGameModeInit()
 {
-	CEF_InitSubscriptions();
+        CEF_InitSubscriptions();
 }
 
-stock CefBrowserCreated(playerid, browserid, bool:success, E_CEF_CREATE_STATUS:code, const reason[])
+stock CefBrowserCreated(playerid, browserid, status_code)
 {
-	#pragma unused playerid, browserid, success, code, reason
+        #pragma unused playerid, browserid, status_code
 }

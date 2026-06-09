@@ -4,7 +4,7 @@
 #define _INC_cef_portal
 
 #define CEF_PORTAL_BROWSER_ID   60
-#define CEF_PORTAL_URL          "cef://portal/index.html"
+#define CEF_PORTAL_URL          "http://cef/portal/index.html"
 
 static bool:PortalOpen[MAX_PLAYERS];
 
