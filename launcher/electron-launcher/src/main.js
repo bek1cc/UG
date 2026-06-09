@@ -45,9 +45,9 @@ function flushLog() {
 }
 
 // Clear old log (async)
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.8 ===\n'); } catch(e) {}
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v3.9 ===\n'); } catch(e) {}
 
-log('Launcher v3.8 starting...');
+log('Launcher v3.9 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -72,7 +72,7 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '3.8.0';
+const LAUNCHER_VERSION = '3.9.0';
 
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
@@ -307,6 +307,14 @@ function downloadFile(url, dest, onProgress, maxRedirects = 10) {
 async function autoInstall(gtaPath, missing) {
   for (const comp of missing) {
     if (comp === 'client') {
+      // Delete corrupted samp.exe and its backup before reinstalling
+      const sampExePath = path.join(gtaPath, 'samp.exe');
+      const sampDllPath = path.join(gtaPath, 'samp.dll');
+      try { if (fs.existsSync(sampExePath)) fs.unlinkSync(sampExePath); } catch(e) {}
+      try { if (fs.existsSync(sampExePath + '.ug_backup')) fs.unlinkSync(sampExePath + '.ug_backup'); } catch(e) {}
+      try { if (fs.existsSync(sampDllPath + '.ug_backup')) fs.unlinkSync(sampDllPath + '.ug_backup'); } catch(e) {}
+      log('Auto-install: Cleaned up old SA-MP files before reinstall');
+
       const tmpExe = path.join(LAUNCHER_DIR, 'tmp_samp_install.exe');
       log('Downloading SA-MP R4 client...');
       await downloadFile(SAMP_CLIENT_URL, tmpExe, (pct, dl, total, speed) => {
@@ -655,16 +663,61 @@ function removeCompatibilityMode(gtaPath) {
 }
 
 // ============================================================
-//  UG SPLASH SCREEN PATCHER
-//  Automatically patches samp.dll to show UG splash bitmap
-//  Uses Resource Hacker CLI to replace the bitmap resource
-//  Player doesn't need to do anything - launcher handles it all
+//  UG SPLASH SCREEN PATCHER (v2 - SAFE)
+//  Only patches samp.dll (patching samp.exe CORRUPTS it!)
+//  Verifies PE integrity after patching - auto-restores backup if broken
+//  If Resource Hacker can't list resources, SKIP patching (don't guess)
 // ============================================================
 const RH_URL = 'http://www.angusj.com/resourcehacker/resource_hacker.zip';
+
+// Check if a file is a valid PE (Portable Executable) by reading MZ header
+function isValidPE(fpath) {
+  try {
+    const fd = fs.openSync(fpath, 'r');
+    const buf = Buffer.alloc(2);
+    fs.readSync(fd, buf, 0, 2, 0);
+    fs.closeSync(fd);
+    return buf[0] === 0x4D && buf[1] === 0x5A; // 'MZ' header
+  } catch (e) {
+    return false;
+  }
+}
+
+// Restore any corrupted files from their .ug_backup
+function restoreCorruptedFiles(gtaPath) {
+  const filesToCheck = ['samp.exe', 'samp.dll'];
+  let restored = [];
+  for (const fname of filesToCheck) {
+    const fpath = path.join(gtaPath, fname);
+    const backup = fpath + '.ug_backup';
+    if (!fs.existsSync(fpath) && fs.existsSync(backup)) {
+      // File is missing but backup exists - restore it
+      fs.copyFileSync(backup, fpath);
+      log('UG Splash: Restored missing ' + fname + ' from backup');
+      restored.push(fname);
+    } else if (fs.existsSync(fpath) && !isValidPE(fpath)) {
+      // File exists but is NOT a valid PE - corrupted! Restore from backup
+      if (fs.existsSync(backup)) {
+        fs.copyFileSync(backup, fpath);
+        log('UG Splash: RESTORED corrupted ' + fname + ' from backup (was not valid PE)');
+        restored.push(fname);
+      } else {
+        log('UG Splash: WARNING: ' + fname + ' is corrupted and NO backup exists!');
+      }
+    }
+  }
+  return restored;
+}
 
 async function patchSampSplash(gtaPath) {
   const ugSplashBmp = path.join(LAUNCHER_DIR, 'ug_splash.bmp');
   const rhExe = path.join(LAUNCHER_DIR, 'ResourceHacker.exe');
+
+  // STEP 1: Always restore corrupted files first
+  const restored = restoreCorruptedFiles(gtaPath);
+  if (restored.length > 0) {
+    log('UG Splash: Restored corrupted files: ' + restored.join(', '));
+  }
 
   // Check prerequisites
   if (!fs.existsSync(ugSplashBmp)) {
@@ -719,86 +772,147 @@ async function patchSampSplash(gtaPath) {
     return false;
   }
 
-  // Patch BOTH samp.exe AND samp.dll (splash can be in either)
-  const filesToPatch = ['samp.exe', 'samp.dll'];
-  let anyPatched = false;
+  // IMPORTANT: Only patch samp.dll - patching samp.exe with Resource Hacker CORRUPTS it!
+  // The SA-MP splash bitmap is in samp.dll, not samp.exe.
+  // samp.exe must remain untouched or the game won't launch (0xC1 error).
+  const fname = 'samp.dll';
+  const fpath = path.join(gtaPath, fname);
 
-  for (const fname of filesToPatch) {
-    const fpath = path.join(gtaPath, fname);
-    if (!fs.existsSync(fpath)) {
-      log('UG Splash: ' + fname + ' not found, skipping');
-      continue;
-    }
+  if (!fs.existsSync(fpath)) {
+    log('UG Splash: samp.dll not found, skipping splash patch');
+    return false;
+  }
 
-    log('UG Splash: Patching ' + fname + '...');
-
-    // Backup original (restore from backup first if exists, so we always patch clean)
+  // Verify samp.dll is a valid PE before touching it
+  if (!isValidPE(fpath)) {
+    log('UG Splash: samp.dll is not a valid PE file! Cannot patch.');
     const backup = fpath + '.ug_backup';
     if (fs.existsSync(backup)) {
       fs.copyFileSync(backup, fpath);
-    } else {
-      fs.copyFileSync(fpath, backup);
-      log('UG Splash: Backed up ' + fname);
+      log('UG Splash: Restored samp.dll from backup');
     }
-
-    // List bitmap resources in the file
-    const resFile = path.join(LAUNCHER_DIR, fname + '_res.txt');
-    try {
-      try {
-        execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,', {
-          timeout: 15000, windowsHide: true
-        });
-      } catch (e) { /* RH sometimes returns non-zero but still creates the file */ }
-    } catch (e) {}
-
-    let ids = [];
-    if (fs.existsSync(resFile)) {
-      try {
-        const txt = fs.readFileSync(resFile, 'utf8');
-        const matches = [...txt.matchAll(/BITMAP[^\d]*(\d+)/gi)];
-        if (matches.length > 0) ids = matches.map(m => parseInt(m[1]));
-        log('UG Splash: ' + fname + ' bitmap IDs: ' + ids.join(', '));
-      } catch (e) {
-        ids = [100, 101];
-      }
-      try { fs.unlinkSync(resFile); } catch (e) {}
-    } else {
-      ids = [100, 101];
-      log('UG Splash: ' + fname + ' no resource list, trying defaults');
-    }
-
-    // Patch ONLY the first bitmap (the splash) - don't patch all bitmaps!
-    let filePatched = false;
-    for (const id of ids) {
-      const tmp = path.join(LAUNCHER_DIR, 'ug_tmp_' + fname);
-      try { try { fs.unlinkSync(tmp); } catch (e) {} } catch (e) {}
-      try {
-        execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0', {
-          timeout: 30000, windowsHide: true
-        });
-        if (fs.existsSync(tmp) && fs.statSync(tmp).size > 10000) {
-          fs.copyFileSync(tmp, fpath);
-          log('UG Splash: Patched ' + fname + ' BITMAP,' + id);
-          filePatched = true;
-          anyPatched = true;
-          try { fs.unlinkSync(tmp); } catch (e) {}
-          break; // Only patch the first (splash) bitmap, not all
-        }
-        try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e) {}
-      } catch (e) {
-        log('UG Splash: Failed ' + fname + ' ID ' + id + ': ' + e.message);
-      }
-    }
-    if (!filePatched) log('UG Splash: Could not patch ' + fname);
+    return false;
   }
 
-  if (!anyPatched) log('UG Splash: WARNING: No bitmaps were patched!');
-  return anyPatched;
+  log('UG Splash: Patching ' + fname + '...');
+
+  // Backup original (restore from backup first if exists, so we always patch clean original)
+  const backup = fpath + '.ug_backup';
+  if (fs.existsSync(backup)) {
+    fs.copyFileSync(backup, fpath);
+    log('UG Splash: Restored original from backup before patching');
+  } else {
+    fs.copyFileSync(fpath, backup);
+    log('UG Splash: Created backup of ' + fname);
+  }
+
+  // List bitmap resources using Resource Hacker
+  // CRITICAL: If RH can't list resources, the file format might not be compatible
+  // Do NOT guess resource IDs - that's what corrupted samp.exe before!
+  const resFile = path.join(LAUNCHER_DIR, fname + '_res.txt');
+  try { try { fs.unlinkSync(resFile); } catch(e) {} } catch(e) {}
+
+  try {
+    try {
+      execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + resFile + '" -action list -mask ,,', {
+        timeout: 15000, windowsHide: true
+      });
+    } catch (e) { /* RH sometimes returns non-zero but still creates the file */ }
+  } catch (e) {}
+
+  let ids = [];
+  if (fs.existsSync(resFile)) {
+    try {
+      const txt = fs.readFileSync(resFile, 'utf8');
+      const matches = [...txt.matchAll(/BITMAP[^\d]*(\d+)/gi)];
+      if (matches.length > 0) {
+        ids = matches.map(m => parseInt(m[1]));
+        log('UG Splash: ' + fname + ' bitmap IDs found: ' + ids.join(', '));
+      } else {
+        log('UG Splash: ' + fname + ' has NO bitmap resources - splash not in this file');
+        try { fs.unlinkSync(resFile); } catch (e) {}
+        return false;
+      }
+    } catch (e) {
+      log('UG Splash: Could not parse resource list - NOT patching (safety)');
+      try { fs.unlinkSync(resFile); } catch (e2) {}
+      return false;
+    }
+    try { fs.unlinkSync(resFile); } catch (e) {}
+  } else {
+    // Resource Hacker could NOT list resources - DO NOT GUESS IDs!
+    // Guessing is what corrupted samp.exe before!
+    log('UG Splash: Cannot list resources in ' + fname + ' - skipping patch (safety)');
+    return false;
+  }
+
+  // Patch ONLY the first bitmap (the splash screen)
+  let patched = false;
+  for (const id of ids) {
+    const tmp = path.join(LAUNCHER_DIR, 'ug_tmp_' + fname);
+    try { try { fs.unlinkSync(tmp); } catch (e) {} } catch (e) {}
+
+    try {
+      execSync('"' + rhExe + '" -open "' + fpath + '" -save "' + tmp + '" -action addoverwrite -res "' + ugSplashBmp + '" -mask BITMAP,' + id + ',0', {
+        timeout: 30000, windowsHide: true
+      });
+
+      // CRITICAL: Verify the patched file is still a valid PE executable!
+      if (fs.existsSync(tmp) && fs.statSync(tmp).size > 10000 && isValidPE(tmp)) {
+        fs.copyFileSync(tmp, fpath);
+        log('UG Splash: Patched ' + fname + ' BITMAP,' + id + ' (PE verified OK)');
+        patched = true;
+        try { fs.unlinkSync(tmp); } catch (e) {}
+        break; // Only patch the first (splash) bitmap
+      } else {
+        log('UG Splash: Patched file FAILED PE verification! Restoring backup...');
+        // Patched file is corrupted - restore backup immediately
+        if (fs.existsSync(backup)) {
+          fs.copyFileSync(backup, fpath);
+          log('UG Splash: Restored ' + fname + ' from backup (patch corrupted it)');
+        }
+        try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e) {}
+      }
+    } catch (e) {
+      log('UG Splash: Failed to patch ' + fname + ' ID ' + id + ': ' + e.message);
+      try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (e2) {}
+    }
+  }
+
+  if (!patched) {
+    log('UG Splash: Could not patch splash - restoring original ' + fname);
+    if (fs.existsSync(backup)) {
+      fs.copyFileSync(backup, fpath);
+    }
+  }
+
+  return patched;
 }
 
 ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
+
+  // FIRST: Restore any corrupted PE files (e.g. samp.exe corrupted by Resource Hacker)
+  const restored = restoreCorruptedFiles(gtaPath);
+  if (restored.length > 0) {
+    log('Launch: Restored corrupted files before proceeding: ' + restored.join(', '));
+  }
+
+  // Verify samp.exe is a valid PE before doing anything
+  const sampExe = path.join(gtaPath, 'samp.exe');
+  if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
+    log('CRITICAL: samp.exe is corrupted (not valid PE)! Attempting recovery...');
+    const backup = sampExe + '.ug_backup';
+    if (fs.existsSync(backup) && isValidPE(backup)) {
+      fs.copyFileSync(backup, sampExe);
+      log('Recovered samp.exe from backup');
+    } else {
+      // No valid backup - need to reinstall SA-MP client
+      log('No valid backup for samp.exe - must reinstall SA-MP client');
+      return { error: 'samp.exe je pokvaren! Pokreni auto-instalaciju da ga popravimo.' };
+    }
+  }
 
   // AUTO-INSTALL: Check what's missing and install automatically
   const status = getStatus(gtaPath);
@@ -816,8 +930,23 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     }
   }
 
-  const sampExe = path.join(gtaPath, 'samp.exe');
+  // Verify samp.exe exists after auto-install
   if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela. Pokusaj rucno.' };
+
+  // Also verify samp.exe is a valid PE after auto-install
+  if (!isValidPE(sampExe)) {
+    log('samp.exe is still not a valid PE after auto-install - deleting and reinstalling...');
+    try { fs.unlinkSync(sampExe); } catch(e) {}
+    try { fs.unlinkSync(sampExe + '.ug_backup'); } catch(e) {}
+    try {
+      await autoInstall(gtaPath, ['client']);
+      if (!fs.existsSync(sampExe) || !isValidPE(sampExe)) {
+        return { error: 'samp.exe se ne moze popraviti. Reinstaliraj SA-MP rucno.' };
+      }
+    } catch(e) {
+      return { error: 'samp.exe se ne moze popraviti: ' + e.message };
+    }
+  }
 
   // Check for samp.img - warn but don't block (some installs don't have it in GTA dir)
   const sampImg = path.join(gtaPath, 'samp.img');
@@ -845,8 +974,8 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const cefEnabled = settings.cef_enabled !== false; // default: true
 
   if (srv.mode === 'production') {
-    const status = getStatus(gtaPath);
-    if (!status.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
+    const prodStatus = getStatus(gtaPath);
+    if (!prodStatus.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
     // Production always needs CEF - make sure it's enabled
     if (!cefEnabled) {
       toggleCefFiles(gtaPath, false);
@@ -955,7 +1084,22 @@ ipcMain.handle('get-cef-state', () => {
 ipcMain.handle('auto-install', async () => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
+
+  // Restore any corrupted PE files before checking status
+  const restored = restoreCorruptedFiles(gtaPath);
+  if (restored.length > 0) {
+    log('Auto-install: Restored corrupted files: ' + restored.join(', '));
+  }
+
   const status = getStatus(gtaPath);
+  // Also check if samp.exe is corrupted even if it "exists"
+  const sampExePath = path.join(gtaPath, 'samp.exe');
+  if (fs.existsSync(sampExePath) && !isValidPE(sampExePath)) {
+    // samp.exe is corrupted - need to reinstall
+    if (!status.missing.includes('client')) status.missing.push('client');
+    log('Auto-install: samp.exe is corrupted, adding client to reinstall list');
+  }
+
   if (status.missing.length === 0) return { success: true, message: 'Sve je vec instalirano!' };
 
   try {
