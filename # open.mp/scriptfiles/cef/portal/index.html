@@ -990,7 +990,8 @@
         };
 
         // Inicijalizacija portala - poziva se iz PAWN-a (portal:init event)
-        window.portal_init = function(playerName, onlineCount, maxSlots, cefOk, asiOk) {
+        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName))
+        window.portal_init = function(playerName) {
             if (playerName && playerName.length > 0) {
                 document.getElementById('loginUsername').value = playerName;
                 document.getElementById('regUsername').value = playerName;

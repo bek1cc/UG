@@ -51,7 +51,7 @@ stock CefPortal_InitSubscriptions()
 stock CefPortal_OnGameModeInit()
 {
         // Register portal resource so CEF can find it
-        CEF_AddResource("cef/portal");
+        CEF_AddResource("portal");
         CefPortal_InitSubscriptions();
 }
 
@@ -60,8 +60,8 @@ stock CefPortal_OnPlayerDisconnect(playerid)
         PortalOpen[playerid] = false;
 }
 
-// Forward declaration - OnPortalFinished is implemented in the main gamemode
-forward OnPortalFinished(playerid);
+// OnPortalFinished is implemented in the main gamemode (fg-ogc.pwn)
+// Do not forward-declare here to avoid duplicate declaration warning
 
 // Called when player clicks Login on the portal
 forward OnCefPortalLogin(playerid, const username[], const password[]);

@@ -113,7 +113,9 @@ native bool:CEF_PlayerHasPlugin(playerid);
  * Adds a resource (UI) to be downloaded by clients.
  * This must be called from OnGameModeInit or a similar early-stage callback.
  *
- * @param resourceName      The path to the directory (scriptfiles/cef/my_ui)
+ * @param resourceName      The folder name relative to scriptfiles/cef/
+ *                          e.g. "loading" maps to scriptfiles/cef/loading/
+ *                          The URL http://cef/loading/index.html serves files from this directory
  */
 native CEF_AddResource(const resourceName[]);
 
@@ -492,15 +494,19 @@ forward OnCefChatInputState(playerid, bool:open);
  * @param network_id    The network ID of the entity.
  */
 // TODO: forward OnCefEntityClicked(playerid, entity_type, network_id);
-// UG Compatibility wrappers
-stock cef_emit_event(playerid, browserid, const eventName[], {E_CEF_ARGUMENT_TYPE, Float, _}:...)
+
+// UG Compatibility wrappers - NOTE: These cannot correctly forward variadic arguments in Pawn.
+// Use CEF_EmitEvent() and CEF_RegisterEvent() directly instead.
+// These are kept only for backward compatibility with code that calls them with 0 extra args.
+stock cef_emit_event(playerid, browserid, const eventName[])
 {
-        CEF_EmitEvent(playerid, browserid, eventName, E_CEF_ARGUMENT_TYPE:...);
+        #pragma unused playerid, browserid, eventName
+        // This wrapper cannot forward variadic args. Use CEF_EmitEvent() directly.
 }
 
-stock cef_subscribe(const eventName[], const callback[], E_CEF_ARGUMENT_TYPE:...)
+stock cef_subscribe(const eventName[], const callback[])
 {
-        CEF_RegisterEvent(eventName, callback, E_CEF_ARGUMENT_TYPE:...);
+        CEF_RegisterEvent(eventName, callback);
 }
 
 stock CEF_InitSubscriptions()

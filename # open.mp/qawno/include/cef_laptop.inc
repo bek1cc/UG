@@ -37,8 +37,8 @@ stock CEF_LpOnPlayerDisconnect(playerid)
 
 stock CefLp_OnGameModeInit()
 {
-        CEF_AddResource("cef/laptop");
-        printf("[CEF-LAPTOP] Resource registered: cef/laptop -> cef://laptop/index.html");
+        CEF_AddResource("laptop");
+        printf("[CEF-LAPTOP] Resource registered: laptop -> scriptfiles/cef/laptop/");
 }
 
 stock CefLp_OnCefReady(playerid)
@@ -46,9 +46,9 @@ stock CefLp_OnCefReady(playerid)
         #pragma unused playerid
 }
 
-stock CefLp_OnBrowserCreated(playerid, browserid, bool:success)
+stock CefLp_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid
 }
 
 forward OnCefLaptopClose(playerid);

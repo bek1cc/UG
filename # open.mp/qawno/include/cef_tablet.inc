@@ -32,9 +32,9 @@ stock CefTablet_OnCefReady(playerid)
         #pragma unused playerid
 }
 
-stock CefTablet_OnBrowserCreated(playerid, browserid, bool:success)
+stock CefTablet_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid
 }
 
 stock CefTablet_OnPlayerDisconnect(playerid)
@@ -44,6 +44,6 @@ stock CefTablet_OnPlayerDisconnect(playerid)
 
 stock CefTablet_OnGameModeInit()
 {
-        CEF_AddResource("cef/tablet");
-        printf("[CEF-TABLET] Resource registered: cef/tablet -> cef://tablet/index.html");
+        CEF_AddResource("tablet");
+        printf("[CEF-TABLET] Resource registered: tablet -> scriptfiles/cef/tablet/");
 }

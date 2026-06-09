@@ -1,7 +1,7 @@
 @echo off
 echo ============================================
 echo   CEF Port Opener - UG Server
-echo   Otvara UDP port 7779 za CEF plugin
+echo   Otvara UDP port za CEF plugin
 echo ============================================
 echo.
 
@@ -16,60 +16,53 @@ if %errorLevel% neq 0 (
     exit /b 1
 )
 
-echo [1/3] Otvaranje UDP porta 7779 (CEF Network Server)...
-netsh advfirewall firewall add rule name="UG CEF Server (UDP 7779)" dir=in action=allow protocol=UDP localport=7779
+:: CEF koristi server_port + 2 za KCP protokol (prenos .pak resursa)
+:: Ako je server na portu 7777, CEF koristi port 7779
+set CEF_PORT=7779
+
+echo [1/4] Otvaranje UDP porta %CEF_PORT% (CEF KCP - transfer resursa)...
+netsh advfirewall firewall add rule name="UG CEF KCP (UDP %CEF_PORT%)" dir=in action=allow protocol=UDP localport=%CEF_PORT%
 if %errorLevel% equ 0 (
-    echo [OK] UDP 7779 ulazni otvoren!
+    echo [OK] UDP %CEF_PORT% ulazni otvoren!
 ) else (
-    echo [WARN] Greska pri otvaranju UDP 7779 ulaznog.
+    echo [WARN] Greska pri otvaranju UDP %CEF_PORT% ulaznog.
 )
 
 echo.
-echo [2/3] Otvaranje UDP porta 7779 izlazni...
-netsh advfirewall firewall add rule name="UG CEF Server Out (UDP 7779)" dir=out action=allow protocol=UDP localport=7779
+echo [2/4] Otvaranje UDP porta %CEF_PORT% izlazni...
+netsh advfirewall firewall add rule name="UG CEF KCP Out (UDP %CEF_PORT%)" dir=out action=allow protocol=UDP localport=%CEF_PORT%
 if %errorLevel% equ 0 (
-    echo [OK] UDP 7779 izlazni otvoren!
+    echo [OK] UDP %CEF_PORT% izlazni otvoren!
 ) else (
-    echo [WARN] Greska pri otvaranju UDP 7779 izlaznog.
+    echo [WARN] Greska pri otvaranju UDP %CEF_PORT% izlaznog.
 )
 
 echo.
-echo [3/3] Provera da li je pravilo dodato...
-netsh advfirewall firewall show rule name="UG CEF Server (UDP 7779)" >nul 2>&1
+echo [3/4] Otvaranje TCP porta %CEF_PORT% (CEF HTTP fallback)...
+netsh advfirewall firewall add rule name="UG CEF HTTP (TCP %CEF_PORT%)" dir=in action=allow protocol=TCP localport=%CEF_PORT%
 if %errorLevel% equ 0 (
-    echo [OK] Firewall pravilo postoji!
+    echo [OK] TCP %CEF_PORT% otvoren!
 ) else (
-    echo [ERROR] Pravilo nije pronadjeno. Nesto je poslo po zlu.
+    echo [WARN] Greska pri otvaranju TCP %CEF_PORT%.
 )
 
 echo.
-echo [4/5] Dodavanje "cef" hostname u hosts file...
-findstr /C:"cef" %SystemRoot%\System32\drivers\etc\hosts >nul 2>&1
+echo [4/4] Provera da li su pravila dodata...
+netsh advfirewall firewall show rule name="UG CEF KCP (UDP %CEF_PORT%)" >nul 2>&1
 if %errorLevel% equ 0 (
-    echo [OK] "cef" hostname vec postoji u hosts file-u!
+    echo [OK] Firewall pravila postoje!
 ) else (
-    echo. >> %SystemRoot%\System32\drivers\etc\hosts
-    echo 127.0.0.1   cef >> %SystemRoot%\System32\drivers\etc\hosts
-    if %errorLevel% equ 0 (
-        echo [OK] "cef" hostname dodan u hosts file!
-    ) else (
-        echo [WARN] Nije moguce dodati "cef" u hosts file. Pokusaj rucno:
-        echo         Dodaj "127.0.0.1   cef" u %SystemRoot%\System32\drivers\etc\hosts
-    )
+    echo [ERROR] Pravila nisu pronadjena.
 )
-
-echo.
-echo [5/5] Flush DNS cache...
-ipconfig /flushdns >nul 2>&1
-echo [OK] DNS cache ociscen!
 
 echo.
 echo ============================================
-echo   Gotovo! CEF je potpuno konfigurisan:
-echo   - UDP port 7779 otvoren
-echo   - "cef" hostname registrovan
-echo   - DNS cache ociscen
-echo   Pokreni server i testiraj CEF!
+echo   Gotovo! CEF portovi su otvoreni.
+echo.
+echo   VAZNO: Hosts file unos NIJE potreban!
+echo   omp-cef koristi custom scheme handler
+echo   koji presrece http://cef/ URL-ove direktno
+echo   u Chromium-u, bez DNS rezolucije.
 echo ============================================
 echo.
 pause

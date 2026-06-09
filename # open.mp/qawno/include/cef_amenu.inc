@@ -15,8 +15,8 @@ stock CEF_AmenuOpen(playerid, targetid)
 stock CefAmenu_OnGameModeInit()
 {
         // Register amenu resource
-        CEF_AddResource("cef/amenu");
-        printf("[CEF-AMENU] Resource registered: cef/amenu -> cef://amenu/index.html");
+        CEF_AddResource("amenu");
+        printf("[CEF-AMENU] Resource registered: amenu -> scriptfiles/cef/amenu/");
 }
 
 stock CefAmenu_OnPlayerDisconnect(playerid)

@@ -39,8 +39,8 @@ stock CEF_PhoneInitSubscriptions()
 
 stock CEF_PhoneOnGameModeInit()
 {
-        CEF_AddResource("cef/phone");
-        printf("[CEF-PHONE] Resource registered: cef/phone -> cef://phone/index.html");
+        CEF_AddResource("phone");
+        printf("[CEF-PHONE] Resource registered: phone -> scriptfiles/cef/phone/");
 }
 
 stock CEF_PhoneOnPlayerDisconnect(playerid)
@@ -53,9 +53,9 @@ stock CefPhone_OnCefReady(playerid)
         #pragma unused playerid
 }
 
-stock CefPhone_OnBrowserCreated(playerid, browserid, bool:success)
+stock CefPhone_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid
 }
 
 forward OnCefPhoneCall(playerid, const number[]);

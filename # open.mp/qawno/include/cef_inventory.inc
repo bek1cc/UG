@@ -34,8 +34,8 @@ stock CEF_InvInitSubscriptions()
 
 stock CEF_InvOnGameModeInit()
 {
-        CEF_AddResource("cef/inventory");
-        printf("[CEF-INV] Resource registered: cef/inventory -> cef://inventory/index.html");
+        CEF_AddResource("inventory");
+        printf("[CEF-INV] Resource registered: inventory -> scriptfiles/cef/inventory/");
 }
 
 stock CEF_InvOnPlayerDisconnect(playerid)
@@ -58,9 +58,9 @@ stock CefInv_OnCefReady(playerid)
         #pragma unused playerid
 }
 
-stock CefInv_OnBrowserCreated(playerid, browserid, bool:success)
+stock CefInv_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid, success
+        #pragma unused playerid, browserid
 }
 
 forward OnCefInvUse(playerid, itemid);
