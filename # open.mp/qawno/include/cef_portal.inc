@@ -6,6 +6,10 @@
 #define CEF_PORTAL_BROWSER_ID   60
 #define CEF_PORTAL_URL          "http://cef/portal/index.html"
 
+// SA-MP Dialog IDs za portal
+#define DIALOG_PORTAL_LOGIN     2001
+#define DIALOG_PORTAL_REGISTER  2002
+
 static bool:PortalOpen[MAX_PLAYERS];
 
 stock CEF_PortalOpen(playerid)
@@ -49,7 +53,6 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
                         playerName, isRegistered, strlen(PlayerInfo[playerid][xLozinka]));
 
                 // Posalji ime i registrovan status portalu
-                // Portal sam prikazuje login/register na osnovu ovoga
                 CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:init",
                         CEF_STR(playerName),
                         CEF_INT(isRegistered));
@@ -60,12 +63,8 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
 
 stock CefPortal_InitSubscriptions()
 {
-        // Login event - string argument (lozinka)
-        CEF_RegisterEvent("portal:requestLogin", "OnCefPortalLogin", Argument_String);
-
-        // Register event - string, string, int, int, int (lozinka, email, godine, drzava, spol)
-        CEF_RegisterEvent("portal:requestRegister", "OnCefPortalRegister",
-                Argument_String, Argument_String, Argument_Integer, Argument_Integer, Argument_Integer);
+        // Igrac klikne IGRAJ SADA u CEF portalu - pokazi SA-MP dijalog
+        CEF_RegisterEvent("portal:requestAuth", "OnCefPortalRequestAuth");
 }
 
 stock CefPortal_OnGameModeInit()
@@ -80,83 +79,140 @@ stock CefPortal_OnPlayerDisconnect(playerid)
         PortalOpen[playerid] = false;
 }
 
-// ===== Callback funkcije za CEF evente =====
-
-// Igrac je kliknuo PRIJAVI SE u CEF portalu sa lozinkom
-forward OnCefPortalLogin(playerid, const password[]);
-public OnCefPortalLogin(playerid, const password[])
+// ===== Pokazi SA-MP dijalog za login ili register =====
+stock CefPortal_ShowDialog(playerid)
 {
-        printf("[CEF-PORTAL] Login attempt from player %d, password len=%d", playerid, strlen(password));
-
-        // Ponovo ucitaj account iz fajla
+        // Ponovo ucitaj account podatke
         ManualReadAccount(playerid);
 
-        // Validiraj lozinku
-        if(isnull(password) || strcmp(password, PlayerInfo[playerid][xLozinka], false) != 0)
-        {
-                printf("[CEF-PORTAL] Wrong password for player %d", playerid);
-
-                // Obavijesti portal da je lozinka pogresna
-                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:loginResponse",
-                        CEF_BOOL(false), CEF_STR("Pogresna lozinka! Pokusaj ponovo."));
-                return 1;
+        new isRegistered = PlayerInfo[playerid][xRegistrovan];
+        if(!isRegistered && strlen(PlayerInfo[playerid][xLozinka]) > 0) {
+                isRegistered = 1;
         }
 
-        printf("[CEF-PORTAL] Correct password for player %d - spawning", playerid);
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
 
-        // Obavijesti portal da je login uspjesan
-        CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:loginResponse",
-                CEF_BOOL(true), CEF_STR("Prijava uspjesna!"));
+        if(isRegistered)
+        {
+                // Pokazi LOGIN dijalog
+                new caption[128], line1[256];
+                format(caption, sizeof(caption), "{0088FF}UNICATE GAMING OGC{FFFFFF} - Prijava");
+                format(line1, sizeof(line1),
+                        "{FFFFFF}Dobrodosao natrag, {0088FF}%s{FFFFFF}!\n\n\
+                        Unesi svoju lozinku da bi nastavio.\n\
+                        {AAAAAA}Ako imas problema, kontaktiraj admin tim.", playerName);
+                ShowPlayerDialog(playerid, DIALOG_PORTAL_LOGIN, DIALOG_STYLE_PASSWORD,
+                        caption, line1, "Prijavi se", "Izlaz");
+        }
+        else
+        {
+                // Pokazi REGISTER dijalog
+                new caption[128], line1[512];
+                format(caption, sizeof(caption), "{0088FF}UNICATE GAMING OGC{FFFFFF} - Registracija");
+                format(line1, sizeof(line1),
+                        "{FFFFFF}Dobrodosao, {0088FF}%s{FFFFFF}!\n\n\
+                        Registruj se da bi zapoceo svoju avanturu.\n\n\
+                        {AAAAAA}Unesi lozinku (najmanje 6 karaktera).\n\
+                        {AAAAAA}Ova lozinka ce ti biti potrebna svaki put kad udjes na server.", playerName);
+                ShowPlayerDialog(playerid, DIALOG_PORTAL_REGISTER, DIALOG_STYLE_PASSWORD,
+                        caption, line1, "Registruj se", "Izlaz");
+        }
+}
 
-        // Sacekaj kratko da CEF prikaze poruku, onda zatvori i spawnaj
-        SetTimerEx("CefPortalLoginDelay", 1200, false, "d", playerid);
+// ===== Callback: Igrac kliknuo IGRAJ SADA u CEF =====
+forward OnCefPortalRequestAuth(playerid);
+public OnCefPortalRequestAuth(playerid)
+{
+        printf("[CEF-PORTAL] Player %d clicked IGRAJ SADA - showing SA-MP dialog", playerid);
+
+        // Pokazi SA-MP dijalog (CEF ostaje u pozadini, zamagljen)
+        CefPortal_ShowDialog(playerid);
         return 1;
 }
 
-// Igrac je kliknuo REGISTRIRAJ SE u CEF portalu sa svim podacima
-forward OnCefPortalRegister(playerid, const password[], const email[], age, country, gender);
-public OnCefPortalRegister(playerid, const password[], const email[], age, country, gender)
+// ===== Obradi SA-MP dijalog odgovor =====
+stock CefPortal_OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
-        printf("[CEF-PORTAL] Register attempt from player %d, passLen=%d, emailLen=%d, age=%d, country=%d, gender=%d",
-                playerid, strlen(password), strlen(email), age, country, gender);
-
-        // Validacija
-        if(strlen(password) < 6)
+        if(dialogid == DIALOG_PORTAL_LOGIN)
         {
-                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
-                        CEF_BOOL(false), CEF_STR("Lozinka mora imati najmanje 6 karaktera!"));
+                if(!response)
+                {
+                        // Igrac kliknuo Izlaz - vratite portal u normalno stanje
+                        CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:dialogDone", CEF_INT(0));
+                        return 1;
+                }
+
+                // Validiraj lozinku
+                ManualReadAccount(playerid);
+
+                if(isnull(inputtext) || strcmp(inputtext, PlayerInfo[playerid][xLozinka], false) != 0)
+                {
+                        printf("[CEF-PORTAL] Wrong password for player %d", playerid);
+
+                        // Ponovo pokazi login dijalog sa greskom
+                        new playerName[MAX_PLAYER_NAME];
+                        GetPlayerName(playerid, playerName, sizeof(playerName));
+                        new caption[128], line1[256];
+                        format(caption, sizeof(caption), "{0088FF}UNICATE GAMING OGC{FFFFFF} - Prijava");
+                        format(line1, sizeof(line1),
+                                "{FF4444}Pogresna lozinka! Pokusaj ponovo.{FFFFFF}\n\n\
+                                Dobrodosao natrag, {0088FF}%s{FFFFFF}!\n\n\
+                                Unesi svoju lozinku da bi nastavio.", playerName);
+                        ShowPlayerDialog(playerid, DIALOG_PORTAL_LOGIN, DIALOG_STYLE_PASSWORD,
+                                caption, line1, "Prijavi se", "Izlaz");
+                        return 1;
+                }
+
+                printf("[CEF-PORTAL] Correct password for player %d - spawning", playerid);
+
+                // Obavijesti CEF da je gotovo - zatvori portal
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:dialogDone", CEF_INT(1));
+
+                // Sacekaj kratko pa zatvori browser i spawnaj
+                SetTimerEx("CefPortalLoginDelay", 800, false, "d", playerid);
                 return 1;
         }
 
-        if(strlen(email) < 5)
+        if(dialogid == DIALOG_PORTAL_REGISTER)
         {
-                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
-                        CEF_BOOL(false), CEF_STR("Unesi ispravnu email adresu!"));
+                if(!response)
+                {
+                        // Igrac kliknuo Izlaz - vratite portal u normalno stanje
+                        CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:dialogDone", CEF_INT(0));
+                        return 1;
+                }
+
+                // Validacija lozinke
+                if(isnull(inputtext) || strlen(inputtext) < 6)
+                {
+                        new playerName[MAX_PLAYER_NAME];
+                        GetPlayerName(playerid, playerName, sizeof(playerName));
+                        new caption[128], line1[512];
+                        format(caption, sizeof(caption), "{0088FF}UNICATE GAMING OGC{FFFFFF} - Registracija");
+                        format(line1, sizeof(line1),
+                                "{FF4444}Lozinka mora imati najmanje 6 karaktera!{FFFFFF}\n\n\
+                                Dobrodosao, {0088FF}%s{FFFFFF}!\n\n\
+                                Registruj se da bi zapoceo svoju avanturu.\n\n\
+                                {AAAAAA}Unesi lozinku (najmanje 6 karaktera).", playerName);
+                        ShowPlayerDialog(playerid, DIALOG_PORTAL_REGISTER, DIALOG_STYLE_PASSWORD,
+                                caption, line1, "Registruj se", "Izlaz");
+                        return 1;
+                }
+
+                // Sacuvaj lozinku i registruj
+                strmid(PlayerInfo[playerid][xLozinka], inputtext, 0, strlen(inputtext), 50);
+                PlayerInfo[playerid][xRegistrovan] = 1;
+
+                printf("[CEF-PORTAL] Registration complete for player %d - spawning", playerid);
+
+                // Obavijesti CEF da je gotovo
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:dialogDone", CEF_INT(1));
+
+                // Sacekaj kratko pa zatvori browser i spawnaj
+                SetTimerEx("CefPortalRegDelay", 800, false, "d", playerid);
                 return 1;
         }
 
-        if(age < 12 || age > 70)
-        {
-                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
-                        CEF_BOOL(false), CEF_STR("Godine moraju biti izmedju 12 i 70!"));
-                return 1;
-        }
-
-        // Sacuvaj podatke
-        strmid(PlayerInfo[playerid][xLozinka], password, 0, strlen(password), 50);
-        strmid(PlayerInfo[playerid][xEmail], email, 0, strlen(email), 34);
-        PlayerInfo[playerid][xGodine] = age;
-        PlayerInfo[playerid][xDrzava] = country;
-        PlayerInfo[playerid][xSpol] = gender;
-        PlayerInfo[playerid][xRegistrovan] = 1;
-
-        printf("[CEF-PORTAL] Registration complete for player %d - spawning", playerid);
-
-        // Obavijesti portal da je registracija uspjesna
-        CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerResponse",
-                CEF_BOOL(true), CEF_STR("Registracija uspjesna!"));
-
-        // Sacekaj kratko da CEF prikaze poruku, onda zatvori i spawnaj
-        SetTimerEx("CefPortalRegDelay", 1200, false, "d", playerid);
-        return 1;
+        return 0; // Nije nas dijalog
 }

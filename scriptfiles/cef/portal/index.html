@@ -5,508 +5,338 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UNICATE GAMING OGC</title>
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:#0a0e17;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow-x:hidden;overflow-y:auto;width:100vw;min-height:100vh;user-select:none}
 
-@font-face {
-  font-family: 'GameFont';
-  src: local('Segoe UI'), local('Arial'), local('sans-serif');
-}
-
-body {
-  background: #050B18;
-  color: #fff;
-  font-family: 'Segoe UI', Arial, sans-serif;
-  overflow: hidden;
-  width: 100vw;
-  height: 100vh;
-  user-select: none;
-}
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,0.3)}
+::-webkit-scrollbar-thumb{background:rgba(0,136,255,0.4);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,136,255,0.6)}
 
 /* ===== PARTICLES ===== */
-canvas#particles {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
+canvas#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
-/* ===== MAIN SCREEN ===== */
-#main-screen {
-  position: relative;
-  z-index: 1;
-  width: 100%; height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
+/* ===== HEADER ===== */
+.header{position:fixed;top:0;left:0;right:0;z-index:100;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(10,14,23,0.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(0,136,255,0.08)}
+.header-left{display:flex;align-items:center;gap:14px}
+.header-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;border:2px solid rgba(0,136,255,0.3);filter:drop-shadow(0 0 8px rgba(0,136,255,0.3))}
+.header-brand{display:flex;flex-direction:column}
+.header-brand .name{font-size:14px;font-weight:800;letter-spacing:3px;color:#fff}
+.header-brand .sub{font-size:8px;letter-spacing:2px;color:rgba(0,136,255,0.6);text-transform:uppercase}
 
-/* ===== LOGO ===== */
-.logo-wrap {
-  position: relative;
-  margin-bottom: 20px;
-}
-.logo-wrap img {
-  width: 180px;
-  height: 180px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 30px rgba(0, 191, 255, 0.3));
-  animation: logoFloat 4s ease-in-out infinite;
-}
-.logo-ring {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 210px; height: 210px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 191, 255, 0.3);
-  animation: ringPulse 3s ease-in-out infinite;
-}
-.logo-ring2 {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 240px; height: 240px;
-  border-radius: 50%;
-  border: 1px solid rgba(41, 168, 255, 0.15);
-  animation: ringPulse 3s ease-in-out infinite 0.5s;
-}
+.header-nav{display:flex;gap:6px}
+.nav-item{padding:8px 14px;border-radius:8px;font-size:11px;font-weight:600;letter-spacing:1px;color:rgba(255,255,255,0.5);cursor:pointer;transition:all 0.3s;display:flex;align-items:center;gap:6px;text-transform:uppercase}
+.nav-item:hover{color:#fff;background:rgba(0,136,255,0.08)}
+.nav-item .ico{font-size:13px}
 
-@keyframes logoFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-@keyframes ringPulse {
-  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.03); }
-}
+.header-right{display:flex;align-items:center;gap:8px}
+.server-status{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.12)}
+.server-status .dot{width:6px;height:6px;border-radius:50%;background:#00ff88;animation:blink 2s infinite}
+.server-status .text{font-size:10px;font-weight:600;letter-spacing:1px;color:#00ff88}
+.server-status .count{font-size:9px;color:rgba(255,255,255,0.3);margin-left:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 
-/* ===== TITLE ===== */
-.title {
-  font-size: 38px;
-  font-weight: 900;
-  letter-spacing: 6px;
-  text-transform: uppercase;
-  color: #fff;
-  text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
-  margin-bottom: 4px;
-}
-.title span {
-  background: linear-gradient(90deg, #00BFFF, #29A8FF, #00BFFF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.subtitle {
-  font-size: 14px;
-  color: #29A8FF;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-.player-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 14px;
-  border-radius: 20px;
-  background: rgba(0, 191, 255, 0.08);
-  border: 1px solid rgba(0, 191, 255, 0.15);
-  font-size: 12px;
-  color: #00BFFF;
-  margin-bottom: 30px;
-}
-.player-badge .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #00ff88;
-  animation: blink 2s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+/* ===== HERO ===== */
+.hero{position:relative;z-index:1;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 60px 40px;overflow:hidden}
+.hero-bg{position:absolute;top:0;left:0;right:0;bottom:0;z-index:0}
+.hero-bg::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,14,23,0.3) 0%,rgba(10,14,23,0.7) 60%,#0a0e17 100%)}
+.hero-bg::after{content:'';position:absolute;bottom:0;left:0;right:0;height:200px;background:linear-gradient(to top,#0a0e17,transparent)}
+.hero-city{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0.15;background:linear-gradient(0deg,#0a0e17 0%,transparent 30%),repeating-linear-gradient(90deg,rgba(0,136,255,0.02) 0px,rgba(0,136,255,0.02) 1px,transparent 1px,transparent 40px),repeating-linear-gradient(0deg,rgba(0,136,255,0.02) 0px,rgba(0,136,255,0.02) 1px,transparent 1px,transparent 40px)}
 
-/* ===== PLAY BUTTON ===== */
-.play-btn {
-  padding: 14px 50px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: #050B18;
-  background: linear-gradient(135deg, #00BFFF, #29A8FF);
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 0 25px rgba(0, 191, 255, 0.3);
-}
-.play-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 40px rgba(0, 191, 255, 0.5);
-}
+.hero-content{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;width:100%;max-width:1200px;gap:60px}
+.hero-text{flex:1}
+.hero-text .welcome{font-size:14px;font-weight:600;letter-spacing:4px;color:rgba(0,136,255,0.7);text-transform:uppercase;margin-bottom:8px}
+.hero-text .title-main{font-size:56px;font-weight:900;line-height:1.05;margin-bottom:2px}
+.hero-text .title-main .white{color:#fff}
+.hero-text .title-main .blue{background:linear-gradient(135deg,#0088ff,#00aaff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-text .tagline{font-size:13px;letter-spacing:3px;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-bottom:16px}
+.hero-text .desc{font-size:13px;line-height:1.7;color:rgba(255,255,255,0.35);max-width:460px;margin-bottom:28px}
+.hero-text .compat{font-size:10px;color:rgba(255,255,255,0.2);letter-spacing:1px;display:flex;align-items:center;gap:6px}
 
-/* ===== AUTH SCREEN ===== */
-#auth-screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  z-index: 10;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: #030810;
-}
-#auth-screen.active {
-  display: flex;
-}
+.play-btn{display:inline-flex;align-items:center;gap:10px;padding:16px 48px;border:none;border-radius:12px;font-size:15px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#fff;background:linear-gradient(135deg,#0088ff,#0066dd);cursor:pointer;transition:all 0.3s;box-shadow:0 4px 25px rgba(0,136,255,0.3)}
+.play-btn:hover{transform:translateY(-2px);box-shadow:0 8px 35px rgba(0,136,255,0.5)}
+.play-btn:active{transform:translateY(0)}
+.play-btn .arrow{font-size:18px;transition:transform 0.3s}
+.play-btn:hover .arrow{transform:translateX(4px)}
 
-/* Background grid */
-#auth-screen::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image:
-    linear-gradient(rgba(0, 191, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 191, 255, 0.03) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-}
-/* Radial glow */
-#auth-screen::after {
-  content: '';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600px; height: 600px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 191, 255, 0.06), transparent 70%);
-  pointer-events: none;
-}
+.hero-logo-area{flex:0 0 auto;display:flex;align-items:center;justify-content:center;position:relative}
+.hero-logo-ring{position:relative;width:320px;height:320px;display:flex;align-items:center;justify-content:center}
+.hero-logo-ring::before{content:'';position:absolute;inset:0;border-radius:50%;border:2px solid rgba(0,136,255,0.15);animation:ringRotate 20s linear infinite}
+.hero-logo-ring::after{content:'';position:absolute;inset:20px;border-radius:50%;border:1px solid rgba(0,136,255,0.08);animation:ringRotate 15s linear infinite reverse}
+@keyframes ringRotate{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.hero-logo-ring img{width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 0 30px rgba(0,136,255,0.3));animation:logoFloat 5s ease-in-out infinite}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}
+.hero-logo-ring .glow{position:absolute;inset:-30px;border-radius:50%;background:radial-gradient(circle,rgba(0,136,255,0.06) 0%,transparent 70%);pointer-events:none}
 
-/* Auth Card */
-.auth-card {
-  position: relative;
-  width: 380px;
-  max-width: 90%;
-  background: rgba(6, 20, 40, 0.9);
-  border: 1px solid rgba(0, 191, 255, 0.12);
-  border-radius: 16px;
-  overflow: hidden;
-  z-index: 1;
-}
-.auth-card .top-line {
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00BFFF, transparent);
-}
+/* ===== STATS ===== */
+.stats-section{position:relative;z-index:1;padding:40px 60px;display:flex;gap:20px;max-width:1200px;margin:0 auto}
+.stat-card{flex:1;padding:20px 24px;border-radius:14px;background:rgba(13,20,38,0.7);border:1px solid rgba(0,136,255,0.08);backdrop-filter:blur(6px);transition:all 0.3s}
+.stat-card:hover{border-color:rgba(0,136,255,0.2);transform:translateY(-2px)}
+.stat-card .ico{font-size:22px;margin-bottom:10px;filter:drop-shadow(0 0 8px rgba(0,136,255,0.3))}
+.stat-card .val{font-size:28px;font-weight:800;color:#fff;margin-bottom:2px}
+.stat-card .val span{color:#0088ff}
+.stat-card .lbl{font-size:10px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase}
+.stat-card .graph{margin-top:12px;height:20px;display:flex;align-items:flex-end;gap:2px}
+.stat-card .graph .bar{width:100%;background:rgba(0,136,255,0.15);border-radius:2px;transition:height 0.5s}
 
-.auth-inner {
-  padding: 30px 28px;
-}
+/* ===== INFO SECTION ===== */
+.info-section{position:relative;z-index:1;padding:40px 60px;max-width:1200px;margin:0 auto}
+.info-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.info-header h2{font-size:18px;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.info-header .see-all{font-size:11px;color:#0088ff;cursor:pointer;display:flex;align-items:center;gap:4px;letter-spacing:1px;transition:color 0.3s}
+.info-header .see-all:hover{color:#fff}
 
-.auth-logo {
-  display: block;
-  margin: 0 auto 16px;
-  width: 50px; height: 50px;
-  object-fit: contain;
-  filter: drop-shadow(0 0 10px rgba(0, 191, 255, 0.3));
-}
+.info-cards{display:flex;gap:20px}
+.info-card{flex:1;padding:24px;border-radius:14px;background:rgba(13,20,38,0.7);border:1px solid rgba(0,136,255,0.08);backdrop-filter:blur(6px);transition:all 0.3s}
+.info-card:hover{border-color:rgba(0,136,255,0.2);transform:translateY(-2px)}
+.info-card .card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.info-card .card-head .ico-wrap{width:38px;height:38px;border-radius:10px;background:rgba(0,136,255,0.08);display:flex;align-items:center;justify-content:center;font-size:18px}
+.info-card .badge{padding:3px 10px;border-radius:12px;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}
+.badge-new{background:rgba(0,136,255,0.12);color:#0088ff;border:1px solid rgba(0,136,255,0.2)}
+.badge-important{background:rgba(255,100,50,0.12);color:#ff6432;border:1px solid rgba(255,100,50,0.2)}
+.badge-active{background:rgba(160,80,255,0.12);color:#a050ff;border:1px solid rgba(160,80,255,0.2)}
+.info-card .card-type{font-size:9px;letter-spacing:2px;color:rgba(255,255,255,0.3);text-transform:uppercase;margin-bottom:4px}
+.info-card .card-title{font-size:15px;font-weight:700;margin-bottom:8px}
+.info-card .card-desc{font-size:12px;line-height:1.6;color:rgba(255,255,255,0.35);margin-bottom:14px}
+.info-card .card-footer{display:flex;justify-content:space-between;align-items:center}
+.info-card .card-date{font-size:10px;color:rgba(255,255,255,0.2)}
+.info-card .card-btn{padding:6px 16px;border-radius:8px;font-size:10px;font-weight:600;letter-spacing:1px;color:#0088ff;background:rgba(0,136,255,0.06);border:1px solid rgba(0,136,255,0.12);cursor:pointer;transition:all 0.3s;text-transform:uppercase}
+.info-card .card-btn:hover{background:rgba(0,136,255,0.12);border-color:rgba(0,136,255,0.3)}
+.info-card .card-timer{font-size:11px;color:#a050ff;letter-spacing:1px}
 
-.auth-title {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  margin-bottom: 6px;
-}
+/* ===== MAP SECTION ===== */
+.map-section{position:relative;z-index:1;padding:40px 60px;max-width:1200px;margin:0 auto}
+.map-wrap{display:flex;gap:30px;align-items:center}
+.map-info{flex:1}
+.map-info h2{font-size:22px;font-weight:800;letter-spacing:2px;margin-bottom:8px;text-transform:uppercase}
+.map-info .desc{font-size:13px;color:rgba(255,255,255,0.35);line-height:1.6;margin-bottom:20px}
+.map-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 32px;border:none;border-radius:10px;font-size:12px;font-weight:600;letter-spacing:2px;color:#fff;background:linear-gradient(135deg,#0088ff,#0066dd);cursor:pointer;transition:all 0.3s;text-transform:uppercase}
+.map-btn:hover{box-shadow:0 4px 20px rgba(0,136,255,0.3)}
+.map-visual{flex:1;height:280px;border-radius:16px;background:rgba(13,20,38,0.6);border:1px solid rgba(0,136,255,0.08);position:relative;overflow:hidden}
+.map-visual::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(0,136,255,0.03) 0px,rgba(0,136,255,0.03) 1px,transparent 1px,transparent 30px),repeating-linear-gradient(0deg,rgba(0,136,255,0.03) 0px,rgba(0,136,255,0.03) 1px,transparent 1px,transparent 30px)}
+.map-pin{position:absolute;padding:4px 10px;border-radius:6px;font-size:9px;font-weight:600;letter-spacing:1px;color:#fff;background:rgba(0,136,255,0.15);border:1px solid rgba(0,136,255,0.25);cursor:pointer;transition:all 0.3s;white-space:nowrap}
+.map-pin:hover{background:rgba(0,136,255,0.3);border-color:rgba(0,136,255,0.5)}
+.map-pin::before{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid rgba(0,136,255,0.25)}
 
-.auth-name {
-  text-align: center;
-  margin-bottom: 20px;
-}
-.auth-name span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 12px;
-  border-radius: 15px;
-  background: rgba(0, 191, 255, 0.08);
-  border: 1px solid rgba(0, 191, 255, 0.15);
-  font-size: 11px;
-  color: #00BFFF;
-}
+/* ===== FOOTER ===== */
+.footer{position:relative;z-index:1;padding:40px 60px 30px;border-top:1px solid rgba(0,136,255,0.06);margin-top:40px}
+.footer-inner{max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.footer-left{display:flex;align-items:center;gap:12px}
+.footer-left img{width:32px;height:32px;border-radius:50%;object-fit:contain;filter:drop-shadow(0 0 6px rgba(0,136,255,0.2))}
+.footer-left .brand{font-size:12px;font-weight:700;letter-spacing:2px}
+.footer-left .tagline{font-size:9px;color:rgba(255,255,255,0.2);letter-spacing:1px}
+.footer-center{display:flex;gap:16px}
+.footer-center .social{width:36px;height:36px;border-radius:10px;background:rgba(0,136,255,0.06);border:1px solid rgba(0,136,255,0.08);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all 0.3s;color:rgba(255,255,255,0.4)}
+.footer-center .social:hover{background:rgba(0,136,255,0.12);border-color:rgba(0,136,255,0.2);color:#fff}
+.footer-right{text-align:right}
+.footer-right .ip{font-size:12px;font-weight:600;color:rgba(0,136,255,0.5);letter-spacing:1px}
+.footer-right .copy{font-size:9px;color:rgba(255,255,255,0.15);margin-top:4px;letter-spacing:1px}
 
-/* Tab toggle */
-.tab-toggle {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 10px;
-  background: rgba(0, 191, 255, 0.04);
-  border: 1px solid rgba(0, 191, 255, 0.08);
-  margin-bottom: 20px;
-}
-.tab-btn {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #8899aa;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-.tab-btn.active {
-  color: #050B18;
-  background: linear-gradient(135deg, #00BFFF, #29A8FF);
-}
+/* ===== DIMMED STATE (when SA-MP dialog is shown) ===== */
+body.dialog-open{overflow:hidden}
+body.dialog-open .header,body.dialog-open .hero-content,body.dialog-open .stats-section,body.dialog-open .info-section,body.dialog-open .map-section,body.dialog-open .footer{filter:brightness(0.3) blur(2px);pointer-events:none;transition:all 0.4s}
 
-/* Status */
-.status-msg {
-  text-align: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 14px;
-  display: none;
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .hero-content{flex-direction:column;text-align:center}
+  .hero-logo-area{order:-1}
+  .hero-text .desc{margin:0 auto 28px}
+  .info-cards{flex-direction:column}
+  .stats-section{flex-direction:column}
+  .map-wrap{flex-direction:column}
+  .header-nav{display:none}
+  .footer-inner{flex-direction:column;gap:20px;text-align:center}
 }
-.status-msg.success {
-  display: block;
-  background: rgba(0, 255, 136, 0.1);
-  color: #00ff88;
-  border: 1px solid rgba(0, 255, 136, 0.2);
-}
-.status-msg.error {
-  display: block;
-  background: rgba(255, 68, 68, 0.1);
-  color: #ff6666;
-  border: 1px solid rgba(255, 68, 68, 0.2);
-}
-
-/* Form */
-.form-group {
-  margin-bottom: 12px;
-}
-.form-group input, .form-group select {
-  width: 100%;
-  padding: 10px 14px 10px 38px;
-  border-radius: 10px;
-  background: rgba(0, 191, 255, 0.04);
-  border: 1px solid rgba(0, 191, 255, 0.1);
-  color: #fff;
-  font-size: 13px;
-  outline: none;
-  transition: border 0.3s;
-}
-.form-group input:focus, .form-group select:focus {
-  border-color: rgba(0, 191, 255, 0.4);
-}
-.form-group input::placeholder {
-  color: rgba(136, 153, 170, 0.5);
-}
-.form-group select option {
-  background: #0A1930;
-  color: #fff;
-}
-
-/* Icon prefix */
-.form-group {
-  position: relative;
-}
-.form-group .ico {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 16px; height: 16px;
-  color: #8899aa;
-  pointer-events: none;
-}
-
-/* Submit */
-.submit-btn {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: #050B18;
-  background: linear-gradient(135deg, #00BFFF, #29A8FF);
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-top: 4px;
-}
-.submit-btn:hover {
-  box-shadow: 0 0 25px rgba(0, 191, 255, 0.4);
-}
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Switch link */
-.switch-link {
-  text-align: center;
-  margin-top: 16px;
-  font-size: 11px;
-  color: #8899aa;
-}
-.switch-link a {
-  color: #00BFFF;
-  cursor: pointer;
-  text-decoration: none;
-}
-.switch-link a:hover {
-  color: #fff;
-}
-
-/* Hide sections */
-.form-section { display: none; }
-.form-section.active { display: block; }
-
-/* Bottom text */
-.bottom-text {
-  position: absolute;
-  bottom: 16px;
-  left: 0; right: 0;
-  text-align: center;
-  font-size: 9px;
-  color: rgba(136, 153, 170, 0.3);
-  letter-spacing: 2px;
-  z-index: 1;
-}
-
-/* Password toggle */
-.pw-toggle {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #8899aa;
-  cursor: pointer;
-  font-size: 11px;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-.pw-toggle:hover { color: #fff; }
 </style>
 </head>
 <body>
 
-<!-- Particles -->
 <canvas id="particles"></canvas>
 
-<!-- ===== MAIN SCREEN ===== -->
-<div id="main-screen">
-  <div class="logo-wrap">
-    <div class="logo-ring"></div>
-    <div class="logo-ring2"></div>
-    <img src="./logo.png" alt="UG" />
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-left">
+    <img class="header-logo" src="./logo.png" alt="UG" />
+    <div class="header-brand">
+      <div class="name">UNICATE</div>
+      <div class="sub">Gaming</div>
+    </div>
   </div>
-  <div class="title">UNICATE <span>GAMING OGC</span></div>
-  <div class="subtitle">Premium Balkan Roleplay</div>
-  <div class="player-badge">
-    <span class="dot"></span>
-    <span id="player-name-text">Server Online</span>
+  <div class="header-nav">
+    <div class="nav-item"><span class="ico">&#9632;</span> Updates</div>
+    <div class="nav-item"><span class="ico">&#128276;</span> Obavijesti</div>
+    <div class="nav-item"><span class="ico">&#128197;</span> Dogadjaji</div>
+    <div class="nav-item"><span class="ico">&#128737;</span> Pravila</div>
+    <div class="nav-item"><span class="ico">&#128506;</span> Mapa</div>
+    <div class="nav-item"><span class="ico">&#127897;</span> Podrska</div>
+    <div class="nav-item"><span class="ico">&#128142;</span> Kupi VIP</div>
   </div>
-  <button class="play-btn" onclick="onPlayClick()">IGRAJ SADA</button>
+  <div class="header-right">
+    <div class="server-status">
+      <span class="dot"></span>
+      <span class="text">SERVER ONLINE</span>
+      <span class="count" id="player-count">124 / 500</span>
+    </div>
+  </div>
 </div>
 
-<!-- ===== AUTH SCREEN ===== -->
-<div id="auth-screen">
-  <div class="auth-card">
-    <div class="top-line"></div>
-    <div class="auth-inner">
-      <img class="auth-logo" src="./logo.png" alt="UG" />
-      <div class="auth-title" id="auth-title">DOBRODOŠAO NATRAG</div>
-      <div class="auth-name"><span>&#9737; <span id="auth-player-name">Igrač</span></span></div>
-
-      <div class="tab-toggle">
-        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Prijava</button>
-        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Registracija</button>
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-bg">
+    <div class="hero-city"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <div class="welcome">DOBRODOSLI NA</div>
+      <div class="title-main">
+        <span class="white">UNICATE</span><br/>
+        <span class="blue">GAMING OGC</span>
       </div>
-
-      <div class="status-msg" id="status-msg"></div>
-
-      <!-- LOGIN FORM -->
-      <div class="form-section active" id="login-form">
-        <div class="form-group">
-          <span class="ico">&#128274;</span>
-          <input type="password" id="login-pass" placeholder="Lozinka" />
-          <span class="pw-toggle" onclick="togglePw('login-pass')">Pokaži</span>
-        </div>
-        <button class="submit-btn" onclick="doLogin()">PRIJAVI SE</button>
-      </div>
-
-      <!-- REGISTER FORM -->
-      <div class="form-section" id="register-form">
-        <div class="form-group">
-          <span class="ico">&#128274;</span>
-          <input type="password" id="reg-pass" placeholder="Lozinka (min. 6)" />
-          <span class="pw-toggle" onclick="togglePw('reg-pass')">Pokaži</span>
-        </div>
-        <div class="form-group">
-          <span class="ico">&#9993;</span>
-          <input type="text" id="reg-email" placeholder="Email adresa" />
-        </div>
-        <div class="form-group">
-          <span class="ico">&#127874;</span>
-          <input type="number" id="reg-age" placeholder="Godine (12-70)" min="12" max="70" />
-        </div>
-        <div class="form-group">
-          <span class="ico">&#127758;</span>
-          <select id="reg-country">
-            <option value="">Država</option>
-            <option value="1">Srbija</option>
-            <option value="2">Hrvatska</option>
-            <option value="3">Bosna i Hercegovina</option>
-            <option value="4">Crna Gora</option>
-            <option value="5">Makedonija</option>
-            <option value="6">Ostalo</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <span class="ico">&#128100;</span>
-          <select id="reg-gender">
-            <option value="">Spol</option>
-            <option value="1">Muški</option>
-            <option value="2">Ženski</option>
-          </select>
-        </div>
-        <button class="submit-btn" onclick="doRegister()">REGISTRIRAJ SE</button>
-      </div>
-
-      <div class="switch-link">
-        <span id="switch-text">Nemaš račun?</span>
-        <a id="switch-link" onclick="toggleMode()">Registriraj se</a>
+      <div class="tagline">Premium Balkan Roleplay Experience</div>
+      <div class="desc">Uronite u najrealisticniji balkanski roleplay server. Gradite svoju karijeru, upoznajte ljude i stvarajte price koje ce se pamti. Vasa avantura pocinje ovdje.</div>
+      <button class="play-btn" onclick="onPlayClick()">
+        IGRAJ SADA <span class="arrow">&#8594;</span>
+      </button>
+      <div class="compat" style="margin-top:14px">&#9654; open.mp / SA-MP kompatibilno</div>
+    </div>
+    <div class="hero-logo-area">
+      <div class="hero-logo-ring">
+        <div class="glow"></div>
+        <img src="./logo.png" alt="UG Logo" />
       </div>
     </div>
   </div>
-  <div class="bottom-text">UNICATE GAMING OGC &bull; PREMIUM ROLEPLAY</div>
+</div>
+
+<!-- ===== STATS ===== -->
+<div class="stats-section">
+  <div class="stat-card">
+    <div class="ico">&#128100;</div>
+    <div class="val" id="stat-players">124</div>
+    <div class="lbl">Igraca online</div>
+    <div class="graph"><div class="bar" style="height:60%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:90%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:55%"></div><div class="bar" style="height:85%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="ico">&#128188;</div>
+    <div class="val">38</div>
+    <div class="lbl">Firmi aktivno</div>
+    <div class="graph"><div class="bar" style="height:40%"></div><div class="bar" style="height:65%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:55%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:90%"></div><div class="bar" style="height:50%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="ico">&#128197;</div>
+    <div class="val">6</div>
+    <div class="lbl">Dogadjaja danas</div>
+    <div class="graph"><div class="bar" style="height:30%"></div><div class="bar" style="height:50%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:90%"></div><div class="bar" style="height:60%"></div><div class="bar" style="height:40%"></div><div class="bar" style="height:75%"></div></div>
+  </div>
+  <div class="stat-card">
+    <div class="ico">&#128225;</div>
+    <div class="val" style="color:#00ff88">ONLINE</div>
+    <div class="lbl">Server status</div>
+    <div class="graph"><div class="bar" style="height:95%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:98%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:92%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:97%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:94%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:96%;background:rgba(0,255,136,0.15)"></div><div class="bar" style="height:99%;background:rgba(0,255,136,0.15)"></div></div>
+  </div>
+</div>
+
+<!-- ===== INFO SECTION ===== -->
+<div class="info-section">
+  <div class="info-header">
+    <h2>Zadnje Informacije</h2>
+    <div class="see-all">PRIKAZI SVE &#8594;</div>
+  </div>
+  <div class="info-cards">
+    <div class="info-card">
+      <div class="card-head">
+        <div class="ico-wrap">&#9632;</div>
+        <div class="badge badge-new">NOVO</div>
+      </div>
+      <div class="card-type">UPDATE</div>
+      <div class="card-title">v2.3.1</div>
+      <div class="card-desc">Novi sistem vozila, poboljsana fizika i dodane nove lokacije za roleplay. Bug fixevi i optimizacije.</div>
+      <div class="card-footer">
+        <div class="card-date">18.05.2025</div>
+        <div class="card-btn">DETALJNIJE</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="card-head">
+        <div class="ico-wrap">&#128276;</div>
+        <div class="badge badge-important">VAZNO</div>
+      </div>
+      <div class="card-type">OBAVIJEST</div>
+      <div class="card-title">Redovno odrzavanje</div>
+      <div class="card-desc">Server ce biti privremeno nedostupan zbog redovnog odrzavanja i backup-a podataka.</div>
+      <div class="card-footer">
+        <div class="card-date">22.05.2025 u 03:00h</div>
+        <div class="card-btn">DETALJNIJE</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="card-head">
+        <div class="ico-wrap">&#127873;</div>
+        <div class="badge badge-active">AKTIVNO</div>
+      </div>
+      <div class="card-type">DOGADJAJ</div>
+      <div class="card-title">Happy Hours</div>
+      <div class="card-desc">Dvostruko iskustvo i novac za sve igrace! Iskoristite priliku za brzi napredak.</div>
+      <div class="card-footer">
+        <div class="card-timer">Završava za: 02d 14h 37m</div>
+        <div class="card-btn">DETALJNIJE</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAP SECTION ===== -->
+<div class="map-section">
+  <div class="map-wrap">
+    <div class="map-info">
+      <h2>Istrazi Mapu</h2>
+      <div class="desc">Klikni na lokaciju i otkrij sve sto ti grad nudi. Od skrivenih mjesta do popularnih destinacija - sve je na dohvat ruke.</div>
+      <button class="map-btn">OTVORI MAPU &#8594;</button>
+    </div>
+    <div class="map-visual">
+      <div class="map-pin" style="top:25%;left:35%">Vinewood</div>
+      <div class="map-pin" style="top:50%;left:55%">Downtown LS</div>
+      <div class="map-pin" style="top:70%;left:30%">Verona Beach</div>
+      <div class="map-pin" style="top:35%;left:65%">Idlewood</div>
+      <div class="map-pin" style="top:60%;left:75%">East Los Santos</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<div class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <img src="./logo.png" alt="UG" />
+      <div>
+        <div class="brand">UNICATE GAMING OGC</div>
+        <div class="tagline">Premium Roleplay</div>
+      </div>
+    </div>
+    <div class="footer-center">
+      <div class="social">&#127760;</div>
+      <div class="social">&#128247;</div>
+      <div class="social">&#127925;</div>
+      <div class="social">&#9654;</div>
+    </div>
+    <div class="footer-right">
+      <div class="ip">play.unicate-gaming.com</div>
+      <div class="copy">&copy; 2025 Unicate Gaming OGC. Sva prava zadrzana.</div>
+    </div>
+  </div>
 </div>
 
 <script>
-// ===== STATE =====
-var isRegistered = false;
-var playerName = 'Igrač';
-var currentMode = 'login'; // 'login' or 'register'
-
 // ===== PARTICLES =====
 (function() {
   var c = document.getElementById('particles');
   var ctx = c.getContext('2d');
   var pts = [];
-  var count = 40;
+  var count = 50;
 
-  function resize() {
-    c.width = window.innerWidth;
-    c.height = window.innerHeight;
-  }
+  function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
   resize();
   window.addEventListener('resize', resize);
 
@@ -514,9 +344,10 @@ var currentMode = 'login'; // 'login' or 'register'
     pts.push({
       x: Math.random() * c.width,
       y: Math.random() * c.height,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      r: Math.random() * 1.5 + 0.5
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.3,
+      a: Math.random() * 0.3 + 0.05
     });
   }
 
@@ -524,25 +355,22 @@ var currentMode = 'login'; // 'login' or 'register'
     ctx.clearRect(0, 0, c.width, c.height);
     for (var i = 0; i < pts.length; i++) {
       var p = pts[i];
-      p.x += p.vx;
-      p.y += p.vy;
+      p.x += p.vx; p.y += p.vy;
       if (p.x < 0 || p.x > c.width) p.vx *= -1;
       if (p.y < 0 || p.y > c.height) p.vy *= -1;
-
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(0, 191, 255, 0.4)';
+      ctx.fillStyle = 'rgba(0,136,255,' + p.a + ')';
       ctx.fill();
-
       for (var j = i + 1; j < pts.length; j++) {
         var q = pts[j];
         var dx = p.x - q.x, dy = p.y - q.y;
         var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 120) {
+        if (dist < 100) {
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(q.x, q.y);
-          ctx.strokeStyle = 'rgba(0, 191, 255, ' + (0.15 * (1 - dist / 120)) + ')';
+          ctx.strokeStyle = 'rgba(0,136,255,' + (0.08 * (1 - dist / 100)) + ')';
           ctx.stroke();
         }
       }
@@ -552,159 +380,41 @@ var currentMode = 'login'; // 'login' or 'register'
   draw();
 })();
 
+// ===== STATE =====
+var isRegistered = false;
+var playerName = 'Igrac';
+
 // ===== CEF EVENTS =====
-// Listen for portal:init from Pawn
 if (typeof cef !== 'undefined' && cef.addEventListener) {
   cef.addEventListener('portal:init', function(name, registered) {
-    playerName = name || 'Igrač';
+    playerName = name || 'Igrac';
     isRegistered = (registered == 1);
-    document.getElementById('player-name-text').textContent = playerName;
-    document.getElementById('auth-player-name').textContent = playerName;
-    if (isRegistered) {
-      switchTab('login');
-    } else {
-      switchTab('register');
-    }
     console.log('[PORTAL] init: ' + name + ' registered=' + registered);
   });
 
-  cef.addEventListener('portal:loginResponse', function(success, msg) {
-    showStatus(success ? 'success' : 'error', msg || (success ? 'Prijava uspješna!' : 'Pogrešna lozinka!'));
-    if (success) {
-      document.getElementById('login-pass').disabled = true;
-    } else {
-      document.getElementById('login-pass').value = '';
-    }
-    document.getElementById('login-pass').disabled = false;
-  });
-
-  cef.addEventListener('portal:registerResponse', function(success, msg) {
-    showStatus(success ? 'success' : 'error', msg || (success ? 'Registracija uspješna!' : 'Greška!'));
-    if (!success) {
-      document.getElementById('reg-pass').value = '';
-    }
+  // Pawn kaze da je dijalog zatvoren - vratite portal u normalno stanje
+  cef.addEventListener('portal:dialogDone', function() {
+    document.body.classList.remove('dialog-open');
+    console.log('[PORTAL] dialog done, undimmed');
   });
 }
 
-// ===== FUNCTIONS =====
+// ===== PLAY CLICK =====
 function onPlayClick() {
-  document.getElementById('main-screen').style.display = 'none';
-  document.getElementById('auth-screen').classList.add('active');
+  // Dim the portal so SA-MP dialog is visible on top
+  document.body.classList.add('dialog-open');
 
-  // Set mode based on registration status
-  if (isRegistered) {
-    switchTab('login');
-  } else {
-    switchTab('register');
-  }
-
-  // Focus password input
-  setTimeout(function() {
-    var el = isRegistered ? document.getElementById('login-pass') : document.getElementById('reg-pass');
-    if (el) el.focus();
-  }, 200);
-}
-
-function switchTab(mode) {
-  currentMode = mode;
-  var loginBtn = document.getElementById('tab-login');
-  var regBtn = document.getElementById('tab-register');
-  var loginForm = document.getElementById('login-form');
-  var regForm = document.getElementById('register-form');
-  var title = document.getElementById('auth-title');
-  var switchText = document.getElementById('switch-text');
-  var switchLink = document.getElementById('switch-link');
-
-  if (mode === 'login') {
-    loginBtn.classList.add('active');
-    regBtn.classList.remove('active');
-    loginForm.classList.add('active');
-    regForm.classList.remove('active');
-    title.textContent = 'DOBRODOŠAO NATRAG';
-    switchText.textContent = 'Nemaš račun? ';
-    switchLink.textContent = 'Registriraj se';
-  } else {
-    regBtn.classList.add('active');
-    loginBtn.classList.remove('active');
-    regForm.classList.add('active');
-    loginForm.classList.remove('active');
-    title.textContent = 'KREIRAJ RAČUN';
-    switchText.textContent = 'Imaš račun? ';
-    switchLink.textContent = 'Prijavi se';
-  }
-  hideStatus();
-}
-
-function toggleMode() {
-  switchTab(currentMode === 'login' ? 'register' : 'login');
-}
-
-function showStatus(type, msg) {
-  var el = document.getElementById('status-msg');
-  el.className = 'status-msg ' + type;
-  el.textContent = msg;
-}
-function hideStatus() {
-  var el = document.getElementById('status-msg');
-  el.className = 'status-msg';
-}
-
-function togglePw(id) {
-  var el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-}
-
-function doLogin() {
-  var pass = document.getElementById('login-pass').value;
-  if (!pass || pass.length < 1) {
-    showStatus('error', 'Unesi lozinku!');
-    return;
-  }
-  showStatus('success', 'Provjera...');
-  document.getElementById('login-pass').disabled = true;
-
+  // Emit event to Pawn - Pawn will show SA-MP dialog
   if (typeof cef !== 'undefined' && cef.emit) {
-    cef.emit('portal:requestLogin', pass);
+    cef.emit('portal:requestAuth');
   } else {
-    // Dev mode
+    // Dev mode - just dim for testing
+    console.log('[PORTAL] DEV: would show SA-MP dialog');
     setTimeout(function() {
-      showStatus('success', 'Prijava uspješna! (dev)');
-      document.getElementById('login-pass').disabled = false;
-    }, 1000);
+      document.body.classList.remove('dialog-open');
+    }, 3000);
   }
 }
-
-function doRegister() {
-  var pass = document.getElementById('reg-pass').value;
-  var email = document.getElementById('reg-email').value;
-  var age = parseInt(document.getElementById('reg-age').value);
-  var country = parseInt(document.getElementById('reg-country').value);
-  var gender = parseInt(document.getElementById('reg-gender').value);
-
-  if (!pass || pass.length < 6) { showStatus('error', 'Lozinka mora imati najmanje 6 karaktera!'); return; }
-  if (!email || email.length < 5) { showStatus('error', 'Unesi ispravan email!'); return; }
-  if (!age || age < 12 || age > 70) { showStatus('error', 'Godine moraju biti između 12 i 70!'); return; }
-  if (!country) { showStatus('error', 'Odaberi državu!'); return; }
-  if (!gender) { showStatus('error', 'Odaberi spol!'); return; }
-
-  showStatus('success', 'Provjera...');
-
-  if (typeof cef !== 'undefined' && cef.emit) {
-    cef.emit('portal:requestRegister', pass, email, age, country, gender);
-  } else {
-    setTimeout(function() {
-      showStatus('success', 'Registracija uspješna! (dev)');
-    }, 1000);
-  }
-}
-
-// Enter key support
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    if (currentMode === 'login') doLogin();
-    else doRegister();
-  }
-});
 </script>
 </body>
 </html>
