@@ -60,7 +60,22 @@ stock CefInv_OnCefReady(playerid)
 
 stock CefInv_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid
+        if(browserid != CEF_INV_BROWSER_ID) return;
+        printf("[CEF-INV] Inventory browser created for player %d", playerid);
+
+        // Postavi vidljivost i fokus
+        CEF_SetBrowserVisible(playerid, CEF_INV_BROWSER_ID, true);
+        CEF_FocusBrowser(playerid, CEF_INV_BROWSER_ID, true);
+
+        // Posalji init podatke inventaru
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
+        CEF_EmitEvent(playerid, CEF_INV_BROWSER_ID, "inventory:playerInfo",
+                CEF_STR(playerName),
+                CEF_INT(playerid),
+                CEF_INT(PlayerInfo[playerid][xLevel]),
+                CEF_INT(PlayerInfo[playerid][xNovac]),
+                CEF_INT(PlayerInfo[playerid][xRespekt]);
 }
 
 forward OnCefInvUse(playerid, itemid);

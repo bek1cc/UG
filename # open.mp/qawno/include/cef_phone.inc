@@ -55,7 +55,19 @@ stock CefPhone_OnCefReady(playerid)
 
 stock CefPhone_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid
+        if(browserid != CEF_PHONE_BROWSER_ID) return;
+        printf("[CEF-PHONE] Phone browser created for player %d", playerid);
+
+        // Postavi vidljivost i fokus
+        CEF_SetBrowserVisible(playerid, CEF_PHONE_BROWSER_ID, true);
+        CEF_FocusBrowser(playerid, CEF_PHONE_BROWSER_ID, true);
+
+        // Posalji init podatke telefonu
+        new phoneNumber = PlayerInfo[playerid][xBrojTelefona];
+        CEF_EmitEvent(playerid, CEF_PHONE_BROWSER_ID, "phone:init",
+                CEF_INT(phoneNumber),
+                CEF_INT(PlayerInfo[playerid][xNovac]),
+                CEF_INT(PlayerInfo[playerid][xLevel]));
 }
 
 forward OnCefPhoneCall(playerid, const number[]);

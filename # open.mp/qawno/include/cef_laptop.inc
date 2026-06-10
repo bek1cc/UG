@@ -48,7 +48,18 @@ stock CefLp_OnCefReady(playerid)
 
 stock CefLp_OnBrowserCreated(playerid, browserid)
 {
-        #pragma unused playerid, browserid
+        if(browserid != CEF_LAPTOP_BROWSER_ID) return;
+        printf("[CEF-LAPTOP] Laptop browser created for player %d", playerid);
+
+        // Postavi vidljivost i fokus
+        CEF_SetBrowserVisible(playerid, CEF_LAPTOP_BROWSER_ID, true);
+        CEF_FocusBrowser(playerid, CEF_LAPTOP_BROWSER_ID, true);
+
+        // Posalji init podatke laptopu
+        CEF_EmitEvent(playerid, CEF_LAPTOP_BROWSER_ID, "laptop:init",
+                CEF_INT(PlayerInfo[playerid][xNovac]),
+                CEF_INT(PlayerInfo[playerid][xBRacun]),
+                CEF_INT(PlayerInfo[playerid][xLevel]));
 }
 
 forward OnCefLaptopClose(playerid);
