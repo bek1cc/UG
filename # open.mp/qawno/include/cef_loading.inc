@@ -3,16 +3,14 @@
 #endif
 #define _INC_cef_loading
 
-#define CEF_LOADING_BROWSER_ID  50
-#define CEF_LOADING_URL         "http://cef/loading/index.html"
-
-// Loading screen je UKLONJEN - portal se prikazuje direktno
-// Ove funkcije ostaju kao stub-ovi da se ne bi kompajlacija break-ovala
+// Loading screen je POTPUNO UKLONJEN
+// Nema browser ID-a, nema URL-a, nema resursa
+// Ove funkcije ostaju kao potpuni stub-ovi da se ne bi kompajlacija break-ovala
 
 stock CEF_LoadingOpen(playerid)
 {
         #pragma unused playerid
-        // NE OTVARAJ loading screen - portal se otvara direktno iz OnCefReady
+        // Loading screen je obrisan - ne radi nista
 }
 
 stock CEF_LoadingClose(playerid)
@@ -22,9 +20,8 @@ stock CEF_LoadingClose(playerid)
 
 stock CefLoading_OnCefReady(playerid)
 {
-        // UKLONJENO: Ne prikazuje se vise loading screen
-        // Portal se otvara direktno iz OnCefReady u fg-ogc.pwn
-        printf("[CEF-LOADING] Skipping loading screen, portal opens directly for player %d", playerid);
+        #pragma unused playerid
+        // Loading screen ne postoji - ne radi nista
 }
 
 stock CefLoading_OnBrowserCreated(playerid, browserid)
@@ -34,16 +31,14 @@ stock CefLoading_OnBrowserCreated(playerid, browserid)
 
 stock CefLoading_InitSubscriptions()
 {
-        // Loading event se vise ne koristi, ali ostavljamo registraciju
-        // da ne bi break-ovali kod ako se negdje poziva
+        // Loading event se vise ne koristi
 }
 
 stock CefLoading_OnGameModeInit()
 {
-        // I dalje registrujemo resurs za CEF, cak i ako loading screen nije u upotrebi
-        CEF_AddResource("loading");
-        CefLoading_InitSubscriptions();
-        printf("[CEF-LOADING] Resource registered (disabled): loading -> scriptfiles/cef/loading/");
+        // NE REGISTRUJEMO loading resurs - obrisan je
+        // CEF_AddResource("loading") - UKLONJENO
+        printf("[CEF-LOADING] Loading screen completely removed - no resource registered");
 }
 
 stock CefLoading_OnPlayerDisconnect(playerid)
@@ -55,5 +50,6 @@ stock CefLoading_OnPlayerDisconnect(playerid)
 forward OnCefLoadingComplete(playerid);
 public OnCefLoadingComplete(playerid)
 {
-        printf("[CEF-LOADING] OnCefLoadingComplete called for player %d - but loading screen is disabled, ignoring", playerid);
+        #pragma unused playerid
+        // Loading screen je obrisan - ignorisi
 }
