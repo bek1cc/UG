@@ -1,236 +1,550 @@
 <!DOCTYPE html>
 <html lang="bs">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UNICATE GAMING OGC</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-@font-face{font-family:'Orbitron';src:url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap')}
-body{background:#050B18;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;width:100vw;height:100vh;position:relative}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* Background */
-.bg{position:fixed;inset:0;z-index:0}
-.bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(0,191,255,0.05)0%,transparent 60%)}
-.bg::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,191,255,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,191,255,0.03)1px,transparent 1px);background-size:60px 60px;opacity:0.5}
+@font-face {
+  font-family: 'GameFont';
+  src: local('Segoe UI'), local('Arial'), local('sans-serif');
+}
 
-/* Particles canvas */
-#particles{position:fixed;inset:0;z-index:1;pointer-events:none}
+body {
+  background: #050B18;
+  color: #fff;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+  user-select: none;
+}
 
-/* Main portal */
-.portal{position:relative;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px}
+/* ===== PARTICLES ===== */
+canvas#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
 
-/* Logo */
-.logo-wrap{margin-bottom:24px;position:relative}
-.logo-wrap img{width:180px;height:180px;object-fit:contain;filter:drop-shadow(0 0 30px rgba(0,191,255,0.25));animation:logoFloat 4s ease-in-out infinite}
-.logo-ring{position:absolute;inset:-15px;border:1.5px solid rgba(0,191,255,0.2);border-radius:50%;animation:ringPulse 3s ease-in-out infinite}
-.logo-ring2{position:absolute;inset:-25px;border:1px solid rgba(41,168,255,0.1);border-radius:50%;animation:ringPulse 3s ease-in-out infinite 0.5s}
+/* ===== MAIN SCREEN ===== */
+#main-screen {
+  position: relative;
+  z-index: 1;
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
-@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-@keyframes ringPulse{0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:0.7;transform:scale(1.02)}}
+/* ===== LOGO ===== */
+.logo-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+.logo-wrap img {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 30px rgba(0, 191, 255, 0.3));
+  animation: logoFloat 4s ease-in-out infinite;
+}
+.logo-ring {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 210px; height: 210px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 191, 255, 0.3);
+  animation: ringPulse 3s ease-in-out infinite;
+}
+.logo-ring2 {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 240px; height: 240px;
+  border-radius: 50%;
+  border: 1px solid rgba(41, 168, 255, 0.15);
+  animation: ringPulse 3s ease-in-out infinite 0.5s;
+}
 
-/* Title */
-.title{font-family:'Orbitron','Segoe UI',sans-serif;font-size:42px;font-weight:900;letter-spacing:6px;margin-bottom:4px;color:#fff;text-shadow:0 0 20px rgba(0,191,255,0.3)}
-.subtitle{font-family:'Orbitron','Segoe UI',sans-serif;font-size:20px;font-weight:400;letter-spacing:8px;background:linear-gradient(90deg,#00BFFF,#29A8FF,#00BFFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
-.tagline{color:#8899aa;font-size:14px;letter-spacing:2px;margin-bottom:32px}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes ringPulse {
+  0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.03); }
+}
 
-/* Status badge */
-.badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:20px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);margin-bottom:28px}
-.badge-dot{width:8px;height:8px;border-radius:50%;background:#00ff88;animation:blink 1.5s infinite}
-.badge-text{color:#00ff88;font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+/* ===== TITLE ===== */
+.title {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+  margin-bottom: 4px;
+}
+.title span {
+  background: linear-gradient(90deg, #00BFFF, #29A8FF, #00BFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.subtitle {
+  font-size: 14px;
+  color: #29A8FF;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.player-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: rgba(0, 191, 255, 0.08);
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  font-size: 12px;
+  color: #00BFFF;
+  margin-bottom: 30px;
+}
+.player-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #00ff88;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-/* Play button */
-.play-btn{font-family:'Orbitron','Segoe UI',sans-serif;font-size:16px;font-weight:700;letter-spacing:4px;color:#050B18;background:linear-gradient(135deg,#00BFFF,#29A8FF);border:none;padding:16px 48px;border-radius:12px;cursor:pointer;transition:all 0.3s;box-shadow:0 0 30px rgba(0,191,255,0.3),0 0 60px rgba(0,191,255,0.1)}
-.play-btn:hover{transform:scale(1.05);box-shadow:0 0 40px rgba(0,191,255,0.5),0 0 80px rgba(0,191,255,0.2)}
+/* ===== PLAY BUTTON ===== */
+.play-btn {
+  padding: 14px 50px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #050B18;
+  background: linear-gradient(135deg, #00BFFF, #29A8FF);
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 0 25px rgba(0, 191, 255, 0.3);
+}
+.play-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(0, 191, 255, 0.5);
+}
 
-/* Auth overlay */
-.auth-overlay{position:fixed;inset:0;z-index:100;display:none;flex-direction:column;align-items:center;justify-content:center;background:#030810}
-.auth-overlay.active{display:flex}
-.auth-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,191,255,0.06)0%,transparent 60%)}
-.auth-overlay::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,191,255,0.03)1px,transparent 1px),linear-gradient(90deg,rgba(0,191,255,0.03)1px,transparent 1px);background-size:60px 60px;opacity:0.4}
+/* ===== AUTH SCREEN ===== */
+#auth-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 10;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #030810;
+}
+#auth-screen.active {
+  display: flex;
+}
 
-.auth-card{position:relative;z-index:2;width:380px;max-width:90vw;background:rgba(6,20,40,0.9);border:1px solid rgba(0,191,255,0.12);border-radius:16px;padding:36px 32px;backdrop-filter:blur(30px);box-shadow:0 0 60px rgba(0,191,255,0.05)}
-.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#00BFFF,transparent);border-radius:16px 16px 0 0}
+/* Background grid */
+#auth-screen::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image:
+    linear-gradient(rgba(0, 191, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 191, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+/* Radial glow */
+#auth-screen::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 191, 255, 0.06), transparent 70%);
+  pointer-events: none;
+}
 
-/* Auth header */
-.auth-logo{display:block;margin:0 auto 16px;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(0,191,255,0.3))}
-.auth-title{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;text-align:center;letter-spacing:3px;margin-bottom:4px}
-.auth-name{text-align:center;margin-bottom:20px}
-.auth-name span{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:12px;background:rgba(0,191,255,0.08);border:1px solid rgba(0,191,255,0.15);font-size:12px;color:#00BFFF;font-weight:500}
+/* Auth Card */
+.auth-card {
+  position: relative;
+  width: 380px;
+  max-width: 90%;
+  background: rgba(6, 20, 40, 0.9);
+  border: 1px solid rgba(0, 191, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  z-index: 1;
+}
+.auth-card .top-line {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #00BFFF, transparent);
+}
 
-/* Mode toggle */
-.mode-toggle{display:flex;gap:4px;padding:4px;border-radius:10px;background:rgba(0,191,255,0.04);border:1px solid rgba(0,191,255,0.08);margin-bottom:20px}
-.mode-btn{flex:1;padding:10px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.3s;background:transparent;color:#8899aa;font-family:'Segoe UI',sans-serif}
-.mode-btn.active{background:linear-gradient(135deg,#00BFFF,#29A8FF);color:#050B18}
+.auth-inner {
+  padding: 30px 28px;
+}
 
-/* Status message */
-.status-msg{margin-bottom:12px;padding:8px 12px;border-radius:8px;text-align:center;font-size:13px;font-weight:500;display:none}
-.status-msg.show{display:block}
-.status-msg.success{background:rgba(0,255,136,0.1);color:#00ff88;border:1px solid rgba(0,255,136,0.2)}
-.status-msg.error{background:rgba(255,68,68,0.1);color:#ff6666;border:1px solid rgba(255,68,68,0.2)}
+.auth-logo {
+  display: block;
+  margin: 0 auto 16px;
+  width: 50px; height: 50px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(0, 191, 255, 0.3));
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.auth-name {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.auth-name span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 12px;
+  border-radius: 15px;
+  background: rgba(0, 191, 255, 0.08);
+  border: 1px solid rgba(0, 191, 255, 0.15);
+  font-size: 11px;
+  color: #00BFFF;
+}
+
+/* Tab toggle */
+.tab-toggle {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.04);
+  border: 1px solid rgba(0, 191, 255, 0.08);
+  margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8899aa;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tab-btn.active {
+  color: #050B18;
+  background: linear-gradient(135deg, #00BFFF, #29A8FF);
+}
+
+/* Status */
+.status-msg {
+  text-align: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  display: none;
+}
+.status-msg.success {
+  display: block;
+  background: rgba(0, 255, 136, 0.1);
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+.status-msg.error {
+  display: block;
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff6666;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
 
 /* Form */
-.form-group{margin-bottom:12px;position:relative}
-.form-group input,.form-group select{width:100%;padding:12px 12px 12px 38px;border-radius:10px;border:1px solid rgba(0,191,255,0.1);background:rgba(0,191,255,0.04);color:#fff;font-size:13px;outline:none;transition:border 0.3s;font-family:'Segoe UI',sans-serif}
-.form-group input:focus,.form-group select:focus{border-color:rgba(0,191,255,0.4)}
-.form-group input::placeholder{color:rgba(136,153,170,0.5)}
-.form-group select option{background:#061428;color:#fff}
-.form-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#8899aa;font-size:14px}
+.form-group {
+  margin-bottom: 12px;
+}
+.form-group input, .form-group select {
+  width: 100%;
+  padding: 10px 14px 10px 38px;
+  border-radius: 10px;
+  background: rgba(0, 191, 255, 0.04);
+  border: 1px solid rgba(0, 191, 255, 0.1);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: border 0.3s;
+}
+.form-group input:focus, .form-group select:focus {
+  border-color: rgba(0, 191, 255, 0.4);
+}
+.form-group input::placeholder {
+  color: rgba(136, 153, 170, 0.5);
+}
+.form-group select option {
+  background: #0A1930;
+  color: #fff;
+}
 
-/* Eye toggle */
-.eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#8899aa;cursor:pointer;font-size:13px;padding:4px}
-.eye-btn:hover{color:#fff}
+/* Icon prefix */
+.form-group {
+  position: relative;
+}
+.form-group .ico {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px;
+  color: #8899aa;
+  pointer-events: none;
+}
 
-/* Submit button */
-.submit-btn{width:100%;padding:14px;border:none;border-radius:10px;font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:3px;color:#050B18;background:linear-gradient(135deg,#00BFFF,#29A8FF);cursor:pointer;transition:all 0.3s;margin-top:4px}
-.submit-btn:hover{box-shadow:0 0 25px rgba(0,191,255,0.4)}
-.submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+/* Submit */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #050B18;
+  background: linear-gradient(135deg, #00BFFF, #29A8FF);
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-top: 4px;
+}
+.submit-btn:hover {
+  box-shadow: 0 0 25px rgba(0, 191, 255, 0.4);
+}
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Switch link */
-.switch-link{text-align:center;margin-top:16px;font-size:12px;color:#8899aa}
-.switch-link button{background:none;border:none;color:#00BFFF;cursor:pointer;font-size:12px;font-weight:600}
-.switch-link button:hover{color:#fff}
+.switch-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 11px;
+  color: #8899aa;
+}
+.switch-link a {
+  color: #00BFFF;
+  cursor: pointer;
+  text-decoration: none;
+}
+.switch-link a:hover {
+  color: #fff;
+}
 
-/* Footer */
-.auth-footer{position:absolute;bottom:20px;left:0;right:0;text-align:center;z-index:2;font-size:10px;color:rgba(136,153,170,0.3);letter-spacing:2px;font-family:'Orbitron',sans-serif}
+/* Hide sections */
+.form-section { display: none; }
+.form-section.active { display: block; }
 
-/* Login form */
-.login-form{display:block}
-.register-form{display:none}
-.auth-overlay.reg .login-form{display:none}
-.auth-overlay.reg .register-form{display:block}
+/* Bottom text */
+.bottom-text {
+  position: absolute;
+  bottom: 16px;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: 9px;
+  color: rgba(136, 153, 170, 0.3);
+  letter-spacing: 2px;
+  z-index: 1;
+}
 
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:scale(0.95) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
-.auth-card{animation:fadeIn 0.4s ease}
+/* Password toggle */
+.pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8899aa;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.pw-toggle:hover { color: #fff; }
 </style>
 </head>
 <body>
 
-<!-- Background -->
-<div class="bg"></div>
+<!-- Particles -->
 <canvas id="particles"></canvas>
 
-<!-- Main Portal -->
-<div class="portal" id="mainPortal">
+<!-- ===== MAIN SCREEN ===== -->
+<div id="main-screen">
   <div class="logo-wrap">
     <div class="logo-ring"></div>
     <div class="logo-ring2"></div>
-    <img src="logo.png" alt="Unicate Gaming">
+    <img src="./logo.png" alt="UG" />
   </div>
-  <div class="title">UNICATE</div>
-  <div class="subtitle">GAMING OGC</div>
-  <div class="tagline">PREMIUM BALKAN ROLEPLAY EXPERIENCE</div>
-  <div class="badge">
-    <div class="badge-dot"></div>
-    <span class="badge-text">Server Online</span>
+  <div class="title">UNICATE <span>GAMING OGC</span></div>
+  <div class="subtitle">Premium Balkan Roleplay</div>
+  <div class="player-badge">
+    <span class="dot"></span>
+    <span id="player-name-text">Server Online</span>
   </div>
-  <br>
-  <button class="play-btn" onclick="openAuth()">IGRAJ SADA</button>
+  <button class="play-btn" onclick="onPlayClick()">IGRAJ SADA</button>
 </div>
 
-<!-- Auth Overlay -->
-<div class="auth-overlay" id="authOverlay">
+<!-- ===== AUTH SCREEN ===== -->
+<div id="auth-screen">
   <div class="auth-card">
-    <img src="logo.png" alt="UG" class="auth-logo">
-    <div class="auth-title" id="authTitle">DOBRODOŠAO NATRAG</div>
-    <div class="auth-name"><span>&#x1F6E1; <span id="playerNameDisplay">Igrač</span></span></div>
+    <div class="top-line"></div>
+    <div class="auth-inner">
+      <img class="auth-logo" src="./logo.png" alt="UG" />
+      <div class="auth-title" id="auth-title">DOBRODOŠAO NATRAG</div>
+      <div class="auth-name"><span>&#9737; <span id="auth-player-name">Igrač</span></span></div>
 
-    <!-- Mode Toggle -->
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="loginTab" onclick="setMode('login')">Prijava</button>
-      <button class="mode-btn" id="registerTab" onclick="setMode('register')">Registracija</button>
-    </div>
+      <div class="tab-toggle">
+        <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Prijava</button>
+        <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Registracija</button>
+      </div>
 
-    <!-- Status -->
-    <div class="status-msg" id="statusMsg"></div>
+      <div class="status-msg" id="status-msg"></div>
 
-    <!-- Login Form -->
-    <div class="login-form" id="loginForm">
-      <div class="form-group">
-        <span class="form-icon">&#x1F512;</span>
-        <input type="password" id="loginPass" placeholder="Lozinka" autocomplete="off">
-        <button class="eye-btn" onclick="togglePass('loginPass',this)">&#x1F441;</button>
+      <!-- LOGIN FORM -->
+      <div class="form-section active" id="login-form">
+        <div class="form-group">
+          <span class="ico">&#128274;</span>
+          <input type="password" id="login-pass" placeholder="Lozinka" />
+          <span class="pw-toggle" onclick="togglePw('login-pass')">Pokaži</span>
+        </div>
+        <button class="submit-btn" onclick="doLogin()">PRIJAVI SE</button>
       </div>
-      <button class="submit-btn" onclick="doLogin()">PRIJAVI SE</button>
-    </div>
 
-    <!-- Register Form -->
-    <div class="register-form" id="registerForm">
-      <div class="form-group">
-        <span class="form-icon">&#x1F512;</span>
-        <input type="password" id="regPass" placeholder="Lozinka (min. 6 karaktera)" autocomplete="off">
-        <button class="eye-btn" onclick="togglePass('regPass',this)">&#x1F441;</button>
+      <!-- REGISTER FORM -->
+      <div class="form-section" id="register-form">
+        <div class="form-group">
+          <span class="ico">&#128274;</span>
+          <input type="password" id="reg-pass" placeholder="Lozinka (min. 6)" />
+          <span class="pw-toggle" onclick="togglePw('reg-pass')">Pokaži</span>
+        </div>
+        <div class="form-group">
+          <span class="ico">&#9993;</span>
+          <input type="text" id="reg-email" placeholder="Email adresa" />
+        </div>
+        <div class="form-group">
+          <span class="ico">&#127874;</span>
+          <input type="number" id="reg-age" placeholder="Godine (12-70)" min="12" max="70" />
+        </div>
+        <div class="form-group">
+          <span class="ico">&#127758;</span>
+          <select id="reg-country">
+            <option value="">Država</option>
+            <option value="1">Srbija</option>
+            <option value="2">Hrvatska</option>
+            <option value="3">Bosna i Hercegovina</option>
+            <option value="4">Crna Gora</option>
+            <option value="5">Makedonija</option>
+            <option value="6">Ostalo</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <span class="ico">&#128100;</span>
+          <select id="reg-gender">
+            <option value="">Spol</option>
+            <option value="1">Muški</option>
+            <option value="2">Ženski</option>
+          </select>
+        </div>
+        <button class="submit-btn" onclick="doRegister()">REGISTRIRAJ SE</button>
       </div>
-      <div class="form-group">
-        <span class="form-icon">&#x2709;</span>
-        <input type="email" id="regEmail" placeholder="Email adresa" autocomplete="off">
-      </div>
-      <div class="form-group">
-        <span class="form-icon">&#x1F4C5;</span>
-        <input type="number" id="regAge" placeholder="Godine (12-70)" min="12" max="70">
-      </div>
-      <div class="form-group">
-        <span class="form-icon">&#x1F30D;</span>
-        <select id="regCountry">
-          <option value="" disabled selected>Država</option>
-          <option value="1">Bosna i Hercegovina</option>
-          <option value="2">Hrvatska</option>
-          <option value="3">Srbija</option>
-          <option value="4">Crna Gora</option>
-          <option value="5">Slovenija</option>
-          <option value="6">Makedonija</option>
-          <option value="7">Ostalo</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <span class="form-icon">&#x1F464;</span>
-        <select id="regGender">
-          <option value="" disabled selected>Spol</option>
-          <option value="1">Muški</option>
-          <option value="2">Ženski</option>
-        </select>
-      </div>
-      <button class="submit-btn" onclick="doRegister()">REGISTRIRAJ SE</button>
-    </div>
 
-    <div class="switch-link">
-      Nemaš račun? <button onclick="setMode('register')" id="switchBtn">Registriraj se</button>
+      <div class="switch-link">
+        <span id="switch-text">Nemaš račun?</span>
+        <a id="switch-link" onclick="toggleMode()">Registriraj se</a>
+      </div>
     </div>
   </div>
-  <div class="auth-footer">UNICATE GAMING OGC &bull; PREMIUM ROLEPLAY</div>
+  <div class="bottom-text">UNICATE GAMING OGC &bull; PREMIUM ROLEPLAY</div>
 </div>
 
 <script>
-// State
+// ===== STATE =====
 var isRegistered = false;
-var playerName = 'Igrac';
+var playerName = 'Igrač';
+var currentMode = 'login'; // 'login' or 'register'
 
-// Particle animation
-(function(){
+// ===== PARTICLES =====
+(function() {
   var c = document.getElementById('particles');
   var ctx = c.getContext('2d');
-  var w, h, pts = [];
-  function resize(){ w = c.width = window.innerWidth; h = c.height = window.innerHeight; }
+  var pts = [];
+  var count = 40;
+
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
   resize();
   window.addEventListener('resize', resize);
-  for(var i = 0; i < 40; i++){
-    pts.push({x:Math.random()*w, y:Math.random()*h, vx:(Math.random()-0.5)*0.3, vy:(Math.random()-0.5)*0.3, r:Math.random()*1.5+0.5});
+
+  for (var i = 0; i < count; i++) {
+    pts.push({
+      x: Math.random() * c.width,
+      y: Math.random() * c.height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      r: Math.random() * 1.5 + 0.5
+    });
   }
-  function draw(){
-    ctx.clearRect(0,0,w,h);
-    for(var i=0;i<pts.length;i++){
-      var p=pts[i];
-      p.x+=p.vx; p.y+=p.vy;
-      if(p.x<0)p.x=w; if(p.x>w)p.x=0;
-      if(p.y<0)p.y=h; if(p.y>h)p.y=0;
-      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
-      ctx.fillStyle='rgba(0,191,255,0.4)'; ctx.fill();
-      for(var j=i+1;j<pts.length;j++){
-        var q=pts[j], dx=p.x-q.x, dy=p.y-q.y, d=Math.sqrt(dx*dx+dy*dy);
-        if(d<120){ ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(q.x,q.y);
-          ctx.strokeStyle='rgba(0,191,255,'+(0.12*(1-d/120))+')'; ctx.stroke(); }
+
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (var i = 0; i < pts.length; i++) {
+      var p = pts[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > c.width) p.vx *= -1;
+      if (p.y < 0 || p.y > c.height) p.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0, 191, 255, 0.4)';
+      ctx.fill();
+
+      for (var j = i + 1; j < pts.length; j++) {
+        var q = pts[j];
+        var dx = p.x - q.x, dy = p.y - q.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = 'rgba(0, 191, 255, ' + (0.15 * (1 - dist / 120)) + ')';
+          ctx.stroke();
+        }
       }
     }
     requestAnimationFrame(draw);
@@ -238,125 +552,157 @@ var playerName = 'Igrac';
   draw();
 })();
 
-// CEF communication
-function cefEmit(event){
-  var args = Array.prototype.slice.call(arguments, 1);
-  try {
-    if(typeof cef !== 'undefined' && cef.emit){
-      cef.emit.apply(cef, [event].concat(args));
+// ===== CEF EVENTS =====
+// Listen for portal:init from Pawn
+if (typeof cef !== 'undefined' && cef.addEventListener) {
+  cef.addEventListener('portal:init', function(name, registered) {
+    playerName = name || 'Igrač';
+    isRegistered = (registered == 1);
+    document.getElementById('player-name-text').textContent = playerName;
+    document.getElementById('auth-player-name').textContent = playerName;
+    if (isRegistered) {
+      switchTab('login');
+    } else {
+      switchTab('register');
     }
-  } catch(e){}
+    console.log('[PORTAL] init: ' + name + ' registered=' + registered);
+  });
+
+  cef.addEventListener('portal:loginResponse', function(success, msg) {
+    showStatus(success ? 'success' : 'error', msg || (success ? 'Prijava uspješna!' : 'Pogrešna lozinka!'));
+    if (success) {
+      document.getElementById('login-pass').disabled = true;
+    } else {
+      document.getElementById('login-pass').value = '';
+    }
+    document.getElementById('login-pass').disabled = false;
+  });
+
+  cef.addEventListener('portal:registerResponse', function(success, msg) {
+    showStatus(success ? 'success' : 'error', msg || (success ? 'Registracija uspješna!' : 'Greška!'));
+    if (!success) {
+      document.getElementById('reg-pass').value = '';
+    }
+  });
 }
 
-// Listen for Pawn events
-try {
-  if(typeof cef !== 'undefined' && cef.addEventListener){
-    cef.addEventListener('portal:init', function(name, registered){
-      playerName = name || 'Igrac';
-      isRegistered = (registered == 1);
-      document.getElementById('playerNameDisplay').textContent = playerName;
-      if(isRegistered) setMode('login');
-      else setMode('register');
-    });
-    cef.addEventListener('portal:loginResponse', function(success, msg){
-      showStatus(success ? 'success' : 'error', msg || (success ? 'Prijava uspjesna!' : 'Pogresna lozinka!'));
-      if(success){
-        document.getElementById('loginPass').disabled = true;
-        document.querySelector('.submit-btn').disabled = true;
-      }
-    });
-    cef.addEventListener('portal:registerResponse', function(success, msg){
-      showStatus(success ? 'success' : 'error', msg || (success ? 'Registracija uspjesna!' : 'Greska!'));
-      if(success){
-        var btns = document.querySelectorAll('.submit-btn');
-        for(var i=0;i<btns.length;i++) btns[i].disabled = true;
-      }
-    });
-  }
-} catch(e){}
+// ===== FUNCTIONS =====
+function onPlayClick() {
+  document.getElementById('main-screen').style.display = 'none';
+  document.getElementById('auth-screen').classList.add('active');
 
-// Open auth screen
-function openAuth(){
-  document.getElementById('mainPortal').style.display = 'none';
-  document.getElementById('authOverlay').classList.add('active');
-  if(isRegistered) setMode('login');
-  else setMode('register');
-}
-
-// Set mode
-function setMode(m){
-  var overlay = document.getElementById('authOverlay');
-  var loginTab = document.getElementById('loginTab');
-  var registerTab = document.getElementById('registerTab');
-  var switchBtn = document.getElementById('switchBtn');
-  var authTitle = document.getElementById('authTitle');
-  if(m === 'login'){
-    overlay.classList.remove('reg');
-    loginTab.classList.add('active');
-    registerTab.classList.remove('active');
-    authTitle.textContent = 'DOBRODO\u0160AO NATRAG';
-    switchBtn.textContent = 'Registriraj se';
-    document.querySelector('.switch-link').innerHTML = 'Nema\u0161 ra\u010dun? <button onclick="setMode(\'register\')">Registriraj se</button>';
+  // Set mode based on registration status
+  if (isRegistered) {
+    switchTab('login');
   } else {
-    overlay.classList.add('reg');
-    registerTab.classList.add('active');
-    loginTab.classList.remove('active');
-    authTitle.textContent = 'KREIRAJ RA\u010cUN';
-    document.querySelector('.switch-link').innerHTML = 'Ima\u0161 ra\u010dun? <button onclick="setMode(\'login\')">Prijavi se</button>';
+    switchTab('register');
+  }
+
+  // Focus password input
+  setTimeout(function() {
+    var el = isRegistered ? document.getElementById('login-pass') : document.getElementById('reg-pass');
+    if (el) el.focus();
+  }, 200);
+}
+
+function switchTab(mode) {
+  currentMode = mode;
+  var loginBtn = document.getElementById('tab-login');
+  var regBtn = document.getElementById('tab-register');
+  var loginForm = document.getElementById('login-form');
+  var regForm = document.getElementById('register-form');
+  var title = document.getElementById('auth-title');
+  var switchText = document.getElementById('switch-text');
+  var switchLink = document.getElementById('switch-link');
+
+  if (mode === 'login') {
+    loginBtn.classList.add('active');
+    regBtn.classList.remove('active');
+    loginForm.classList.add('active');
+    regForm.classList.remove('active');
+    title.textContent = 'DOBRODOŠAO NATRAG';
+    switchText.textContent = 'Nemaš račun? ';
+    switchLink.textContent = 'Registriraj se';
+  } else {
+    regBtn.classList.add('active');
+    loginBtn.classList.remove('active');
+    regForm.classList.add('active');
+    loginForm.classList.remove('active');
+    title.textContent = 'KREIRAJ RAČUN';
+    switchText.textContent = 'Imaš račun? ';
+    switchLink.textContent = 'Prijavi se';
   }
   hideStatus();
 }
 
-// Toggle password
-function togglePass(id, btn){
-  var inp = document.getElementById(id);
-  if(inp.type === 'password'){ inp.type = 'text'; btn.textContent = '\u{1F648}'; }
-  else { inp.type = 'password'; btn.textContent = '\u{1F441}'; }
+function toggleMode() {
+  switchTab(currentMode === 'login' ? 'register' : 'login');
 }
 
-// Show/hide status
-function showStatus(type, msg){
-  var el = document.getElementById('statusMsg');
-  el.className = 'status-msg show ' + type;
+function showStatus(type, msg) {
+  var el = document.getElementById('status-msg');
+  el.className = 'status-msg ' + type;
   el.textContent = msg;
 }
-function hideStatus(){
-  var el = document.getElementById('statusMsg');
+function hideStatus() {
+  var el = document.getElementById('status-msg');
   el.className = 'status-msg';
 }
 
-// Login
-function doLogin(){
-  var pass = document.getElementById('loginPass').value;
-  if(!pass){ showStatus('error','Unesi lozinku!'); return; }
-  showStatus('success','Provjera...');
-  cefEmit('portal:requestLogin', pass);
+function togglePw(id) {
+  var el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
 }
 
-// Register
-function doRegister(){
-  var pass = document.getElementById('regPass').value;
-  var email = document.getElementById('regEmail').value;
-  var age = parseInt(document.getElementById('regAge').value);
-  var country = parseInt(document.getElementById('regCountry').value);
-  var gender = parseInt(document.getElementById('regGender').value);
-  if(!pass || pass.length < 6){ showStatus('error','Lozinka mora imati najmanje 6 karaktera!'); return; }
-  if(!email || email.length < 5){ showStatus('error','Unesi ispravan email!'); return; }
-  if(!age || age < 12 || age > 70){ showStatus('error','Godine moraju biti izmedju 12 i 70!'); return; }
-  if(!country){ showStatus('error','Odaberi drzavu!'); return; }
-  if(!gender){ showStatus('error','Odaberi spol!'); return; }
-  showStatus('success','Provjera...');
-  cefEmit('portal:requestRegister', pass, email, age, country, gender);
+function doLogin() {
+  var pass = document.getElementById('login-pass').value;
+  if (!pass || pass.length < 1) {
+    showStatus('error', 'Unesi lozinku!');
+    return;
+  }
+  showStatus('success', 'Provjera...');
+  document.getElementById('login-pass').disabled = true;
+
+  if (typeof cef !== 'undefined' && cef.emit) {
+    cef.emit('portal:requestLogin', pass);
+  } else {
+    // Dev mode
+    setTimeout(function() {
+      showStatus('success', 'Prijava uspješna! (dev)');
+      document.getElementById('login-pass').disabled = false;
+    }, 1000);
+  }
+}
+
+function doRegister() {
+  var pass = document.getElementById('reg-pass').value;
+  var email = document.getElementById('reg-email').value;
+  var age = parseInt(document.getElementById('reg-age').value);
+  var country = parseInt(document.getElementById('reg-country').value);
+  var gender = parseInt(document.getElementById('reg-gender').value);
+
+  if (!pass || pass.length < 6) { showStatus('error', 'Lozinka mora imati najmanje 6 karaktera!'); return; }
+  if (!email || email.length < 5) { showStatus('error', 'Unesi ispravan email!'); return; }
+  if (!age || age < 12 || age > 70) { showStatus('error', 'Godine moraju biti između 12 i 70!'); return; }
+  if (!country) { showStatus('error', 'Odaberi državu!'); return; }
+  if (!gender) { showStatus('error', 'Odaberi spol!'); return; }
+
+  showStatus('success', 'Provjera...');
+
+  if (typeof cef !== 'undefined' && cef.emit) {
+    cef.emit('portal:requestRegister', pass, email, age, country, gender);
+  } else {
+    setTimeout(function() {
+      showStatus('success', 'Registracija uspješna! (dev)');
+    }, 1000);
+  }
 }
 
 // Enter key support
-document.addEventListener('keydown', function(e){
-  if(e.key === 'Enter'){
-    var overlay = document.getElementById('authOverlay');
-    if(overlay.classList.contains('active')){
-      if(overlay.classList.contains('reg')) doRegister();
-      else doLogin();
-    }
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    if (currentMode === 'login') doLogin();
+    else doRegister();
   }
 });
 </script>
