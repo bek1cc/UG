@@ -1005,8 +1005,8 @@
         };
 
         // Inicijalizacija portala - poziva se iz PAWN-a (portal:init event)
-        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName), CEF_INT(isRegistered), CEF_STR(storedPassword))
-        window.portal_init = function(pName, registered, storedPass) {
+        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName), CEF_INT(isRegistered))
+        window.portal_init = function(pName, registered) {
             playerName = pName || '';
             isRegistered = (registered === 1 || registered === true);
 
@@ -1033,8 +1033,8 @@
 
         // Register CEF event listener for portal:init (omp-cef uses cef.on() for PAWN->JS events)
         if (typeof cef !== 'undefined' && cef.on) {
-            cef.on('portal:init', function(pName, registered, storedPass) {
-                window.portal_init(pName, registered, storedPass);
+            cef.on('portal:init', function(pName, registered) {
+                window.portal_init(pName, registered);
             });
 
             cef.on('portal:loginResponse', function(success, message) {

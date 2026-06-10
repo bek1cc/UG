@@ -31,17 +31,22 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
         {
                 printf("[CEF-PORTAL] Portal browser created successfully for player %d", playerid);
 
-                // Send player info to portal JS - playerName, isRegistered, storedPassword
+                // Send player info to portal JS - playerName and isRegistered
+                // NE SALJEMO LOZINKU klijentu - sigurnosni razlog!
                 new playerName[MAX_PLAYER_NAME];
                 GetPlayerName(playerid, playerName, sizeof(playerName));
 
-                new isRegistered = PlayerInfo[playerid][xRegistrovan];
+                // Ponovo ucitaj account da osiguramo da je xRegistrovan i xLozinka tacan
+                ManualReadAccount(playerid);
 
-                // Posalji ime, da li je registrovan, i lozinku (za login validaciju)
+                new isRegistered = PlayerInfo[playerid][xRegistrovan];
+                printf("[CEF-PORTAL] Player %d: isRegistered=%d, storedPassLen=%d",
+                        playerid, isRegistered, strlen(PlayerInfo[playerid][xLozinka]));
+
+                // Posalji samo ime i da li je registrovan - BEZ lozinke!
                 CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:init",
                         CEF_STR(playerName),
-                        CEF_INT(isRegistered),
-                        CEF_STR(PlayerInfo[playerid][xLozinka]));
+                        CEF_INT(isRegistered));
 
                 // Focus the portal so player can type in login fields
                 CEF_FocusBrowser(playerid, CEF_PORTAL_BROWSER_ID, true);
@@ -77,10 +82,25 @@ public OnCefPortalLogin(playerid, const password[])
 {
         printf("[CEF-PORTAL] Login attempt from player %d, password length: %d", playerid, strlen(password));
 
-        // Validiraj lozinku
-        if(isnull(password) || strcmp(password, PlayerInfo[playerid][xLozinka], false) != 0)
+        // PONOWO UCITAJ ACCOUNT IZ FAJLA - osigurava da je xLozinka tacan
+        ManualReadAccount(playerid);
+
+        printf("[CEF-PORTAL] After re-read: storedPassLen=%d, xRegistrovan=%d",
+                strlen(PlayerInfo[playerid][xLozinka]), PlayerInfo[playerid][xRegistrovan]);
+
+        // Validiraj lozinku - koristimo strcmp sa false (case-insensitive)
+        if(isnull(password))
         {
-                printf("[CEF-PORTAL] Wrong password for player %d", playerid);
+                printf("[CEF-PORTAL] Empty password from player %d", playerid);
+                CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:loginResponse",
+                        CEF_BOOL(false), CEF_STR("Lozinka ne moze biti prazna!"));
+                return 1;
+        }
+
+        if(strcmp(password, PlayerInfo[playerid][xLozinka], false) != 0)
+        {
+                printf("[CEF-PORTAL] Wrong password for player %d (typed='%s', stored='%s')",
+                        playerid, password, PlayerInfo[playerid][xLozinka]);
                 // Posalji gresku nazad u portal JS
                 CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:loginResponse",
                         CEF_BOOL(false), CEF_STR("Pogresna lozinka! Pokusaj ponovo."));
