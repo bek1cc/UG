@@ -34,7 +34,7 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
                 new playerName[MAX_PLAYER_NAME];
                 GetPlayerName(playerid, playerName, sizeof(playerName));
 
-                // Ponovo ucitaj account - koristi ManualReadAccount iz fg-ogc.pwn
+                // Ucitaj account podatke
                 ManualReadAccount(playerid);
 
                 new isRegistered = PlayerInfo[playerid][xRegistrovan];
@@ -56,7 +56,7 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
                 CEF_FocusBrowser(playerid, CEF_PORTAL_BROWSER_ID, true);
 
                 // =====================================================
-                // PRIKAZI SA-MP DIALOG ZA UNOS - CEF input ne radi!
+                // PRIKAZI SA-MP DIALOG ZA UNOS - CEF input ne radi
                 // SA-MP dialog UVIJEK prima tastaturu ispravno
                 // =====================================================
                 if(isRegistered)
@@ -71,7 +71,10 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
                 }
                 else
                 {
-                        // REGISTER - prikazi dialog za lozinku
+                        // REGISTER - prikazi dialog za lozinku (prvi korak)
+                        // Emituj portal:registerStep da CEF prikaze trenutni korak
+                        CEF_EmitEvent(playerid, CEF_PORTAL_BROWSER_ID, "portal:registerStep", CEF_INT(1));
+
                         new regStr[256];
                         format(regStr, sizeof(regStr),
                                 "{FFFFFF}Zdravo, {0074c2}%s{FFFFFF}!\n\nIzaberi lozinku za svoj nalog.\n{FF0000}Napomena:{FFFFFF} Lozinka mora imati minimalno 6 karaktera.",
@@ -84,17 +87,50 @@ stock CefPortal_OnBrowserCreated(playerid, browserid)
 
 stock CefPortal_InitSubscriptions()
 {
-        // Eventi vise nisu potrebni za login/register - koristimo SA-MP dialog
-        // Ostavljamo za mogucu buducu upotrebu
+        // Eventi za CEF portal - registriramo samo za buducu upotrebu
+        // Trenutno se ne koriste za login/register (koristimo SA-MP dialog)
+        // Ali registrujemo ih da bi cef.emit() sa JS strane imao gdje stici
+        CEF_RegisterEvent("portal:requestLogin", "OnCefPortalRequestLogin");
+        CEF_RegisterEvent("portal:requestRegister", "OnCefPortalRequestRegister");
 }
 
 stock CefPortal_OnGameModeInit()
 {
         CEF_AddResource("portal");
         CefPortal_InitSubscriptions();
+        printf("[CEF-PORTAL] Resource registered + events: portal -> scriptfiles/cef/portal/");
 }
 
 stock CefPortal_OnPlayerDisconnect(playerid)
 {
         PortalOpen[playerid] = false;
+}
+
+// ===== Callback funkcije za CEF evente =====
+forward OnCefPortalRequestLogin(playerid);
+public OnCefPortalRequestLogin(playerid)
+{
+        // Igrac je kliknuo "Prijava" u CEF portalu - prikazi SA-MP dialog
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
+        new loginStr[256];
+        format(loginStr, sizeof(loginStr),
+                "{FFFFFF}Dobrodosao nazad, {0074c2}%s{FFFFFF}!\n\nUnesi svoju lozinku da bi nastavio.",
+                playerName);
+        ShowPlayerDialog(playerid, dialog_CEF_LOGIN, DIALOG_STYLE_PASSWORD,
+                "{0074c2}UG GAMING - Prijava", loginStr, "Prijava", "Izlaz");
+}
+
+forward OnCefPortalRequestRegister(playerid);
+public OnCefPortalRequestRegister(playerid)
+{
+        // Igrac je kliknuo "Registracija" u CEF portalu - prikazi SA-MP dialog
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
+        new regStr[256];
+        format(regStr, sizeof(regStr),
+                "{FFFFFF}Zdravo, {0074c2}%s{FFFFFF}!\n\nIzaberi lozinku za svoj nalog.\n{FF0000}Napomena:{FFFFFF} Lozinka mora imati minimalno 6 karaktera.",
+                playerName);
+        ShowPlayerDialog(playerid, dialog_CEF_REGISTER, DIALOG_STYLE_INPUT,
+                "{0074c2}UG GAMING - Registracija", regStr, "Nastavi", "Izlaz");
 }

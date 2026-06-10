@@ -62,16 +62,15 @@ stock CefAmenu_OnBrowserCreated(playerid, browserid)
                 // Posalji podatke o target igracu
                 new targetName[MAX_PLAYER_NAME];
                 GetPlayerName(targetid, targetName, sizeof(targetName));
-                CEF_EmitEvent(playerid, CEF_AMENU_BROWSER_ID, "amenu:open",
-                        CEF_INT(targetid),
+                CEF_EmitEvent(playerid, CEF_AMENU_BROWSER_ID, "amenu:init",
                         CEF_STR(targetName),
                         CEF_INT(PlayerInfo[targetid][xLevel]),
                         CEF_INT(PlayerInfo[targetid][xNovac] + PlayerInfo[targetid][xBRacun]));
         }
         else
         {
-                CEF_EmitEvent(playerid, CEF_AMENU_BROWSER_ID, "amenu:open",
-                        CEF_INT(targetid), CEF_STR("Unknown"), CEF_INT(0), CEF_INT(0));
+                CEF_EmitEvent(playerid, CEF_AMENU_BROWSER_ID, "amenu:init",
+                        CEF_STR("Unknown"), CEF_INT(0), CEF_INT(0));
         }
 
         // Resetuj targetid

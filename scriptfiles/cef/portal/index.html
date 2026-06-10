@@ -144,7 +144,7 @@
             letter-spacing: 1px;
         }
 
-        /* Portal card */
+        /* Portal card - visual only, no input forms */
         .portal-card {
             width: 440px;
             background: rgba(12, 14, 26, 0.85);
@@ -190,279 +190,144 @@
         /* Welcome text */
         .welcome-text {
             text-align: center;
-            margin-bottom: 8px;
+            margin-bottom: 24px;
         }
 
         .welcome-text .player-name {
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 700;
             color: #00b4ff;
             letter-spacing: 1px;
         }
 
         .welcome-text .welcome-sub {
-            font-size: 13px;
+            font-size: 14px;
             color: rgba(255, 255, 255, 0.4);
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
-        /* Tab navigation */
-        .tab-nav {
+        /* Status section */
+        .status-section {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .status-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
             display: flex;
-            gap: 0;
-            margin-bottom: 28px;
-            margin-top: 20px;
-            position: relative;
+            align-items: center;
+            justify-content: center;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 12px 0;
-            background: transparent;
-            border: none;
-            color: rgba(255, 255, 255, 0.4);
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
+        .status-icon.login {
+            background: rgba(0, 180, 255, 0.1);
+            border: 2px solid rgba(0, 180, 255, 0.3);
         }
 
-        .tab-btn:hover {
-            color: rgba(255, 255, 255, 0.7);
+        .status-icon.register {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
         }
 
-        .tab-btn.active {
-            color: #00b4ff;
+        .status-icon.success {
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid rgba(0, 255, 136, 0.3);
+            animation: pulseGlow 2s ease-in-out infinite;
         }
 
-        .tab-indicator {
-            position: absolute;
-            bottom: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #00b4ff, #03cec2);
-            transition: all 0.3s ease;
-            border-radius: 2px;
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 136, 0.4); }
         }
 
-        /* Form styles */
-        .form-container {
-            position: relative;
-            min-height: 100px;
+        .status-icon svg {
+            width: 28px;
+            height: 28px;
         }
 
-        .form-panel {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .form-panel.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group label {
-            display: block;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            font-size: 13px;
-            font-weight: 600;
+        .status-title {
+            font-size: 18px;
+            font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.5);
             margin-bottom: 8px;
         }
 
-        .input-wrapper {
-            position: relative;
+        .status-title.login {
+            color: #00b4ff;
         }
 
-        .input-wrapper .icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 18px;
-            height: 18px;
-            opacity: 0.3;
+        .status-title.register {
+            color: #00ff88;
         }
 
-        .form-input, .form-select {
-            width: 100%;
-            padding: 14px 16px 14px 44px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            color: #ffffff;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            font-size: 14px;
-            transition: all 0.3s ease;
-            outline: none;
-            -webkit-appearance: none;
-            appearance: none;
+        .status-title.success {
+            color: #00ff88;
         }
 
-        .form-select {
-            cursor: pointer;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
+        .status-message {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+            max-width: 320px;
+            margin: 0 auto;
         }
 
-        .form-select option {
-            background: #0c0e1a;
-            color: #ffffff;
+        /* Progress dots */
+        .progress-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 24px;
         }
 
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.2);
-        }
-
-        .form-input:focus, .form-select:focus {
-            border-color: rgba(0, 180, 255, 0.5);
-            background: rgba(0, 180, 255, 0.04);
-            box-shadow: 0 0 20px rgba(0, 180, 255, 0.1);
-        }
-
-        .form-input.error, .form-select.error {
-            border-color: rgba(239, 16, 51, 0.5);
-            box-shadow: 0 0 20px rgba(239, 16, 51, 0.1);
-        }
-
-        .form-input:read-only {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        /* Error message */
-        .error-msg {
-            font-size: 12px;
-            color: #ef1021;
-            margin-top: 6px;
-            display: none;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .error-msg.visible {
-            display: block;
-        }
-
-        /* Submit button */
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #00b4ff, #0090d0);
-            border: none;
-            border-radius: 10px;
-            color: #ffffff;
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            margin-top: 8px;
-        }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0, 180, 255, 0.3);
-        }
-
-        .submit-btn:hover::before {
-            left: 100%;
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .submit-btn.loading {
-            pointer-events: none;
-            opacity: 0.7;
-        }
-
-        .submit-btn.loading::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border: 2px solid transparent;
-            border-top: 2px solid #ffffff;
+        .progress-dot {
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: #00b4ff;
+            box-shadow: 0 0 10px rgba(0, 180, 255, 0.5);
+        }
+
+        .progress-dot.done {
+            background: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        /* Loading spinner */
+        .spinner-container {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(0, 180, 255, 0.2);
+            border-top: 3px solid #00b4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
         }
 
         @keyframes spin {
-            0% { transform: translateY(-50%) rotate(0deg); }
-            100% { transform: translateY(-50%) rotate(360deg); }
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        /* Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            margin: 24px 0;
-            gap: 16px;
-        }
-
-        .divider-line {
-            flex: 1;
-            height: 1px;
-            background: rgba(255, 255, 255, 0.08);
-        }
-
-        .divider-text {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.25);
-            letter-spacing: 2px;
+        .loading-text {
+            font-size: 12px;
+            letter-spacing: 3px;
             text-transform: uppercase;
-        }
-
-        /* Footer links */
-        .portal-footer {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .portal-footer a {
-            color: rgba(0, 180, 255, 0.6);
-            text-decoration: none;
-            font-size: 13px;
-            letter-spacing: 1px;
-            transition: color 0.3s ease;
-        }
-
-        .portal-footer a:hover {
-            color: #00b4ff;
+            color: rgba(255, 255, 255, 0.4);
         }
 
         /* Server status */
@@ -539,70 +404,68 @@
             color: #00ff88;
         }
 
-        /* Password visibility toggle */
-        .toggle-password {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            padding: 4px;
-            transition: color 0.2s;
+        .toast.info {
+            background: rgba(0, 180, 255, 0.1);
+            border: 1px solid rgba(0, 180, 255, 0.3);
+            color: #00b4ff;
         }
 
-        .toggle-password:hover {
-            color: rgba(255, 255, 255, 0.6);
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 16px;
         }
 
-        /* Loading state for form */
-        .form-loading {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(12, 14, 26, 0.9);
-            z-index: 50;
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .divider-text {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Steps info for registration */
+        .steps-info {
+            text-align: left;
+            margin-top: 16px;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .step-item .step-num {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(0, 180, 255, 0.1);
+            border: 1px solid rgba(0, 180, 255, 0.3);
+            display: flex;
             align-items: center;
             justify-content: center;
-            flex-direction: column;
-            gap: 16px;
-            border-radius: 16px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #00b4ff;
+            flex-shrink: 0;
         }
 
-        .form-loading.visible {
-            display: flex;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(0, 180, 255, 0.2);
-            border-top: 3px solid #00b4ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            font-family: 'Segoe UI', -apple-system, sans-serif;
-            font-size: 14px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Form row (two columns) */
-        .form-row {
-            display: flex;
-            gap: 12px;
-        }
-
-        .form-row .form-group {
-            flex: 1;
+        .step-item.completed .step-num {
+            background: rgba(0, 255, 136, 0.1);
+            border-color: rgba(0, 255, 136, 0.3);
+            color: #00ff88;
         }
     </style>
 </head>
@@ -626,160 +489,65 @@
             </div>
         </div>
 
-        <!-- Portal card -->
+        <!-- Portal card - visual only -->
         <div class="portal-card">
             <!-- Welcome text -->
             <div class="welcome-text">
                 <div class="player-name" id="displayName">Dobrodosao</div>
-                <div class="welcome-sub" id="welcomeSub">Unesi podatke da nastavis</div>
+                <div class="welcome-sub" id="welcomeSub">Povezivanje na server...</div>
             </div>
 
-            <!-- Tab navigation -->
-            <div class="tab-nav" id="tabNav">
-                <button class="tab-btn active" data-tab="login" onclick="switchTab('login')">Prijava</button>
-                <button class="tab-btn" data-tab="register" onclick="switchTab('register')">Registracija</button>
-                <div class="tab-indicator" id="tabIndicator"></div>
-            </div>
-
-            <!-- Login form - SAMO LOZINKA -->
-            <div class="form-panel active" id="loginPanel">
-                <form onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label>Lozinka</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input type="password" class="form-input" id="loginPassword" placeholder="Unesi lozinku" autocomplete="off" maxlength="64">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="error-msg" id="loginPasswordError"></div>
-                    </div>
-
-                    <button type="submit" class="submit-btn" id="loginBtn">
-                        Prijavi se
-                    </button>
-                </form>
-
-                <div class="divider">
-                    <div class="divider-line"></div>
-                    <span class="divider-text">ili</span>
-                    <div class="divider-line"></div>
+            <!-- Login status -->
+            <div id="loginStatus" class="status-section">
+                <div class="status-icon login" id="statusIcon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
                 </div>
-
-                <div class="portal-footer">
-                    <a href="#" onclick="switchTab('register')">Nemas nalog? Registruj se</a>
+                <div class="status-title login" id="statusTitle">Prijava</div>
+                <div class="status-message" id="statusMessage">
+                    Unesi svoju lozinku u dialog koji se pojavio na ekranu.
                 </div>
             </div>
 
-            <!-- Register form - LOZINKA, EMAIL, GODINE, DRZAVA, SPOL -->
-            <div class="form-panel" id="registerPanel">
-                <form onsubmit="handleRegister(event)">
-                    <div class="form-group">
-                        <label>Lozinka</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                            </svg>
-                            <input type="password" class="form-input" id="regPassword" placeholder="Izaberi lozinku (min. 6 karaktera)" autocomplete="off" maxlength="64">
-                            <button type="button" class="toggle-password" onclick="togglePasswordVisibility('regPassword', this)">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="error-msg" id="regPasswordError"></div>
+            <!-- Registration steps -->
+            <div id="registerSteps" style="display: none;">
+                <div class="steps-info">
+                    <div class="step-item" id="step1">
+                        <span class="step-num">1</span>
+                        <span>Lozinka</span>
                     </div>
-
-                    <div class="form-group">
-                        <label>Email</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                <polyline points="22,6 12,13 2,6"/>
-                            </svg>
-                            <input type="email" class="form-input" id="regEmail" placeholder="Unesi email adresu" autocomplete="off" maxlength="64">
-                        </div>
-                        <div class="error-msg" id="regEmailError"></div>
+                    <div class="step-item" id="step2">
+                        <span class="step-num">2</span>
+                        <span>Email adresa</span>
                     </div>
-
-                    <div class="form-group">
-                        <label>Godine</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <polyline points="12,6 12,12 16,14"/>
-                            </svg>
-                            <input type="number" class="form-input" id="regGodine" placeholder="Tvoje godine (12-70)" min="12" max="70" autocomplete="off">
-                        </div>
-                        <div class="error-msg" id="regGodineError"></div>
+                    <div class="step-item" id="step3">
+                        <span class="step-num">3</span>
+                        <span>Godine</span>
                     </div>
-
-                    <div class="form-group">
-                        <label>Drzava</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <line x1="2" y1="12" x2="22" y2="12"/>
-                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                            </svg>
-                            <select class="form-select" id="regDrzava">
-                                <option value="" disabled selected>Izaberi drzavu</option>
-                                <option value="3">Bosna i Hercegovina</option>
-                                <option value="1">Srbija</option>
-                                <option value="2">Hrvatska</option>
-                                <option value="4">Crna Gora</option>
-                                <option value="5">Makedonija</option>
-                                <option value="6">Ostalo</option>
-                            </select>
-                        </div>
-                        <div class="error-msg" id="regDrzavaError"></div>
+                    <div class="step-item" id="step4">
+                        <span class="step-num">4</span>
+                        <span>Drzava</span>
                     </div>
-
-                    <div class="form-group">
-                        <label>Spol</label>
-                        <div class="input-wrapper">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                            <select class="form-select" id="regSpol">
-                                <option value="" disabled selected>Izaberi spol</option>
-                                <option value="1">Musko</option>
-                                <option value="2">Zensko</option>
-                            </select>
-                        </div>
-                        <div class="error-msg" id="regSpolError"></div>
+                    <div class="step-item" id="step5">
+                        <span class="step-num">5</span>
+                        <span>Spol</span>
                     </div>
-
-                    <button type="submit" class="submit-btn" id="registerBtn">
-                        Registruj se
-                    </button>
-                </form>
-
-                <div class="divider">
-                    <div class="divider-line"></div>
-                    <span class="divider-text">ili</span>
-                    <div class="divider-line"></div>
-                </div>
-
-                <div class="portal-footer">
-                    <a href="#" onclick="switchTab('login')">Vec imas nalog? Prijavi se</a>
                 </div>
             </div>
 
-            <!-- Loading overlay -->
-            <div class="form-loading" id="formLoading">
+            <!-- Loading spinner -->
+            <div id="spinnerSection" class="spinner-container" style="display: none;">
                 <div class="loading-spinner"></div>
-                <div class="loading-text">Obrada...</div>
+                <div class="loading-text" id="spinnerText">Obrada...</div>
+            </div>
+
+            <!-- Progress dots -->
+            <div class="progress-dots" id="progressDots">
+                <div class="progress-dot active" id="dot1"></div>
+                <div class="progress-dot" id="dot2"></div>
+                <div class="progress-dot" id="dot3"></div>
             </div>
         </div>
     </div>
@@ -791,7 +559,7 @@
     </div>
 
     <!-- Version -->
-    <div class="version-tag">v2.1</div>
+    <div class="version-tag">v2.2</div>
 
     <!-- Toast notifications -->
     <div class="toast" id="toast"></div>
@@ -800,212 +568,55 @@
         // ===== Global State =====
         var isRegistered = false;
         var playerName = '';
-
-        // ===== Tab Switching =====
-        function switchTab(tab) {
-            var loginBtn = document.querySelector('[data-tab="login"]');
-            var registerBtn = document.querySelector('[data-tab="register"]');
-            var loginPanel = document.getElementById('loginPanel');
-            var registerPanel = document.getElementById('registerPanel');
-            var indicator = document.getElementById('tabIndicator');
-
-            // Clear errors
-            clearErrors();
-
-            if (tab === 'login') {
-                loginBtn.classList.add('active');
-                registerBtn.classList.remove('active');
-                loginPanel.classList.add('active');
-                registerPanel.classList.remove('active');
-                indicator.style.left = '0';
-                indicator.style.width = loginBtn.offsetWidth + 'px';
-            } else {
-                registerBtn.classList.add('active');
-                loginBtn.classList.remove('active');
-                registerPanel.classList.add('active');
-                loginPanel.classList.remove('active');
-                indicator.style.left = loginBtn.offsetWidth + 'px';
-                indicator.style.width = registerBtn.offsetWidth + 'px';
-            }
-        }
-
-        // Initialize tab indicator
-        window.addEventListener('load', function() {
-            var loginBtn = document.querySelector('[data-tab="login"]');
-            var indicator = document.getElementById('tabIndicator');
-            indicator.style.left = '0';
-            indicator.style.width = loginBtn.offsetWidth + 'px';
-
-            // Focus password field for login
-            setTimeout(function() {
-                document.getElementById('loginPassword').focus();
-            }, 500);
-        });
-
-        // ===== Password Visibility Toggle =====
-        function togglePasswordVisibility(inputId, btn) {
-            var input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
-            } else {
-                input.type = 'password';
-                btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-            }
-        }
-
-        // ===== Form Validation =====
-        function validatePassword(value) {
-            if (!value || value.length < 6) return 'Lozinka mora imati najmanje 6 karaktera';
-            if (value.length > 64) return 'Lozinka ne moze biti duza od 64 karaktera';
-            return null;
-        }
-
-        function validateEmail(value) {
-            if (!value || value.length === 0) return 'Email je obavezan';
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return 'Unesi ispravnu email adresu';
-            return null;
-        }
-
-        function validateGodine(value) {
-            var age = parseInt(value);
-            if (!value || isNaN(age)) return 'Unesi tvoje godine';
-            if (age < 12 || age > 70) return 'Godine moraju biti izmedju 12 i 70';
-            return null;
-        }
-
-        function validateDrzava(value) {
-            if (!value) return 'Izaberi drzavu';
-            return null;
-        }
-
-        function validateSpol(value) {
-            if (!value) return 'Izaberi spol';
-            return null;
-        }
-
-        function showError(elementId, message) {
-            var el = document.getElementById(elementId);
-            el.textContent = message;
-            el.classList.add('visible');
-            var input = el.previousElementSibling ? el.previousElementSibling.querySelector('.form-input, .form-select') : null;
-            if (!input) input = el.parentElement.querySelector('.form-input, .form-select');
-            if (input) input.classList.add('error');
-        }
-
-        function clearErrors() {
-            var errors = document.querySelectorAll('.error-msg');
-            for (var i = 0; i < errors.length; i++) {
-                errors[i].textContent = '';
-                errors[i].classList.remove('visible');
-            }
-            var inputs = document.querySelectorAll('.form-input, .form-select');
-            for (var j = 0; j < inputs.length; j++) {
-                inputs[j].classList.remove('error');
-            }
-        }
+        var currentStep = 0; // 0=none, 1-5=registration steps, 6=success
 
         // ===== Toast Notification =====
         function showToast(message, type) {
             var toast = document.getElementById('toast');
             toast.textContent = message;
-            toast.className = 'toast ' + (type || 'error') + ' visible';
+            toast.className = 'toast ' + (type || 'info') + ' visible';
             setTimeout(function() {
                 toast.classList.remove('visible');
             }, 4000);
         }
 
-        // ===== Set Loading State =====
-        function setLoading(loading) {
-            var overlay = document.getElementById('formLoading');
-            if (loading) {
-                overlay.classList.add('visible');
-            } else {
-                overlay.classList.remove('visible');
+        // ===== Update Progress Dots =====
+        function updateProgress(step) {
+            currentStep = step;
+            for (var i = 1; i <= 3; i++) {
+                var dot = document.getElementById('dot' + i);
+                dot.className = 'progress-dot';
+                if (i <= step) dot.classList.add('done');
+                if (i === step) dot.classList.add('active');
             }
         }
 
-        // ===== Login Handler - SAMO LOZINKA =====
-        function handleLogin(e) {
-            e.preventDefault();
-            clearErrors();
-
-            var password = document.getElementById('loginPassword').value;
-
-            var passwordErr = validatePassword(password);
-            if (passwordErr) { showError('loginPasswordError', passwordErr); return; }
-
-            setLoading(true);
-            // Emituj event ka PAWN-u - samo lozinka
-            if (typeof cef !== 'undefined' && cef.emit) {
-                cef.emit('portal:loginAttempt', password);
-            } else {
-                console.log('[DEV] Login attempt, password length: ' + password.length);
-                setTimeout(function() { setLoading(false); showToast('Development mode', 'error'); }, 1500);
+        // ===== Mark Registration Step =====
+        function markStep(stepNum, completed) {
+            var step = document.getElementById('step' + stepNum);
+            if (step) {
+                if (completed) {
+                    step.classList.add('completed');
+                } else {
+                    step.classList.remove('completed');
+                }
             }
         }
 
-        // ===== Register Handler - LOZINKA, EMAIL, GODINE, DRZAVA, SPOL =====
-        function handleRegister(e) {
-            e.preventDefault();
-            clearErrors();
-
-            var password = document.getElementById('regPassword').value;
-            var email = document.getElementById('regEmail').value.trim();
-            var godine = document.getElementById('regGodine').value;
-            var drzava = document.getElementById('regDrzava').value;
-            var spol = document.getElementById('regSpol').value;
-
-            var hasError = false;
-            var passwordErr = validatePassword(password);
-            if (passwordErr) { showError('regPasswordError', passwordErr); hasError = true; }
-            var emailErr = validateEmail(email);
-            if (emailErr) { showError('regEmailError', emailErr); hasError = true; }
-            var godineErr = validateGodine(godine);
-            if (godineErr) { showError('regGodineError', godineErr); hasError = true; }
-            var drzavaErr = validateDrzava(drzava);
-            if (drzavaErr) { showError('regDrzavaError', drzavaErr); hasError = true; }
-            var spolErr = validateSpol(spol);
-            if (spolErr) { showError('regSpolError', spolErr); hasError = true; }
-
-            if (hasError) return;
-
-            setLoading(true);
-            // Emituj event ka PAWN-u - lozinka, email, godine, drzava, spol
-            if (typeof cef !== 'undefined' && cef.emit) {
-                cef.emit('portal:registerAttempt', password, email, parseInt(godine), parseInt(drzava), parseInt(spol));
-            } else {
-                console.log('[DEV] Register attempt: pass=' + password.length + ', email=' + email + ', god=' + godine + ', drz=' + drzava + ', spol=' + spol);
-                setTimeout(function() { setLoading(false); showToast('Development mode', 'error'); }, 1500);
-            }
+        // ===== Show/Hide Spinner =====
+        function showSpinner(text) {
+            document.getElementById('spinnerText').textContent = text || 'Obrada...';
+            document.getElementById('spinnerSection').style.display = 'block';
         }
 
-        // ===== CEF Event Handlers (poziva PAWN preko omp-cef emit) =====
+        function hideSpinner() {
+            document.getElementById('spinnerSection').style.display = 'none';
+        }
 
-        // Login odgovor od servera
-        window.portal_loginResponse = function(success, message) {
-            setLoading(false);
-            if (success) {
-                showToast('Prijava uspjesna! Dobrodosao natrag.', 'success');
-            } else {
-                showToast(message || 'Pogresna lozinka. Pokusaj ponovo.', 'error');
-                document.getElementById('loginPassword').value = '';
-                document.getElementById('loginPassword').focus();
-            }
-        };
+        // ===== CEF Event Handlers =====
 
-        // Register odgovor od servera
-        window.portal_registerResponse = function(success, message) {
-            setLoading(false);
-            if (success) {
-                showToast('Registracija uspjesna! Dobrodosao na server.', 'success');
-            } else {
-                showToast(message || 'Registracija nije uspjela. Pokusaj ponovo.', 'error');
-            }
-        };
-
-        // Inicijalizacija portala - poziva se iz PAWN-a (portal:init event)
-        // PAWN salje: CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName), CEF_INT(isRegistered))
+        // Inicijalizacija portala - poziva se iz PAWN-a
+        // CEF_EmitEvent(playerid, browserid, "portal:init", CEF_STR(playerName), CEF_INT(isRegistered))
         window.portal_init = function(pName, registered) {
             playerName = pName || '';
             isRegistered = (registered === 1 || registered === true);
@@ -1016,22 +627,105 @@
                 displayName.textContent = playerName.replace(/_/g, ' ');
             }
 
-            // Ako je registrovan - prikazi login (samo lozinka)
-            // Ako nije - prikazi register
+            var statusTitle = document.getElementById('statusTitle');
+            var statusMessage = document.getElementById('statusMessage');
+            var statusIcon = document.getElementById('statusIcon');
+            var registerSteps = document.getElementById('registerSteps');
+
             if (isRegistered) {
+                // LOGIN - prikazi status za prijavu
                 document.getElementById('welcomeSub').textContent = 'Unesi lozinku da se ulogujes';
-                switchTab('login');
-                // Sakrij tab navigaciju - samo login
-                document.getElementById('tabNav').style.display = 'flex';
+                statusTitle.textContent = 'Prijava';
+                statusTitle.className = 'status-title login';
+                statusMessage.textContent = 'Unesi svoju lozinku u dialog koji se pojavio na ekranu.';
+                statusIcon.className = 'status-icon login';
+                statusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#00b4ff" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+                registerSteps.style.display = 'none';
+                updateProgress(1);
             } else {
+                // REGISTER - prikazi korake registracije
                 document.getElementById('welcomeSub').textContent = 'Popuni podatke za registraciju';
-                switchTab('register');
-                // Sakrij tab navigaciju - samo register
-                document.getElementById('tabNav').style.display = 'flex';
+                statusTitle.textContent = 'Registracija';
+                statusTitle.className = 'status-title register';
+                statusMessage.textContent = 'Slijedi korake u dialogima za registraciju naloga.';
+                statusIcon.className = 'status-icon register';
+                statusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+                registerSteps.style.display = 'block';
+                updateProgress(1);
             }
         };
 
-        // Register CEF event listener for portal:init (omp-cef uses cef.on() for PAWN->JS events)
+        // Login odgovor od servera
+        window.portal_loginResponse = function(success, message) {
+            if (success) {
+                // Uspjesna prijava
+                var statusTitle = document.getElementById('statusTitle');
+                var statusMessage = document.getElementById('statusMessage');
+                var statusIcon = document.getElementById('statusIcon');
+
+                statusTitle.textContent = 'Dobrodosao!';
+                statusTitle.className = 'status-title success';
+                statusMessage.textContent = 'Prijava uspjesna! Uskoro ces biti spawnan...';
+                statusIcon.className = 'status-icon success';
+                statusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+
+                updateProgress(3);
+                showToast('Prijava uspjesna! Dobrodosao natrag.', 'success');
+            } else {
+                showToast(message || 'Pogresna lozinka. Pokusaj ponovo.', 'error');
+                updateProgress(1);
+            }
+        };
+
+        // Register korak update - poziva se iz PAWN-a kada igrac predje na sljedeci korak
+        window.portal_registerStep = function(step) {
+            // step: 1=lozinka, 2=email, 3=godine, 4=drzava, 5=spol
+            for (var i = 1; i < step; i++) {
+                markStep(i, true);
+            }
+            markStep(step, false);
+
+            // Update progress dots (map 5 steps to 3 dots)
+            var dotStep = Math.ceil(step / 2);
+            if (dotStep > 3) dotStep = 3;
+            updateProgress(dotStep);
+
+            var statusMessage = document.getElementById('statusMessage');
+            var messages = {
+                1: 'Unesi lozinku u dialog (min. 6 karaktera).',
+                2: 'Unesi svoju email adresu.',
+                3: 'Unesi svoje godine (12-70).',
+                4: 'Izaberi svoju drzavu.',
+                5: 'Izaberi svoj spol.'
+            };
+            statusMessage.textContent = messages[step] || 'Slijedi uputstva u dialogu.';
+        };
+
+        // Register odgovor od servera
+        window.portal_registerResponse = function(success, message) {
+            if (success) {
+                var statusTitle = document.getElementById('statusTitle');
+                var statusMessage = document.getElementById('statusMessage');
+                var statusIcon = document.getElementById('statusIcon');
+
+                statusTitle.textContent = 'Registracija zavrsena!';
+                statusTitle.className = 'status-title success';
+                statusMessage.textContent = 'Dobrodosao na UG Gaming! Uskoro ces biti spawnan...';
+                statusIcon.className = 'status-icon success';
+                statusIcon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+
+                // Mark all steps as completed
+                for (var i = 1; i <= 5; i++) {
+                    markStep(i, true);
+                }
+                updateProgress(3);
+                showToast('Registracija uspjesna! Dobrodosao na server.', 'success');
+            } else {
+                showToast(message || 'Registracija nije uspjela. Pokusaj ponovo.', 'error');
+            }
+        };
+
+        // Register CEF event listeners (omp-cef uses cef.on() for PAWN->JS events)
         if (typeof cef !== 'undefined' && cef.on) {
             cef.on('portal:init', function(pName, registered) {
                 window.portal_init(pName, registered);
@@ -1041,17 +735,14 @@
                 window.portal_loginResponse(success, message);
             });
 
+            cef.on('portal:registerStep', function(step) {
+                window.portal_registerStep(step);
+            });
+
             cef.on('portal:registerResponse', function(success, message) {
                 window.portal_registerResponse(success, message);
             });
         }
-
-        // ===== Keyboard shortcuts =====
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab' && !e.shiftKey) {
-                // Let default tab behavior work for form navigation
-            }
-        });
     </script>
 </body>
 </html>

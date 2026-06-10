@@ -51,10 +51,17 @@ stock CefTablet_OnBrowserCreated(playerid, browserid)
         CEF_FocusBrowser(playerid, CEF_TABLET_BROWSER_ID, true);
 
         // Posalji init podatke tabletu
+        // HTML ocekuje: tablet:init(name, battery, money, score, online, phone)
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
+        new onlinePlayers = 0;
+        for(new i = 0; i < MAX_PLAYERS; i++) { if(IsPlayerConnected(i)) onlinePlayers++; }
         CEF_EmitEvent(playerid, CEF_TABLET_BROWSER_ID, "tablet:init",
-                CEF_STR(PlayerInfo[playerid][xLozinka]),
+                CEF_STR(playerName),
+                CEF_INT(100),
                 CEF_INT(PlayerInfo[playerid][xNovac]),
                 CEF_INT(PlayerInfo[playerid][xLevel]),
+                CEF_INT(onlinePlayers),
                 CEF_INT(PlayerInfo[playerid][xBrojTelefona]));
 }
 

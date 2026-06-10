@@ -63,11 +63,15 @@ stock CefPhone_OnBrowserCreated(playerid, browserid)
         CEF_FocusBrowser(playerid, CEF_PHONE_BROWSER_ID, true);
 
         // Posalji init podatke telefonu
+        // HTML ocekuje: phone:init(playerName, phoneNumber, money, battery)
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
         new phoneNumber = PlayerInfo[playerid][xBrojTelefona];
         CEF_EmitEvent(playerid, CEF_PHONE_BROWSER_ID, "phone:init",
+                CEF_STR(playerName),
                 CEF_INT(phoneNumber),
                 CEF_INT(PlayerInfo[playerid][xNovac]),
-                CEF_INT(PlayerInfo[playerid][xLevel]));
+                CEF_INT(100));
 }
 
 forward OnCefPhoneCall(playerid, const number[]);

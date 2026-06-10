@@ -56,10 +56,13 @@ stock CefLp_OnBrowserCreated(playerid, browserid)
         CEF_FocusBrowser(playerid, CEF_LAPTOP_BROWSER_ID, true);
 
         // Posalji init podatke laptopu
+        // HTML ocekuje: laptop:init(pName, money, bMoney)
+        new playerName[MAX_PLAYER_NAME];
+        GetPlayerName(playerid, playerName, sizeof(playerName));
         CEF_EmitEvent(playerid, CEF_LAPTOP_BROWSER_ID, "laptop:init",
+                CEF_STR(playerName),
                 CEF_INT(PlayerInfo[playerid][xNovac]),
-                CEF_INT(PlayerInfo[playerid][xBRacun]),
-                CEF_INT(PlayerInfo[playerid][xLevel]));
+                CEF_INT(PlayerInfo[playerid][xBRacun]));
 }
 
 forward OnCefLaptopClose(playerid);

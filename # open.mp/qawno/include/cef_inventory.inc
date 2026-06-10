@@ -67,7 +67,7 @@ stock CefInv_OnBrowserCreated(playerid, browserid)
         CEF_SetBrowserVisible(playerid, CEF_INV_BROWSER_ID, true);
         CEF_FocusBrowser(playerid, CEF_INV_BROWSER_ID, true);
 
-        // Posalji init podatke inventaru
+        // Posalji init podatke inventaru (player info)
         new playerName[MAX_PLAYER_NAME];
         GetPlayerName(playerid, playerName, sizeof(playerName));
         CEF_EmitEvent(playerid, CEF_INV_BROWSER_ID, "inventory:playerInfo",
@@ -76,6 +76,27 @@ stock CefInv_OnBrowserCreated(playerid, browserid)
                 CEF_INT(PlayerInfo[playerid][xLevel]),
                 CEF_INT(PlayerInfo[playerid][xNovac]),
                 CEF_INT(PlayerInfo[playerid][xRespekt]));
+
+        // Posalji inventar podatke kao JSON (inventory:init ocekuje JSON string)
+        // Format: [{"id":0,"name":"Item","quantity":1}, null, ...]
+        new jsonStr[2048];
+        jsonStr[0] = '\0';
+        strcat(jsonStr, "[");
+        for(new i = 0; i < 30; i++) {
+                if(i > 0) strcat(jsonStr, ",");
+                if(inventoryInfo[playerid][i][invExists]) {
+                        new itemJson[128];
+                        format(itemJson, sizeof(itemJson),
+                                "{\"id\":%d,\"name\":\"%s\",\"quantity\":%d}",
+                                i, inventoryInfo[playerid][i][invItem], inventoryInfo[playerid][i][invQuantity]);
+                        strcat(jsonStr, itemJson);
+                } else {
+                        strcat(jsonStr, "null");
+                }
+        }
+        strcat(jsonStr, "]");
+        CEF_EmitEvent(playerid, CEF_INV_BROWSER_ID, "inventory:init",
+                CEF_STR(jsonStr));
 }
 
 forward OnCefInvUse(playerid, itemid);
