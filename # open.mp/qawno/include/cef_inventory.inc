@@ -75,7 +75,7 @@ stock CefInv_OnBrowserCreated(playerid, browserid)
                 CEF_INT(playerid),
                 CEF_INT(PlayerInfo[playerid][xLevel]),
                 CEF_INT(PlayerInfo[playerid][xNovac]),
-                CEF_INT(PlayerInfo[playerid][xRespekt]);
+                CEF_INT(PlayerInfo[playerid][xRespekt]));
 }
 
 forward OnCefInvUse(playerid, itemid);
