@@ -78,25 +78,15 @@ stock CefInv_OnBrowserCreated(playerid, browserid)
                 CEF_INT(PlayerInfo[playerid][xRespekt]));
 
         // Posalji inventar podatke kao JSON (inventory:init ocekuje JSON string)
-        // Format: [{"id":0,"name":"Item","quantity":1}, null, ...]
-        new jsonStr[2048];
-        jsonStr[0] = '\0';
-        strcat(jsonStr, "[");
-        for(new i = 0; i < 30; i++) {
-                if(i > 0) strcat(jsonStr, ",");
-                if(inventoryInfo[playerid][i][invExists]) {
-                        new itemJson[128];
-                        format(itemJson, sizeof(itemJson),
-                                "{\"id\":%d,\"name\":\"%s\",\"quantity\":%d}",
-                                i, inventoryInfo[playerid][i][invItem], inventoryInfo[playerid][i][invQuantity]);
-                        strcat(jsonStr, itemJson);
-                } else {
-                        strcat(jsonStr, "null");
-                }
-        }
-        strcat(jsonStr, "]");
-        CEF_EmitEvent(playerid, CEF_INV_BROWSER_ID, "inventory:init",
-                CEF_STR(jsonStr));
+        // Pozivamo callback koji se implementira u glavnom gamemode-u
+        // jer inventoryInfo nije dostupan ovde
+        CallRemoteFunction("CEF_SendInventoryData", "dd", playerid, CEF_INV_BROWSER_ID);
+}
+
+// Stock funkcija koja se poziva iz glavnog gamemode-a za slanje inventar podataka
+stock CEF_InvSendData(playerid, browserid, const jsonStr[])
+{
+        CEF_EmitEvent(playerid, browserid, "inventory:init", CEF_STR(jsonStr));
 }
 
 forward OnCefInvUse(playerid, itemid);
