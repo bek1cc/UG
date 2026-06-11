@@ -57,9 +57,11 @@ canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0
 .reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:2px;
   background:linear-gradient(135deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .reveal-info .reward-label{font-size:12px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:3px}
-.reward-img-wrap{width:180px;height:90px;display:flex;align-items:center;justify-content:center;margin:8px auto}
-.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.4))}
-.reward-icon-big{font-size:48px;filter:drop-shadow(0 0 15px currentColor)}
+.reward-img-wrap{width:240px;height:130px;display:flex;align-items:center;justify-content:center;margin:12px auto;position:relative}
+.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(139,92,246,0.5));transition:transform 0.3s}
+.reward-img-wrap:hover img{transform:scale(1.05)}
+.reward-img-wrap::before{content:'';position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 70%);pointer-events:none}
+.reward-svg-icon{width:80px;height:80px;filter:drop-shadow(0 0 12px currentColor)}
 
 .collect-btn{margin-top:16px;padding:10px 38px;border:2px solid rgba(139,92,246,0.35);border-radius:10px;
   font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
@@ -137,8 +139,17 @@ var suitSymbols = {spade:'♠',heart:'♥',diamond:'♦',club:'♣'};
 var suitColors = {spade:0x8b5cf6,heart:0xef4444,diamond:0xef4444,club:0x8b5cf6};
 var cardValues = ['A','K','Q','J','10','9'];
 
-var rewardIcons = {vehicle:'🚗',money:'💰',level:'⭐',respect:'👑',weapon:'🔫',vip:'💎',default:'🎁'};
 var rewardColors = {vehicle:0x8b5cf6,money:0x22c55e,level:0xeab308,respect:0xef4444,weapon:0xf97316,vip:0x06b6d4,default:0x8b5cf6};
+
+// SVG icons for non-vehicle rewards (NO EMOJI)
+var rewardSVGs = {
+  money: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.3"/><text x="40" y="50" text-anchor="middle" font-family="Orbitron,monospace" font-size="32" font-weight="900" fill="#22c55e">$</text></svg>',
+  level: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><polygon points="40,4 49,30 78,30 54,48 63,76 40,58 17,76 26,48 2,30 31,30" fill="#eab308" opacity="0.9"/></svg>',
+  respect: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M40 8 L52 32 L78 36 L58 54 L64 80 L40 66 L16 80 L22 54 L2 36 L28 32 Z" fill="none" stroke="#ef4444" stroke-width="2.5"/><circle cx="40" cy="42" r="10" fill="#ef4444" opacity="0.8"/></svg>',
+  weapon: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="35" width="45" height="6" rx="2" fill="#f97316" opacity="0.9"/><rect x="18" y="33" width="8" height="10" rx="1" fill="#f97316"/><rect x="62" y="30" width="4" height="16" rx="1" fill="#f97316" opacity="0.7"/><circle cx="12" cy="38" r="4" fill="none" stroke="#f97316" stroke-width="1.5" opacity="0.5"/></svg>',
+  vip: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><polygon points="40,6 50,28 74,28 54,44 62,68 40,52 18,68 26,44 6,28 30,28" fill="#06b6d4" opacity="0.15" stroke="#06b6d4" stroke-width="2"/><text x="40" y="48" text-anchor="middle" font-family="Orbitron,monospace" font-size="18" font-weight="900" fill="#06b6d4">VIP</text></svg>',
+  default: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="16" width="48" height="48" rx="8" fill="none" stroke="#8b5cf6" stroke-width="2.5"/><text x="40" y="48" text-anchor="middle" font-family="Orbitron,monospace" font-size="22" font-weight="900" fill="#8b5cf6">?</text></svg>'
+};
 
 // ===== THREE.JS SETUP =====
 var canvas = document.getElementById('three-canvas');
@@ -707,12 +718,20 @@ function showReward(){
   document.getElementById('reveal-name').textContent = rewardData.name;
   document.getElementById('reveal-label').textContent = rewardData.label;
 
-  // Reward image
+  // Reward image - REAL images, NO emoji
   var imgWrap = document.getElementById('reveal-img');
   if(rewardData.type==='vehicle'&&rewardData.image){
-    imgWrap.innerHTML = '<img src="'+rewardData.image+'" onerror="this.parentElement.innerHTML=\'<span class=reward-icon-big style=color:'+(rewardColors[rewardData.type]||'#8b5cf6')+'>'+(rewardIcons[rewardData.type]||rewardIcons.default)+'</span>\'">';
+    // Real vehicle image from GTAMag
+    imgWrap.innerHTML = '<img src="'+rewardData.image+'" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<div class=reward-svg-icon style=color:#8b5cf6>'+rewardSVGs.default+'</div>\'">';
+  } else if(rewardData.type==='vehicle'){
+    // Vehicle but no image URL - try GTAMag with lowercase name
+    var lowerName = rewardData.name.toLowerCase();
+    imgWrap.innerHTML = '<img src="https://gtamag.com/images/gta-sa-'+lowerName+'.png" onerror="this.style.display=\'none\';this.parentElement.innerHTML=\'<div class=reward-svg-icon style=color:#8b5cf6>'+rewardSVGs.default+'</div>\'">';
   } else {
-    imgWrap.innerHTML = '<span class="reward-icon-big" style="color:#'+(rewardColors[rewardData.type]||0x8b5cf6).toString(16)+'">'+(rewardIcons[rewardData.type]||rewardIcons.default)+'</span>';
+    // Non-vehicle rewards - use SVG icons
+    var svg = rewardSVGs[rewardData.type] || rewardSVGs.default;
+    var color = '#'+(rewardColors[rewardData.type]||0x8b5cf6).toString(16).padStart(6,'0');
+    imgWrap.innerHTML = '<div class="reward-svg-icon" style="color:'+color+'">'+svg+'</div>';
   }
 
   setTimeout(function(){
