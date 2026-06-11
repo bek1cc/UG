@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UG Card Case</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#07080e;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;width:100vw;height:100vh;user-select:none}
+
+/* ===== CANVAS ===== */
+canvas#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+canvas#confetti{position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;pointer-events:none}
+
+/* ===== VIGNETTE ===== */
+.vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.8) 100%)}
+
+/* ===== FLASH ===== */
+.flash{position:fixed;inset:0;z-index:99;pointer-events:none;background:#fff;opacity:0;transition:opacity 0.1s}
+.flash.active{opacity:0.6}
+
+/* ===== MAIN ===== */
+#main{position:relative;z-index:5;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+/* ===== TITLE ===== */
+.title{position:absolute;top:30px;left:0;right:0;text-align:center;z-index:10;opacity:0;transform:translateY(-20px);animation:slideDown 0.8s 0.3s forwards}
+.title h1{font-size:22px;font-weight:800;letter-spacing:6px;text-transform:uppercase;
+  background:linear-gradient(135deg,#ffd700,#ff8c00,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 20px rgba(255,215,0,0.4))}
+.title .sub{font-size:10px;letter-spacing:3px;color:rgba(255,215,0,0.3);margin-top:6px}
+
+@keyframes slideDown{to{opacity:1;transform:translateY(0)}}
+
+/* ===== DECK CONTAINER ===== */
+.deck-area{position:relative;width:900px;height:500px;display:flex;align-items:center;justify-content:center}
+
+/* ===== SINGLE CARD ===== */
+.card-slot{position:absolute;width:140px;height:200px;perspective:1200px;cursor:pointer;
+  transition:transform 0.6s cubic-bezier(0.23,1,0.32,1),filter 0.3s}
+.card-slot:hover{transform:translateY(-25px) scale(1.08);z-index:50!important;filter:brightness(1.2)}
+.card-slot.selected{transform:translateY(-40px) scale(1.15)!important;z-index:60!important}
+
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.8s cubic-bezier(0.4,0,0.2,1)}
+.card-slot.flipped .card-inner{transform:rotateY(180deg)}
+
+.card-front,.card-back{position:absolute;inset:0;backface-visibility:hidden;border-radius:12px;overflow:hidden}
+
+/* ===== CARD BACK ===== */
+.card-back{
+  background:linear-gradient(135deg,#1a0a2e,#16213e,#0f3460);
+  border:2px solid rgba(255,215,0,0.3);
+  box-shadow:0 0 20px rgba(255,215,0,0.1),inset 0 0 30px rgba(0,0,0,0.5);
+  display:flex;align-items:center;justify-content:center;flex-direction:column}
+.card-back::before{content:'';position:absolute;inset:8px;border:1px solid rgba(255,215,0,0.15);border-radius:8px}
+.card-back::after{content:'';position:absolute;inset:16px;border:1px solid rgba(255,215,0,0.08);border-radius:6px;
+  background:repeating-linear-gradient(45deg,transparent,transparent 8px,rgba(255,215,0,0.03) 8px,rgba(255,215,0,0.03) 9px)}
+
+.card-back .suit{font-size:48px;opacity:0.6;filter:drop-shadow(0 0 10px rgba(255,215,0,0.3))}
+.card-back .card-label{font-size:9px;letter-spacing:2px;color:rgba(255,215,0,0.4);margin-top:8px;text-transform:uppercase}
+
+/* ===== CARD FRONT ===== */
+.card-front{
+  transform:rotateY(180deg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:10px;text-align:center}
+.card-front::before{content:'';position:absolute;inset:0;border-radius:12px;
+  border:2px solid rgba(255,255,255,0.1)}
+
+.card-front .reward-icon{font-size:42px;margin-bottom:6px;filter:drop-shadow(0 0 15px currentColor)}
+.card-front .reward-name{font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:2px}
+.card-front .reward-label{font-size:9px;letter-spacing:1px;opacity:0.6;text-transform:uppercase}
+.card-front .reward-value{font-size:18px;font-weight:800;margin-top:6px}
+
+/* ===== RARITY COLORS ===== */
+.rarity-common .card-front{background:linear-gradient(135deg,#2d3436,#636e72);border-color:rgba(200,200,200,0.3)}
+.rarity-common .reward-icon{color:#b2bec3}
+.rarity-common .reward-value{color:#dfe6e9}
+
+.rarity-rare .card-front{background:linear-gradient(135deg,#0c2461,#1e3799);border-color:rgba(52,152,219,0.4)}
+.rarity-rare .reward-icon{color:#3498db}
+.rarity-rare .reward-value{color:#74b9ff}
+
+.rarity-epic .card-front{background:linear-gradient(135deg,#2d0a4e,#6c2eb9);border-color:rgba(155,89,182,0.5)}
+.rarity-epic .reward-icon{color:#a55eea}
+.rarity-epic .reward-value{color:#d4a0ff}
+
+.rarity-legendary .card-front{background:linear-gradient(135deg,#5a3e00,#b8860b,#ffd700);border-color:rgba(255,215,0,0.6);
+  animation:legendaryGlow 2s ease-in-out infinite}
+.rarity-legendary .reward-icon{color:#ffd700;filter:drop-shadow(0 0 20px rgba(255,215,0,0.6))}
+.rarity-legendary .reward-value{color:#fff;text-shadow:0 0 10px rgba(255,215,0,0.8)}
+
+@keyframes legendaryGlow{
+  0%,100%{box-shadow:0 0 20px rgba(255,215,0,0.3),inset 0 0 30px rgba(255,215,0,0.1)}
+  50%{box-shadow:0 0 40px rgba(255,215,0,0.6),inset 0 0 50px rgba(255,215,0,0.2)}}
+
+/* ===== CAR SPINNER ===== */
+.car-spinner{width:220px;height:120px;margin:8px auto;position:relative;display:flex;align-items:center;justify-content:center}
+.car-spinner img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 15px rgba(255,255,255,0.3));
+  animation:carFloat 3s ease-in-out infinite}
+@keyframes carFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ===== STATS BAR ===== */
+.stats-bar{display:flex;gap:6px;margin-top:8px;width:100%}
+.stat{flex:1;background:rgba(0,0,0,0.4);border-radius:4px;padding:4px 6px;text-align:center}
+.stat .stat-label{font-size:7px;letter-spacing:1px;text-transform:uppercase;opacity:0.5}
+.stat .stat-value{font-size:12px;font-weight:700}
+.stat-fill{height:3px;border-radius:2px;margin-top:2px;transition:width 1s ease-out}
+
+/* ===== RESULT SCREEN ===== */
+#result-screen{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(10px)}
+#result-screen.visible{display:flex;animation:fadeIn 0.5s}
+
+.result-card{width:280px;height:380px;border-radius:16px;overflow:hidden;position:relative;
+  transform:scale(0);animation:resultPop 0.6s 0.2s cubic-bezier(0.175,0.885,0.32,1.275) forwards}
+@keyframes resultPop{to{transform:scale(1)}}
+
+.result-card .result-inner{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;text-align:center}
+.result-card .result-icon{font-size:64px;margin-bottom:10px}
+.result-card .result-name{font-size:22px;font-weight:800;letter-spacing:2px}
+.result-card .result-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;opacity:0.6;margin-top:4px}
+.result-card .result-value{font-size:28px;font-weight:900;margin-top:12px}
+.result-card .result-car{width:240px;height:100px;margin:10px auto}
+.result-card .result-car img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(255,255,255,0.3))}
+
+.result-rarity-tag{position:absolute;top:12px;right:12px;font-size:9px;letter-spacing:2px;text-transform:uppercase;
+  padding:4px 10px;border-radius:20px;font-weight:700}
+
+/* Rarity specific result cards */
+.result-common .result-inner{background:linear-gradient(135deg,#2d3436,#636e72)}
+.result-common .result-rarity-tag{background:rgba(200,200,200,0.2);color:#b2bec3}
+.result-common .result-icon{color:#b2bec3}
+.result-common .result-value{color:#dfe6e9}
+
+.result-rare .result-inner{background:linear-gradient(135deg,#0c2461,#1e3799)}
+.result-rare .result-rarity-tag{background:rgba(52,152,219,0.3);color:#74b9ff}
+.result-rare .result-icon{color:#3498db}
+.result-rare .result-value{color:#74b9ff}
+
+.result-epic .result-inner{background:linear-gradient(135deg,#2d0a4e,#6c2eb9)}
+.result-epic .result-rarity-tag{background:rgba(155,89,182,0.3);color:#d4a0ff}
+.result-epic .result-icon{color:#a55eea}
+.result-epic .result-value{color:#d4a0ff}
+
+.result-legendary .result-inner{background:linear-gradient(135deg,#5a3e00,#b8860b,#ffd700);animation:legendaryGlow 2s infinite}
+.result-legendary .result-rarity-tag{background:rgba(255,215,0,0.3);color:#ffd700}
+.result-legendary .result-icon{color:#ffd700;filter:drop-shadow(0 0 30px rgba(255,215,0,0.8))}
+.result-legendary .result-value{color:#fff;text-shadow:0 0 15px rgba(255,215,0,0.8)}
+
+/* ===== RESULT STATS ===== */
+.result-stats{display:flex;gap:10px;margin-top:20px;opacity:0;animation:fadeIn 0.5s 0.8s forwards}
+.result-stat{width:70px;text-align:center;padding:8px;background:rgba(0,0,0,0.5);border-radius:8px}
+.result-stat .rs-label{font-size:8px;letter-spacing:1px;text-transform:uppercase;opacity:0.5}
+.result-stat .rs-bar{height:4px;background:rgba(255,255,255,0.1);border-radius:2px;margin:4px 0;overflow:hidden}
+.result-stat .rs-fill{height:100%;border-radius:2px;transition:width 1.5s 1s ease-out;width:0}
+.result-stat .rs-val{font-size:11px;font-weight:700}
+
+/* ===== CLOSE BUTTON ===== */
+.close-btn{position:absolute;top:24px;right:24px;z-index:110;width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:18px;color:rgba(255,255,255,0.4);
+  transition:all 0.3s;opacity:0;animation:fadeIn 0.5s 1s forwards}
+.close-btn:hover{background:rgba(255,0,0,0.2);border-color:rgba(255,0,0,0.3);color:#ff4444;transform:rotate(90deg)}
+
+/* ===== COLLECT BUTTON ===== */
+.collect-btn{margin-top:24px;padding:12px 40px;border-radius:30px;border:2px solid;font-size:13px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;cursor:pointer;background:transparent;
+  opacity:0;animation:fadeIn 0.5s 1.2s forwards;transition:all 0.3s}
+.collect-btn:hover{transform:scale(1.05);filter:brightness(1.3)}
+.collect-common{border-color:#b2bec3;color:#b2bec3}
+.collect-common:hover{background:rgba(178,190,195,0.15)}
+.collect-rare{border-color:#3498db;color:#3498db}
+.collect-rare:hover{background:rgba(52,152,219,0.15)}
+.collect-epic{border-color:#a55eea;color:#a55eea}
+.collect-epic:hover{background:rgba(165,94,234,0.15)}
+.collect-legendary{border-color:#ffd700;color:#ffd700}
+.collect-legendary:hover{background:rgba(255,215,0,0.15)}
+
+/* ===== INSTRUCTIONS ===== */
+.instructions{position:absolute;bottom:30px;left:0;right:0;text-align:center;z-index:10;
+  font-size:11px;letter-spacing:2px;color:rgba(255,215,0,0.4);opacity:0;animation:fadeIn 0.5s 1.5s forwards;
+  transition:opacity 0.5s}
+.instructions.hidden{opacity:0!important}
+.instructions .key{display:inline-block;padding:2px 8px;background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.2);
+  border-radius:4px;margin:0 2px;font-weight:600}
+
+/* ===== SHAKE ===== */
+@keyframes shake{0%,100%{transform:translate(0)}10%{transform:translate(-5px,-3px)}20%{transform:translate(5px,3px)}
+  30%{transform:translate(-3px,5px)}40%{transform:translate(3px,-5px)}50%{transform:translate(-5px,2px)}
+  60%{transform:translate(5px,-2px)}70%{transform:translate(-2px,5px)}80%{transform:translate(2px,-3px)}
+  90%{transform:translate(-3px,3px)}}
+.shake{animation:shake 0.5s}
+
+/* ===== FADE IN ===== */
+@keyframes fadeIn{to{opacity:1}}
+
+/* ===== PULSE ===== */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* ===== SCANNER LINE ===== */
+.scanner{position:absolute;left:0;right:0;height:2px;z-index:15;
+  background:linear-gradient(90deg,transparent,rgba(255,215,0,0.6),transparent);
+  box-shadow:0 0 15px rgba(255,215,0,0.3);opacity:0;pointer-events:none}
+.scanner.active{opacity:1;animation:scanDown 1.5s ease-in-out infinite}
+@keyframes scanDown{0%{top:0}100%{top:100%}}
+
+/* ===== AMBIENT GLOW ===== */
+.ambient-glow{position:absolute;width:400px;height:400px;border-radius:50%;pointer-events:none;z-index:2;
+  opacity:0;transition:opacity 1s}
+.ambient-glow.active{opacity:1}
+.glow-common{background:radial-gradient(circle,rgba(178,190,195,0.08),transparent 70%)}
+.glow-rare{background:radial-gradient(circle,rgba(52,152,219,0.1),transparent 70%)}
+.glow-epic{background:radial-gradient(circle,rgba(165,94,234,0.12),transparent 70%)}
+.glow-legendary{background:radial-gradient(circle,rgba(255,215,0,0.15),transparent 70%)}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<canvas id="confetti"></canvas>
+<div class="vignette"></div>
+<div class="flash" id="flash"></div>
+<div class="scanner" id="scanner"></div>
+<div class="ambient-glow" id="ambientGlow"></div>
+
+<div id="main">
+  <div class="title">
+    <h1>CARD CASE</h1>
+    <div class="sub">Izaberi svoju kartu &mdash; sudbina odlucuje</div>
+  </div>
+
+  <div class="deck-area" id="deck"></div>
+
+  <div class="instructions" id="instructions">
+    Klikni na kartu da je <span class="key">OKRENES</span>
+  </div>
+</div>
+
+<div id="result-screen">
+  <div class="close-btn" onclick="closeCase()">&times;</div>
+</div>
+
+<script>
+// ===== CONFIG =====
+var CARD_COUNT = 5;
+var SUITS = ['♠','♥','♦','♣'];
+var suit = SUITS[Math.floor(Math.random()*SUITS.length)];
+
+// ===== PARTICLE BACKGROUND =====
+var pCanvas = document.getElementById('particles');
+var pCtx = pCanvas.getContext('2d');
+var particles = [];
+
+function resizeCanvas(){
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+  var c2 = document.getElementById('confetti');
+  c2.width = window.innerWidth;
+  c2.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+for(var i=0;i<80;i++){
+  particles.push({
+    x:Math.random()*pCanvas.width,
+    y:Math.random()*pCanvas.height,
+    vx:(Math.random()-0.5)*0.3,
+    vy:(Math.random()-0.5)*0.3,
+    size:Math.random()*2+0.5,
+    alpha:Math.random()*0.3+0.1,
+    color:['rgba(255,215,0,','rgba(255,140,0,','rgba(200,200,200,'][Math.floor(Math.random()*3)]
+  });
+}
+
+function drawParticles(){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  for(var i=0;i<particles.length;i++){
+    var p=particles[i];
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=pCanvas.width; if(p.x>pCanvas.width)p.x=0;
+    if(p.y<0)p.y=pCanvas.height; if(p.y>pCanvas.height)p.y=0;
+    pCtx.beginPath();
+    pCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    pCtx.fillStyle=p.color+p.alpha+')';
+    pCtx.fill();
+  }
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ===== CONFETTI =====
+var cfCanvas = document.getElementById('confetti');
+var cfCtx = cfCanvas.getContext('2d');
+var confettiPieces = [];
+var confettiActive = false;
+
+function spawnConfetti(count, colors){
+  confettiActive = true;
+  for(var i=0;i<count;i++){
+    confettiPieces.push({
+      x: cfCanvas.width/2 + (Math.random()-0.5)*200,
+      y: cfCanvas.height/2 - 100,
+      vx: (Math.random()-0.5)*15,
+      vy: -Math.random()*15 - 5,
+      gravity: 0.3 + Math.random()*0.2,
+      rotation: Math.random()*360,
+      rotSpeed: (Math.random()-0.5)*10,
+      size: Math.random()*8+4,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      life: 1
+    });
+  }
+}
+
+function drawConfetti(){
+  cfCtx.clearRect(0,0,cfCanvas.width,cfCanvas.height);
+  if(!confettiActive){requestAnimationFrame(drawConfetti);return;}
+  var alive = false;
+  for(var i=0;i<confettiPieces.length;i++){
+    var c=confettiPieces[i];
+    c.x+=c.vx; c.y+=c.vy; c.vy+=c.gravity;
+    c.rotation+=c.rotSpeed; c.vx*=0.99; c.life-=0.005;
+    if(c.life<=0)continue;
+    alive=true;
+    cfCtx.save();
+    cfCtx.translate(c.x,c.y);
+    cfCtx.rotate(c.rotation*Math.PI/180);
+    cfCtx.globalAlpha=Math.max(0,c.life);
+    cfCtx.fillStyle=c.color;
+    cfCtx.fillRect(-c.size/2,-c.size/4,c.size,c.size/2);
+    cfCtx.restore();
+  }
+  if(!alive){confettiActive=false;confettiPieces=[];}
+  requestAnimationFrame(drawConfetti);
+}
+drawConfetti();
+
+// ===== STATE =====
+var cards = [];
+var flipped = false;
+var rewardData = null;
+
+// ===== BUILD DECK =====
+function buildDeck(){
+  var deck = document.getElementById('deck');
+  deck.innerHTML = '';
+  cards = [];
+  var spread = 60;
+  var startX = -(CARD_COUNT-1)*spread/2;
+
+  for(var i=0;i<CARD_COUNT;i++){
+    var el = document.createElement('div');
+    el.className = 'card-slot';
+    el.style.left = '50%';
+    el.style.marginLeft = (startX + i*spread - 70) + 'px';
+    el.style.top = '50%';
+    el.style.marginTop = '-100px';
+    el.style.zIndex = i;
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(80px) rotate(' + ((Math.random()-0.5)*5) + 'deg)';
+
+    // Staggered entrance
+    (function(el, i){
+      setTimeout(function(){
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0) rotate(' + ((Math.random()-0.5)*3) + 'deg)';
+      }, 300 + i*120);
+    })(el, i);
+
+    el.innerHTML = '<div class="card-inner">' +
+      '<div class="card-back">' +
+        '<div class="suit">' + suit + '</div>' +
+        '<div class="card-label">UG</div>' +
+      '</div>' +
+      '<div class="card-front" id="card-front-' + i + '">' +
+        '<div class="reward-icon" id="card-icon-' + i + '"></div>' +
+        '<div class="reward-name" id="card-name-' + i + '"></div>' +
+        '<div class="reward-label" id="card-label-' + i + '"></div>' +
+        '<div class="reward-value" id="card-value-' + i + '"></div>' +
+        '<div class="car-spinner" id="card-car-' + i + '"></div>' +
+        '<div class="stats-bar" id="card-stats-' + i + '"></div>' +
+      '</div>' +
+    '</div>';
+
+    el.setAttribute('data-index', i);
+    el.onclick = function(){ selectCard(parseInt(this.getAttribute('data-index'))); };
+    deck.appendChild(el);
+    cards.push(el);
+  }
+}
+
+// ===== SELECT CARD =====
+function selectCard(index){
+  if(flipped) return;
+  flipped = true;
+
+  document.getElementById('instructions').classList.add('hidden');
+  document.getElementById('scanner').classList.add('active');
+
+  // Highlight selected
+  cards[index].classList.add('selected');
+
+  // Shake other cards
+  for(var i=0;i<cards.length;i++){
+    if(i !== index){
+      cards[i].style.transition = 'transform 0.8s 0.3s, opacity 0.5s 0.5s';
+      cards[i].style.transform = 'translateY(30px) scale(0.85)';
+      cards[i].style.opacity = '0.3';
+      cards[i].style.pointerEvents = 'none';
+    }
+  }
+
+  // Flip after short delay
+  setTimeout(function(){
+    cards[index].classList.add('flipped');
+    document.getElementById('scanner').classList.remove('active');
+
+    // Flash effect
+    var flash = document.getElementById('flash');
+    flash.classList.add('active');
+    setTimeout(function(){ flash.classList.remove('active'); }, 150);
+
+    // Set ambient glow
+    if(rewardData){
+      var glow = document.getElementById('ambientGlow');
+      glow.className = 'ambient-glow active glow-' + rewardData.rarity;
+    }
+
+    // Show result after card flip
+    setTimeout(function(){
+      showResult();
+    }, 1200);
+  }, 800);
+}
+
+// ===== SHOW RESULT =====
+function showResult(){
+  if(!rewardData) return;
+  var rs = document.getElementById('result-screen');
+  rs.classList.add('visible');
+  rs.innerHTML = '<div class="close-btn" onclick="closeCase()">&times;</div>' +
+    '<div class="result-card result-' + rewardData.rarity + '">' +
+      '<div class="result-inner">' +
+        '<div class="result-rarity-tag">' + rewardData.rarity.toUpperCase() + '</div>' +
+        '<div class="result-icon">' + getRewardIcon(rewardData.type) + '</div>' +
+        '<div class="result-name">' + rewardData.name + '</div>' +
+        '<div class="result-label">' + rewardData.label + '</div>' +
+        (rewardData.type === 'vehicle' ?
+          '<div class="result-car"><img src="' + getCarImage(rewardData.name) + '" alt="' + rewardData.name + '" onerror="this.style.display=\'none\'"></div>' : '') +
+        '<div class="reward-value">' + getRewardDisplay(rewardData) + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="result-stats" id="result-stats">' +
+      buildResultStats(rewardData) +
+    '</div>' +
+    '<button class="collect-btn collect-' + rewardData.rarity + '" onclick="collectReward()">POKUPI</button>';
+
+  // Animate stat bars
+  setTimeout(function(){
+    var fills = document.querySelectorAll('.rs-fill');
+    for(var i=0;i<fills.length;i++){
+      fills[i].style.width = fills[i].getAttribute('data-w') + '%';
+    }
+  }, 100);
+
+  // Confetti based on rarity
+  if(rewardData.rarity === 'legendary'){
+    spawnConfetti(200, ['#ffd700','#ff8c00','#fff','#ff6b00','#ffe066']);
+  } else if(rewardData.rarity === 'epic'){
+    spawnConfetti(100, ['#a55eea','#d4a0ff','#fff','#8e44ad']);
+  } else if(rewardData.rarity === 'rare'){
+    spawnConfetti(60, ['#3498db','#74b9ff','#fff']);
+  } else {
+    spawnConfetti(20, ['#b2bec3','#dfe6e9']);
+  }
+
+  // Shake screen on legendary
+  if(rewardData.rarity === 'legendary'){
+    document.body.classList.add('shake');
+    setTimeout(function(){ document.body.classList.remove('shake'); }, 500);
+    // Second flash
+    var flash = document.getElementById('flash');
+    flash.classList.add('active');
+    setTimeout(function(){ flash.classList.remove('active'); }, 200);
+  }
+}
+
+function getRewardIcon(type){
+  var icons = {
+    'vehicle': '&#128663;',
+    'money': '&#128176;',
+    'level': '&#11088;',
+    'respect': '&#9812;',
+    'weapon': '&#128481;',
+    'skin': '&#128100;',
+    'vip': '&#128081;'
+  };
+  return icons[type] || '&#127922;';
+}
+
+function getCarImage(carName){
+  return 'https://gtamag.com/images/gta-sa-' + carName.toLowerCase().replace(/\s/g,'-') + '.png';
+}
+
+function getRewardDisplay(data){
+  if(data.type === 'money') return '$' + data.value;
+  if(data.type === 'level') return 'LVL ' + data.value;
+  if(data.type === 'respect') return data.value + ' RP';
+  return data.value || '';
+}
+
+function buildResultStats(data){
+  if(data.type !== 'vehicle') return '';
+  var stats = [
+    {label:'BRZINA', val:data.speed||5, max:10, color:'#e74c3c'},
+    {label:'UBRZANJE', val:data.accel||5, max:10, color:'#f39c12'},
+    {label:'UPRAVLJANJE', val:data.handling||5, max:10, color:'#2ecc71'}
+  ];
+  var html = '';
+  for(var i=0;i<stats.length;i++){
+    var s = stats[i];
+    var pct = Math.round((s.val/s.max)*100);
+    html += '<div class="result-stat">' +
+      '<div class="rs-label">' + s.label + '</div>' +
+      '<div class="rs-bar"><div class="rs-fill" data-w="' + pct + '" style="background:' + s.color + '"></div></div>' +
+      '<div class="rs-val">' + s.val.toFixed(1) + '</div>' +
+    '</div>';
+  }
+  return html;
+}
+
+// ===== COLLECT =====
+function collectReward(){
+  if(typeof cef !== 'undefined' && cef.emit){
+    cef.emit('cardcase:collect');
+  }
+  closeCase();
+}
+
+// ===== CLOSE =====
+function closeCase(){
+  if(typeof cef !== 'undefined' && cef.emit){
+    cef.emit('cardcase:close');
+  }
+  var rs = document.getElementById('result-screen');
+  rs.classList.remove('visible');
+}
+
+// ===== INIT FROM PAWN =====
+function initCards(data){
+  // data: {name, type, rarity, label, value, speed, accel, handling}
+  rewardData = data;
+
+  // Fill card fronts with rewards (only the winning card gets real data, others get random)
+  var winIdx = Math.floor(Math.random() * CARD_COUNT);
+  
+  // Fake rewards for non-winning cards
+  var fakeRewards = [
+    {name:'Bravura', type:'vehicle', rarity:'common', label:'Gradski auto', value:'Bravura', speed:4.2, accel:3.8, handling:4.5},
+    {name:'$5,000', type:'money', rarity:'common', label:'Novac', value:'5000'},
+    {name:'Sentinel', type:'vehicle', rarity:'rare', label:'Sedan', value:'Sentinel', speed:6.1, accel:5.5, handling:6.0},
+    {name:'LVL 2', type:'level', rarity:'rare', label:'Level', value:'2'},
+    {name:'50 RP', type:'respect', rarity:'common', label:'Respekt', value:'50'},
+    {name:'$500', type:'money', rarity:'common', label:'Novac', value:'500'},
+  ];
+
+  for(var i=0;i<CARD_COUNT;i++){
+    var front = document.getElementById('card-front-' + i);
+    if(i === winIdx){
+      // Winning card
+      front.parentElement.parentElement.parentElement.classList.add('rarity-' + data.rarity);
+      document.getElementById('card-icon-' + i).innerHTML = getRewardIcon(data.type);
+      document.getElementById('card-name-' + i).textContent = data.name;
+      document.getElementById('card-label-' + i).textContent = data.label;
+      document.getElementById('card-value-' + i).innerHTML = getRewardDisplay(data);
+      if(data.type === 'vehicle'){
+        document.getElementById('card-car-' + i).innerHTML = '<img src="' + getCarImage(data.name) + '" onerror="this.parentElement.style.display=\'none\'">';
+        document.getElementById('card-stats-' + i).innerHTML = buildCardStats(data);
+      }
+    } else {
+      // Fake card
+      var fake = fakeRewards[i % fakeRewards.length];
+      front.parentElement.parentElement.parentElement.classList.add('rarity-' + fake.rarity);
+      document.getElementById('card-icon-' + i).innerHTML = getRewardIcon(fake.type);
+      document.getElementById('card-name-' + i).textContent = fake.name;
+      document.getElementById('card-label-' + i).textContent = fake.label;
+      document.getElementById('card-value-' + i).innerHTML = getRewardDisplay(fake);
+    }
+  }
+}
+
+function buildCardStats(data){
+  var stats = [
+    {label:'SPD', val:data.speed||5, max:10, color:'#e74c3c'},
+    {label:'ACC', val:data.accel||5, max:10, color:'#f39c12'},
+    {label:'HND', val:data.handling||5, max:10, color:'#2ecc71'}
+  ];
+  var html = '';
+  for(var i=0;i<stats.length;i++){
+    var s = stats[i];
+    var pct = Math.round((s.val/s.max)*100);
+    html += '<div class="stat"><div class="stat-label">' + s.label + '</div>' +
+      '<div class="stat-value">' + s.val.toFixed(1) + '</div>' +
+      '<div class="stat-fill" style="width:' + pct + '%;background:' + s.color + '"></div></div>';
+  }
+  return html;
+}
+
+// ===== CEF EVENTS =====
+if(typeof cef !== 'undefined' && cef.addEventListener){
+  cef.addEventListener('cardcase:init', function(name, type, rarity, label, value, speed, accel, handling){
+    var data = {
+      name: name,
+      type: type,
+      rarity: rarity,
+      label: label,
+      value: value,
+      speed: parseFloat(speed) || 5,
+      accel: parseFloat(accel) || 5,
+      handling: parseFloat(handling) || 5
+    };
+    initCards(data);
+  });
+}
+
+// ===== AUTO-START (DEV MODE) =====
+buildDeck();
+if(typeof cef === 'undefined'){
+  // Dev mode - auto init with sample data
+  setTimeout(function(){
+    initCards({
+      name: 'Infernus',
+      type: 'vehicle',
+      rarity: 'legendary',
+      label: 'Super auto',
+      value: 'Infernus',
+      speed: 9.7,
+      accel: 9.2,
+      handling: 8.8
+    });
+  }, 1500);
+}
+</script>
+</body>
+</html>
