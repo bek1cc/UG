@@ -1,102 +1,64 @@
 # UNICATE GAMING OGC - Linux Deploy
 
-Sve sto trebas za deploy SA-MP/open.mp servera na Linux host.
+Kompaktan Deploy folder - SAMO prebaci na FTP i pokreni.
 
 ## Struktura
 
 ```
 Deploy/
-├── deploy.sh                    # Automatski deploy script
-├── open.mp/
-│   ├── config.json              # Server konfiguracija
-│   ├── components/              # open.mp komponente (.so)
-│   │   └── Cef.so              # CEF za browser u igri
-│   ├── filterscripts/           # Filter skripte
-│   │   ├── npc_trains.amx
-│   │   └── npc_trains.pwn
-│   └── qawno/include/           # Pawn include fajlovi (139)
-├── gamemodes/
-│   ├── fg-ogc.pwn              # Glavni gamemode (5.3MB)
-│   ├── systems/                # Sistemi (kliziste, plastika, zeljezara)
-│   └── maps/                   # Map includeovi
-├── plugins/                    # Linux plugini (.so)
-│   ├── crashdetect.so
-│   ├── streamer.so
-│   ├── sscanf.so
-│   ├── mysql.so
-│   ├── MapAndreas.so
-│   └── SKY.so
-└── scriptfiles/
-    ├── cef/                    # CEF web stranice
-    │   ├── portal/            # Login/Register portal
-    │   ├── case/              # Case opening
-    │   ├── amenu/             # Admin meni
-    │   ├── tablet/            # Tablet browser
-    │   ├── inventory/         # Inventar
-    │   ├── laptop/            # Laptop
-    │   └── phone/             # Telefon
-    ├── Events/                # Event podaci
-    ├── Firme/                 # Firma podaci
-    ├── Organizacije/          # Org podaci
-    ├── Bankomati/             # Bankomat podaci
-    └── ...                    # Ostali podaci
+├── deploy.sh              # Pokreni ovo na Linuxu
+├── open.mp/               # CIJELI server (komponente, includes, scriptfiles, config)
+│   ├── components/        # 46 komponenti (.so Linux verzije)
+│   ├── filterscripts/     # Filter skripte
+│   ├── npcmodes/          # NPC modovi
+│   ├── plugins/           # Plugini (.so)
+│   ├── qawno/include/     # 139 Pawn includes
+│   ├── scriptfiles/       # SVI podaci (CEF, firme, organizacije itd)
+│   ├── config.json        # Server konfiguracija (IP: 217.156.22.164:7774)
+│   └── server.cfg         # Legacy konfiguracija
+├── gamemodes/             # fg-ogc.pwn + systems + maps
+├── extra-plugins/         # Dodatni Linux .so plugini
+├── launcher/              # Windows launcher (za igrace)
+└── scriptfiles/           # Extra scriptfiles
 ```
 
-## Brzi Deploy
+## Brzi Deploy (3 koraka)
 
+### 1. Prebaci na FTP
+Cijeli `Deploy/` folder prebaci u `/home/samp/server/`
+
+### 2. SSH na server
 ```bash
-# 1. Upload Deploy folder na Linux host
-scp -r Deploy/ root@tvoj-server:/tmp/Deploy/
-
-# 2. Pokreni deploy script
-ssh root@tvoj-server
-cd /tmp/Deploy
+cd /home/samp/server
 chmod +x deploy.sh
 sudo ./deploy.sh
 ```
 
-## Rucni Deploy
-
+### 3. Pokreni server
 ```bash
-# 1. Download open.mp server
-wget https://github.com/openmultiplayer/open.mp/releases/latest/download/omp-linux-x86_64.tar.gz
-tar -xzf omp-linux-x86_64.tar.gz -C /home/samp/server --strip-components=1
-
-# 2. Kopiraj fajlove iz Deploy/ u server direktorij
-cp -r Deploy/open.mp/* /home/samp/server/
-cp -r Deploy/gamemodes/ /home/samp/server/
-cp -r Deploy/plugins/ /home/samp/server/
-cp -r Deploy/scriptfiles/ /home/samp/server/
-
-# 3. Kompajliraj gamemode (ako imas pawncc)
-cd /home/samp/server/gamemodes
-./qawno/pawncc fg-ogc.pwn -;+ -d3
-
-# 4. Pokreni server
+export DISPLAY=:99
 cd /home/samp/server
-chmod +x omp-server
-screen -AmdS unicate ./omp-server
+./omp-server
 ```
 
-## Sta trebas podesiti
+## Sta FALI (moras dodati rucno)
 
-1. **config.json** - Promijeni IP, port, rcon password
-2. **MySQL** - Podesi konekciju u fg-ogc.pwn
-3. **Firewall** - Otvori port 7777 (TCP + UDP)
-4. **Gamemode** - Kompajliraj na Windowsu ako nemas pawncc na Linuxu
+1. **fg-ogc.amx** - Kompajliraj `fg-ogc.pwn` na Windowsu, prebaci .amx u `gamemodes/`
+2. **omp-server** - Skini sa https://github.com/openmultiplayer/open.mp/releases
+
+## CEF Fix
+
+CEF zahtijeva Xvfb na Linuxu. deploy.sh ga automatski instalira i pokrece.
+Ako CEF ne radi, provjeri:
+```bash
+echo $DISPLAY   # Mora biti :99
+ps aux | grep Xvfb   # Mora biti pokrenut
+```
 
 ## Portovi
 
 | Port | Protokol | Opis |
 |------|----------|------|
-| 7777 | UDP | SA-MP game server |
-| 7777 | TCP | RCON |
-| 3306 | TCP | MySQL (ako je lokalni) |
-
-## Napomene
-
-- **fg-ogc.amx** nije ukljucen - moras kompajlirati fg-ogc.pwn
-- Svi plugini su Linux (.so) verzije
-- Cef.so komponenta je potrebna za CEF browser
-- scriptfiles/Igraci/ i scriptfiles/Korisnici/ ce se popuniti automatski kad igraci udju
-- Provjeri da je MySQL pokrenut prije startanja servera
+| 7774 | UDP | SA-MP game server |
+| 7774 | TCP | RCON |
+| 3306 | TCP | MySQL |
