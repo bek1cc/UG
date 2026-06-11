@@ -3,257 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UG Card Case</title>
+<title>UG Card Case - Three.js</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+body{background:#000;color:#fff;font-family:'Rajdhani',sans-serif;overflow:hidden;width:100vw;height:100vh;user-select:none}
+canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
 
-body{background:#020810;color:#fff;font-family:'Rajdhani','Segoe UI',sans-serif;overflow:hidden;width:100vw;height:100vh;user-select:none}
+/* ===== UI OVERLAY ===== */
+#ui-overlay{position:fixed;inset:0;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:40px}
 
-/* ===== CANVAS LAYERS ===== */
-canvas#fx-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
-canvas#particle-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}
-canvas#lightning-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:18;pointer-events:none;opacity:0;transition:opacity 0.3s}
-
-/* ===== VIGNETTE + SCANLINES ===== */
-.vignette{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;
-  background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,0.8) 100%)}
-.scanlines{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2;pointer-events:none;opacity:0.03;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.3) 2px,rgba(0,0,0,0.3) 4px)}
-
-/* ===== MAIN CONTAINER ===== */
-#case-container{position:relative;z-index:5;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center}
-
-/* ===== HEADER ===== */
-.header{position:absolute;top:0;left:0;right:0;padding:20px 30px;display:flex;align-items:center;justify-content:space-between;z-index:10}
+/* Header */
+.header{position:absolute;top:0;left:0;right:0;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
 .header-logo{display:flex;align-items:center;gap:10px}
-.header-logo img{width:40px;height:40px;object-fit:contain;filter:drop-shadow(0 0 15px rgba(139,92,246,0.5))}
-.header-title{font-family:'Orbitron',monospace;font-size:14px;letter-spacing:4px;text-transform:uppercase;
+.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.5))}
+.header-title{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:4px;text-transform:uppercase;
   background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.header-price{font-family:'Orbitron',monospace;font-size:13px;color:rgba(139,92,246,0.6);letter-spacing:2px}
+.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(139,92,246,0.5);letter-spacing:2px}
 
-/* ===== PORTAL ===== */
-.portal-container{position:relative;width:500px;height:350px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.portal{width:280px;height:280px;border-radius:50%;position:relative;opacity:0;animation:portalAppear 1.5s 0.3s forwards}
-.portal-ring{position:absolute;border-radius:50%;border:2px solid transparent}
-.portal-ring:nth-child(1){inset:0;border-color:rgba(139,92,246,0.3);animation:portalSpin 8s linear infinite}
-.portal-ring:nth-child(2){inset:15px;border-color:rgba(6,182,212,0.2);animation:portalSpin 6s linear infinite reverse}
-.portal-ring:nth-child(3){inset:30px;border-color:rgba(139,92,246,0.15);animation:portalSpin 10s linear infinite}
-.portal-ring:nth-child(4){inset:50px;border-color:rgba(6,182,212,0.1);animation:portalSpin 4s linear infinite reverse}
-.portal-core{position:absolute;inset:70px;border-radius:50%;
-  background:radial-gradient(circle,rgba(139,92,246,0.15) 0%,rgba(6,182,212,0.08) 40%,transparent 70%);
-  animation:portalPulse 3s ease-in-out infinite}
-.portal-glow{position:absolute;inset:-40px;border-radius:50%;
-  background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 60%);
-  animation:portalPulse 4s ease-in-out infinite 1s}
+/* Card select hint */
+.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(139,92,246,0.35);
+  text-transform:uppercase;margin-bottom:14px;transition:opacity 0.5s;pointer-events:none}
+.select-hint.hidden{opacity:0}
 
-/* Floating cards in portal */
-.portal-cards{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-.float-card{position:absolute;width:50px;height:70px;border-radius:5px;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(6,182,212,0.1));
-  border:1px solid rgba(139,92,246,0.2);backdrop-filter:blur(2px);
-  animation:floatCard 6s ease-in-out infinite;opacity:0.6}
-.float-card:nth-child(1){top:20%;left:15%;animation-delay:0s;transform:rotate(-15deg)}
-.float-card:nth-child(2){top:10%;right:20%;animation-delay:1s;transform:rotate(10deg)}
-.float-card:nth-child(3){bottom:20%;left:20%;animation-delay:2s;transform:rotate(5deg)}
-.float-card:nth-child(4){bottom:15%;right:15%;animation-delay:3s;transform:rotate(-8deg)}
-.float-card:nth-child(5){top:50%;left:50%;animation-delay:4s;transform:rotate(20deg) translate(-50%,-50%)}
-.float-card .suit{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;opacity:0.4}
-.float-card.red .suit{color:rgba(239,68,68,0.5)}
-.float-card.black .suit{color:rgba(139,92,246,0.5)}
-
-/* Platform */
-.platform{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:320px;height:8px;
-  background:linear-gradient(90deg,transparent,rgba(139,92,246,0.3),rgba(6,182,212,0.4),rgba(139,92,246,0.3),transparent);
-  border-radius:50%;filter:blur(2px)}
-.platform-reflection{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);width:250px;height:30px;
-  background:radial-gradient(ellipse,rgba(139,92,246,0.06) 0%,transparent 70%)}
-
-/* ===== CARD HAND ===== */
-.card-hand{display:flex;gap:8px;position:relative;z-index:10;opacity:0;animation:slideUp 0.8s 0.8s forwards}
-.card-hand-title{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(139,92,246,0.4);
-  text-align:center;margin-bottom:12px;text-transform:uppercase}
-
-.poker-card{width:85px;height:120px;border-radius:8px;cursor:pointer;position:relative;
-  transform-style:preserve-3d;transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.3s;
-  perspective:800px}
-.poker-card:hover{transform:translateY(-18px) scale(1.08);z-index:20}
-.poker-card.selected{transform:translateY(-30px) scale(1.15)!important;z-index:30}
-
-.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.8s cubic-bezier(0.4,0,0.2,1)}
-.poker-card.flipped .card-inner{transform:rotateY(180deg)}
-
-.card-front,.card-back{position:absolute;width:100%;height:100%;border-radius:8px;backface-visibility:hidden;overflow:hidden}
-
-/* Card back design */
-.card-back{background:linear-gradient(135deg,#1a0a2e,#0c1445);
-  border:2px solid rgba(139,92,246,0.3);display:flex;align-items:center;justify-content:center}
-.card-back::before{content:'';position:absolute;inset:6px;border:1px solid rgba(139,92,246,0.15);border-radius:5px}
-.card-back::after{content:'';position:absolute;inset:10px;
-  background:repeating-conic-gradient(rgba(139,92,246,0.06) 0% 25%,transparent 25% 50%) 0 0/12px 12px;
-  border-radius:4px;opacity:0.5}
-.card-back-emblem{font-family:'Orbitron',monospace;font-size:16px;font-weight:900;
-  background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;z-index:1;position:relative}
-.card-back .holo-shimmer{position:absolute;inset:0;
-  background:linear-gradient(135deg,transparent 20%,rgba(139,92,246,0.08) 40%,rgba(6,182,212,0.06) 50%,transparent 70%);
-  animation:holoShimmer 3s ease-in-out infinite}
-
-/* Card front design */
-.card-front{transform:rotateY(180deg);background:linear-gradient(135deg,#0f172a,#1e1b4b);
-  border:2px solid rgba(139,92,246,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px}
-.card-front .corner-value{position:absolute;font-family:'Orbitron',monospace;font-size:10px;font-weight:700}
-.card-front .corner-value.top{top:5px;left:7px}
-.card-front .corner-value.bottom{bottom:5px;right:7px;transform:rotate(180deg)}
-.card-front .center-suit{font-size:32px;filter:drop-shadow(0 0 10px currentColor);line-height:1}
-.card-front .reward-icon{font-size:22px;margin-top:4px;opacity:0.7;filter:drop-shadow(0 0 6px currentColor)}
-
-.card-front.red-card{border-color:rgba(239,68,68,0.3)}
-.card-front.red-card .corner-value,.card-front.red-card .center-suit{color:#ef4444}
-.card-front.black-card .corner-value,.card-front.black-card .center-suit{color:#8b5cf6}
-
-/* Hover glow effect */
-.poker-card::before{content:'';position:absolute;inset:-3px;border-radius:10px;
-  background:linear-gradient(135deg,rgba(139,92,246,0.4),rgba(6,182,212,0.3));opacity:0;transition:opacity 0.3s;z-index:-1;filter:blur(6px)}
-.poker-card:hover::before{opacity:1}
-.poker-card.selected::before{opacity:1;animation:selectedGlow 1s ease-in-out infinite}
-
-/* Rarity border colors */
-.poker-card.common .card-front{border-color:rgba(100,200,100,0.3)}
-.poker-card.common::before{background:linear-gradient(135deg,rgba(100,200,100,0.3),rgba(139,92,246,0.2))}
-.poker-card.rare .card-front{border-color:rgba(0,191,255,0.4)}
-.poker-card.epic .card-front{border-color:rgba(168,85,247,0.5)}
-.poker-card.epic::before{background:linear-gradient(135deg,rgba(168,85,247,0.5),rgba(236,72,153,0.3))}
-.poker-card.legendary .card-front{border-color:rgba(255,170,0,0.5)}
-.poker-card.legendary::before{background:linear-gradient(135deg,rgba(255,170,0,0.5),rgba(239,68,68,0.3))}
-
-/* ===== OPEN BUTTON ===== */
-.open-btn{position:relative;padding:14px 52px;border:2px solid rgba(139,92,246,0.4);border-radius:12px;
-  font-family:'Orbitron',monospace;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#c4b5fd;cursor:pointer;z-index:10;
-  background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(6,182,212,0.05));
-  transition:all 0.3s;opacity:0;animation:fadeIn 0.6s 1.5s forwards;margin-top:20px;backdrop-filter:blur(8px)}
-.open-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.15));
-  border-color:rgba(139,92,246,0.7);box-shadow:0 0 40px rgba(139,92,246,0.2);transform:scale(1.04);color:#fff}
-.open-btn:active{transform:scale(0.97)}
+/* Open button */
+.open-btn{padding:12px 44px;border:2px solid rgba(139,92,246,0.35);border-radius:12px;
+  font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:#c4b5fd;cursor:pointer;pointer-events:all;
+  background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.04));
+  transition:all 0.3s;backdrop-filter:blur(6px);opacity:0}
+.open-btn.visible{opacity:1}
+.open-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(6,182,212,0.1));
+  border-color:rgba(139,92,246,0.6);box-shadow:0 0 30px rgba(139,92,246,0.15);color:#fff;transform:scale(1.04)}
 .open-btn.hidden{display:none}
-.open-btn .btn-glow{position:absolute;inset:-2px;border-radius:14px;
-  background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(6,182,212,0.2));filter:blur(12px);z-index:-1;opacity:0;transition:opacity 0.3s}
-.open-btn:hover .btn-glow{opacity:1}
+
+/* ESC hint */
+.esc-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;
+  color:rgba(255,255,255,0.12);letter-spacing:1px;pointer-events:none}
 
 /* ===== REVEAL OVERLAY ===== */
 #reveal-overlay{position:fixed;inset:0;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(2,8,16,0.95);backdrop-filter:blur(8px)}
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);pointer-events:all}
 #reveal-overlay.active{display:flex}
 
-/* Center revealed card */
-.reveal-card-wrap{perspective:1200px;width:240px;height:340px;position:relative}
-.reveal-card{width:100%;height:100%;transform-style:preserve-3d;position:relative}
-.reveal-card.flipping{animation:cardReveal 1.2s cubic-bezier(0.4,0,0.2,1) forwards}
-.reveal-card-front,.reveal-card-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:16px;overflow:hidden}
-.reveal-card-back{background:linear-gradient(135deg,#1a0a2e,#0c1445);
-  border:3px solid rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center}
-.reveal-card-back .back-design{font-family:'Orbitron',monospace;font-size:28px;font-weight:900;
-  background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.reveal-card-back::before{content:'';position:absolute;inset:12px;border:1px solid rgba(139,92,246,0.15);border-radius:10px}
-.reveal-card-back::after{content:'';position:absolute;inset:18px;
-  background:repeating-conic-gradient(rgba(139,92,246,0.04) 0% 25%,transparent 25% 50%) 0 0/16px 16px;border-radius:8px}
-
-.reveal-card-front{transform:rotateY(180deg);background:linear-gradient(135deg,#0f172a,#1e1b4b);
-  border:3px solid rgba(139,92,246,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-.reveal-card-front .big-suit{font-size:64px;line-height:1;filter:drop-shadow(0 0 20px currentColor);margin-bottom:8px}
-.reveal-card-front .big-value{font-family:'Orbitron',monospace;font-size:36px;font-weight:900;
-  filter:drop-shadow(0 0 10px currentColor)}
-.reveal-card-front.red-card .big-suit,.reveal-card-front.red-card .big-value{color:#ef4444}
-.reveal-card-front.black-card .big-suit,.reveal-card-front.black-card .big-value{color:#8b5cf6}
-
-/* Reward display below card */
-.reveal-reward{margin-top:24px;text-align:center;opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
-.reveal-reward.show{opacity:1;transform:translateY(0)}
-.reveal-reward .rarity-badge{display:inline-block;padding:5px 18px;border-radius:20px;font-family:'Orbitron',monospace;
-  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px}
-.reveal-reward .rarity-badge.common{background:rgba(100,200,100,0.12);border:1px solid rgba(100,200,100,0.3);color:#64c864}
-.reveal-reward .rarity-badge.rare{background:rgba(0,191,255,0.12);border:1px solid rgba(0,191,255,0.3);color:#00bfff}
-.reveal-reward .rarity-badge.epic{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:#a855f7}
-.reveal-reward .rarity-badge.legendary{background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00}
-.reveal-reward .reward-name{font-family:'Orbitron',monospace;font-size:22px;font-weight:900;letter-spacing:2px;
+.reveal-info{text-align:center;opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
+.reveal-info.show{opacity:1;transform:translateY(0)}
+.reveal-info .rarity-badge{display:inline-block;padding:5px 18px;border-radius:20px;font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.rarity-badge.common{background:rgba(100,200,100,0.12);border:1px solid rgba(100,200,100,0.3);color:#64c864}
+.rarity-badge.rare{background:rgba(0,191,255,0.12);border:1px solid rgba(0,191,255,0.3);color:#00bfff}
+.rarity-badge.epic{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:#a855f7}
+.rarity-badge.legendary{background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00}
+.reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:2px;
   background:linear-gradient(135deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.reveal-reward .reward-label{font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:1px;margin-top:4px}
+.reveal-info .reward-label{font-size:12px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:3px}
+.reward-img-wrap{width:180px;height:90px;display:flex;align-items:center;justify-content:center;margin:8px auto}
+.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.4))}
+.reward-icon-big{font-size:48px;filter:drop-shadow(0 0 15px currentColor)}
 
-/* Reward image */
-.reward-image-wrap{width:200px;height:100px;display:flex;align-items:center;justify-content:center;margin:12px auto;position:relative}
-.reward-image-wrap img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 15px rgba(139,92,246,0.4))}
-.reward-silhouette{font-size:60px;filter:drop-shadow(0 0 20px currentColor);opacity:0.8}
-
-/* Collect button */
-.collect-btn{margin-top:20px;padding:12px 44px;border:2px solid rgba(139,92,246,0.4);border-radius:12px;
-  font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+.collect-btn{margin-top:16px;padding:10px 38px;border:2px solid rgba(139,92,246,0.35);border-radius:10px;
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
   color:#c4b5fd;cursor:pointer;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(6,182,212,0.08));
-  transition:all 0.3s;opacity:0;animation:fadeIn 0.5s 2s forwards;backdrop-filter:blur(8px)}
-.collect-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(6,182,212,0.15));
-  border-color:rgba(139,92,246,0.7);box-shadow:0 0 30px rgba(139,92,246,0.2);transform:scale(1.04);color:#fff}
+  background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(6,182,212,0.05));
+  transition:all 0.3s;backdrop-filter:blur(6px)}
+.collect-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.12));
+  border-color:rgba(139,92,246,0.6);box-shadow:0 0 25px rgba(139,92,246,0.15);color:#fff;transform:scale(1.04)}
 
-/* ===== SCREEN FLASH ===== */
-.screen-flash{position:fixed;inset:0;z-index:17;pointer-events:none;opacity:0;
-  background:radial-gradient(circle,rgba(139,92,246,0.6) 0%,rgba(6,182,212,0.3) 40%,transparent 70%)}
-.screen-flash.flash{animation:screenFlash 0.8s ease-out forwards}
+/* Screen flash */
+.screen-flash{position:fixed;inset:0;z-index:14;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(139,92,246,0.5) 0%,transparent 60%)}
+.screen-flash.flash{animation:flashAnim 0.6s ease-out forwards}
+.screen-flash.legendary{background:radial-gradient(circle,rgba(255,170,0,0.7) 0%,rgba(239,68,68,0.3) 30%,transparent 60%)}
+.screen-flash.epic{background:radial-gradient(circle,rgba(168,85,247,0.6) 0%,rgba(236,72,153,0.2) 40%,transparent 60%)}
 
-/* Legendary flash */
-.screen-flash.legendary{background:radial-gradient(circle,rgba(255,170,0,0.8) 0%,rgba(239,68,68,0.4) 30%,rgba(139,92,246,0.2) 60%,transparent 80%)}
-.screen-flash.epic{background:radial-gradient(circle,rgba(168,85,247,0.7) 0%,rgba(236,72,153,0.3) 40%,transparent 70%)}
-
-/* ===== RARITY COLORS ===== */
-:root{
-  --common:#64c864;--rare:#00bfff;--epic:#a855f7;--legendary:#ffaa00;
-  --purple:#8b5cf6;--cyan:#06b6d4;--bg:#020810
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes portalAppear{from{opacity:0;transform:scale(0.5)}to{opacity:1;transform:scale(1)}}
-@keyframes portalSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes portalPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
-@keyframes floatCard{0%,100%{transform:translateY(0) var(--rot,rotate(0deg))}50%{transform:translateY(-12px) var(--rot,rotate(0deg))}}
-@keyframes holoShimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
-@keyframes selectedGlow{0%,100%{opacity:0.7}50%{opacity:1}}
-@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-@keyframes fadeIn{from{opacity:0}to{opacity:1}}
-@keyframes screenFlash{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
-@keyframes cardReveal{
-  0%{transform:rotateY(0deg) scale(1)}
-  40%{transform:rotateY(90deg) scale(1.1)}
-  60%{transform:rotateY(90deg) scale(1.1)}
-  100%{transform:rotateY(180deg) scale(1)}
-}
-@keyframes glowPulse{0%,100%{opacity:0.5}50%{opacity:0.8}}
-@keyframes shakeX{0%,100%{transform:translateX(0)}10%{transform:translateX(-8px)}20%{transform:translateX(8px)}30%{transform:translateX(-6px)}40%{transform:translateX(6px)}50%{transform:translateX(-3px)}60%{transform:translateX(3px)}}
-
-.shake{animation:shakeX 0.6s ease-out}
-
-/* ===== ESC HINT ===== */
-.esc-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-size:11px;
-  color:rgba(255,255,255,0.15);letter-spacing:1px;font-family:'Rajdhani',sans-serif}
-
-/* ===== LOADING STATE ===== */
-.loading-text{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:3px;color:rgba(139,92,246,0.4);
-  text-transform:uppercase;animation:glowPulse 2s ease-in-out infinite}
+@keyframes flashAnim{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}15%{transform:translateX(-6px)}30%{transform:translateX(6px)}45%{transform:translateX(-4px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.shake{animation:shakeX 0.5s ease-out}
 </style>
 </head>
 <body>
 
-<!-- Canvas layers -->
-<canvas id="fx-canvas"></canvas>
-<canvas id="particle-canvas"></canvas>
-<canvas id="lightning-canvas"></canvas>
-
-<!-- Overlays -->
-<div class="vignette"></div>
-<div class="scanlines"></div>
+<canvas id="three-canvas"></canvas>
 <div class="screen-flash" id="screen-flash"></div>
 
-<!-- Main UI -->
-<div id="case-container">
-  <!-- Header -->
+<!-- UI Overlay -->
+<div id="ui-overlay">
   <div class="header">
     <div class="header-logo">
       <img src="logo.png" alt="UG" onerror="this.style.display='none'">
@@ -261,683 +95,836 @@ canvas#lightning-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-ind
     </div>
     <div class="header-price">$5,000</div>
   </div>
-
-  <!-- Portal + Floating Cards -->
-  <div class="portal-container">
-    <div class="portal">
-      <div class="portal-ring"></div>
-      <div class="portal-ring"></div>
-      <div class="portal-ring"></div>
-      <div class="portal-ring"></div>
-      <div class="portal-core"></div>
-      <div class="portal-glow"></div>
-      <div class="portal-cards">
-        <div class="float-card red"><span class="suit">♥</span></div>
-        <div class="float-card black"><span class="suit">♠</span></div>
-        <div class="float-card red"><span class="suit">♦</span></div>
-        <div class="float-card black"><span class="suit">♣</span></div>
-        <div class="float-card red"><span class="suit">♥</span></div>
-      </div>
-    </div>
-    <div class="platform"></div>
-    <div class="platform-reflection"></div>
-  </div>
-
-  <!-- Card Hand Title -->
-  <div class="card-hand-title">Izaberi kartu</div>
-
-  <!-- Card Hand -->
-  <div class="card-hand" id="card-hand">
-    <!-- Cards generated by JS -->
-  </div>
-
-  <!-- Open Button -->
-  <button class="open-btn" id="open-btn" onclick="startReveal()">
-    <span class="btn-glow"></span>
-    OTVORI KARTU
-  </button>
-
+  <div class="select-hint" id="select-hint">Izaberi kartu</div>
+  <button class="open-btn" id="open-btn" onclick="startReveal()">OTVORI KARTU</button>
   <div class="esc-hint">ESC za izlaz</div>
 </div>
 
 <!-- Reveal Overlay -->
 <div id="reveal-overlay">
-  <div class="reveal-card-wrap">
-    <div class="reveal-card" id="reveal-card">
-      <div class="reveal-card-back">
-        <span class="back-design">UG</span>
-      </div>
-      <div class="reveal-card-front" id="reveal-card-front">
-        <div class="big-suit" id="reveal-suit">♠</div>
-        <div class="big-value" id="reveal-value">A</div>
-      </div>
-    </div>
-  </div>
-  <div class="reveal-reward" id="reveal-reward">
-    <div class="rarity-badge" id="reveal-rarity-badge">LEGENDARY</div>
-    <div class="reward-image-wrap" id="reveal-image"></div>
+  <div class="reveal-info" id="reveal-info">
+    <div class="rarity-badge" id="reveal-rarity">LEGENDARY</div>
+    <div class="reward-img-wrap" id="reveal-img"></div>
     <div class="reward-name" id="reveal-name">Elegy</div>
     <div class="reward-label" id="reveal-label">Sportsko vozilo</div>
   </div>
   <button class="collect-btn" id="collect-btn" onclick="collectReward()">POKUPI</button>
-  <div class="esc-hint">ESC za izlaz</div>
 </div>
 
-<script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
 // ===== STATE =====
-var rewardData = {name:'Elegy',type:'vehicle',rarity:'legendary',label:'Sportsko vozilo',amount:1,image:''};
+var rewardData = {name:'Elegy',type:'vehicle',rarity:'legendary',label:'Sportsko vozilo',image:''};
 var selectedCardIndex = -1;
 var isAnimating = false;
 var audioCtx = null;
 
-// Card definitions
-var suits = ['♠','♥','♦','♣'];
-var suitColors = {'♠':'black','♥':'red','♦':'red','♣':'black'};
-var cardValues = ['A','K','Q','J','10','9','8','7'];
-var cardSuits = [0,1,2,3,0,1,2,3]; // index into suits
+var suits = ['spade','heart','diamond','club'];
+var suitSymbols = {spade:'♠',heart:'♥',diamond:'♦',club:'♣'};
+var suitColors = {spade:0x8b5cf6,heart:0xef4444,diamond:0xef4444,club:0x8b5cf6};
+var cardValues = ['A','K','Q','J','10','9'];
 
-// Reward icons by type
-var rewardIcons = {
-  vehicle: '🚗', money: '💰', level: '⭐', respect: '👑',
-  weapon: '🔫', vip: '💎', default: '🎁'
-};
-var rewardIconColors = {
-  vehicle: '#8b5cf6', money: '#22c55e', level: '#eab308',
-  respect: '#ef4444', weapon: '#f97316', vip: '#06b6d4', default: '#8b5cf6'
-};
+var rewardIcons = {vehicle:'🚗',money:'💰',level:'⭐',respect:'👑',weapon:'🔫',vip:'💎',default:'🎁'};
+var rewardColors = {vehicle:0x8b5cf6,money:0x22c55e,level:0xeab308,respect:0xef4444,weapon:0xf97316,vip:0x06b6d4,default:0x8b5cf6};
 
-// ===== CANVAS SETUP =====
-var fxCanvas = document.getElementById('fx-canvas');
-var fxCtx = fxCanvas.getContext('2d');
-var partCanvas = document.getElementById('particle-canvas');
-var partCtx = partCanvas.getContext('2d');
-var lightCanvas = document.getElementById('lightning-canvas');
-var lightCtx = lightCanvas.getContext('2d');
+// ===== THREE.JS SETUP =====
+var canvas = document.getElementById('three-canvas');
+var renderer = new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
 
-function resizeCanvases() {
-  var w = window.innerWidth, h = window.innerHeight;
-  fxCanvas.width = w; fxCanvas.height = h;
-  partCanvas.width = w; partCanvas.height = h;
-  lightCanvas.width = w; lightCanvas.height = h;
-}
-resizeCanvases();
-window.addEventListener('resize', resizeCanvases);
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0x020810);
+scene.fog = new THREE.FogExp2(0x020810,0.08);
 
-// ===== BACKGROUND PARTICLES =====
-var bgParticles = [];
-var numBgParticles = 80;
+var camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
+camera.position.set(0,2.5,6);
+camera.lookAt(0,0.5,0);
 
-function initBgParticles() {
-  bgParticles = [];
-  for (var i = 0; i < numBgParticles; i++) {
-    bgParticles.push({
-      x: Math.random() * fxCanvas.width,
-      y: Math.random() * fxCanvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3 - 0.2,
-      size: Math.random() * 2 + 0.5,
-      alpha: Math.random() * 0.4 + 0.1,
-      color: Math.random() > 0.5 ? '139,92,246' : '6,182,212',
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: Math.random() * 0.02 + 0.01
-    });
+// Post-processing
+var composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),1.2,0.5,0.3);
+composer.addPass(bloomPass);
+
+// Lights
+var ambientLight = new THREE.AmbientLight(0x111133,0.5);
+scene.add(ambientLight);
+
+var portalLight = new THREE.PointLight(0x8b5cf6,3,15);
+portalLight.position.set(0,2,-1);
+scene.add(portalLight);
+
+var rimLight = new THREE.PointLight(0x06b6d4,1.5,10);
+rimLight.position.set(2,1,3);
+scene.add(rimLight);
+
+var spotLight = new THREE.SpotLight(0x8b5cf6,2,20,Math.PI/6,0.5);
+spotLight.position.set(0,6,0);
+spotLight.target.position.set(0,0,0);
+scene.add(spotLight);
+scene.add(spotLight.target);
+
+// ===== FLOOR =====
+var floorGeo = new THREE.PlaneGeometry(30,30);
+var floorMat = new THREE.MeshStandardMaterial({color:0x030810,roughness:0.8,metalness:0.2});
+var floor = new THREE.Mesh(floorGeo,floorMat);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -0.5;
+scene.add(floor);
+
+// Floor glow ring
+var ringGeo = new THREE.RingGeometry(1.8,2.2,64);
+var ringMat = new THREE.MeshBasicMaterial({color:0x8b5cf6,transparent:true,opacity:0.15,side:THREE.DoubleSide});
+var floorRing = new THREE.Mesh(ringGeo,ringMat);
+floorRing.rotation.x = -Math.PI/2;
+floorRing.position.y = -0.48;
+scene.add(floorRing);
+
+// ===== PORTAL =====
+var portalGroup = new THREE.Group();
+portalGroup.position.set(0,1.8,-0.5);
+scene.add(portalGroup);
+
+// Portal torus
+var torusGeo = new THREE.TorusGeometry(1.3,0.06,16,100);
+var torusMat = new THREE.MeshStandardMaterial({color:0x8b5cf6,emissive:0x8b5cf6,emissiveIntensity:2,roughness:0.2,metalness:0.8});
+var portalTorus = new THREE.Mesh(torusGeo,torusMat);
+portalGroup.add(portalTorus);
+
+// Inner torus
+var torusGeo2 = new THREE.TorusGeometry(1.1,0.03,16,80);
+var torusMat2 = new THREE.MeshStandardMaterial({color:0x06b6d4,emissive:0x06b6d4,emissiveIntensity:1.5,roughness:0.3,metalness:0.7});
+var portalTorus2 = new THREE.Mesh(torusGeo2,torusMat2);
+portalGroup.add(portalTorus2);
+
+// Portal core (transparent disc)
+var coreGeo = new THREE.CircleGeometry(1.05,64);
+var coreMat = new THREE.ShaderMaterial({
+  transparent:true,
+  side:THREE.DoubleSide,
+  uniforms:{
+    uTime:{value:0},
+    uColor1:{value:new THREE.Color(0x8b5cf6)},
+    uColor2:{value:new THREE.Color(0x06b6d4)}
+  },
+  vertexShader:`
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader:`
+    uniform float uTime;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    varying vec2 vUv;
+    void main(){
+      vec2 center = vUv - 0.5;
+      float dist = length(center);
+      float angle = atan(center.y,center.x);
+      float swirl = sin(angle*3.0 + uTime*2.0)*0.1;
+      float alpha = smoothstep(0.5,0.1,dist+swirl)*0.25;
+      vec3 col = mix(uColor1,uColor2,sin(angle+uTime)*0.5+0.5);
+      alpha *= (0.7 + 0.3*sin(uTime*1.5 + dist*5.0));
+      gl_FragColor = vec4(col,alpha);
+    }
+  `
+});
+var portalCore = new THREE.Mesh(coreGeo,coreMat);
+portalGroup.add(portalCore);
+
+// Portal back glow
+var glowGeo = new THREE.PlaneGeometry(5,5);
+var glowMat = new THREE.ShaderMaterial({
+  transparent:true,
+  side:THREE.DoubleSide,
+  uniforms:{uColor:{value:new THREE.Color(0x8b5cf6)}},
+  vertexShader:`
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader:`
+    uniform vec3 uColor;
+    varying vec2 vUv;
+    void main(){
+      float dist = length(vUv-0.5);
+      float alpha = smoothstep(0.5,0.0,dist)*0.12;
+      gl_FragColor = vec4(uColor,alpha);
+    }
+  `
+});
+var portalGlow = new THREE.Mesh(glowGeo,glowMat);
+portalGlow.position.z = -0.1;
+portalGroup.add(portalGlow);
+
+// ===== 3D CARDS =====
+var cards = [];
+var cardGroup = new THREE.Group();
+cardGroup.position.y = 0.3;
+scene.add(cardGroup);
+
+function createCardTexture(value,suit,isFront,rarity){
+  var cvs = document.createElement('canvas');
+  cvs.width = 256; cvs.height = 384;
+  var ctx = cvs.getContext('2d');
+
+  if(isFront){
+    // Card front
+    var gradient = ctx.createLinearGradient(0,0,256,384);
+    gradient.addColorStop(0,'#0f172a');
+    gradient.addColorStop(1,'#1e1b4b');
+    ctx.fillStyle = gradient;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border
+    var borderColors = {common:'#64c864',rare:'#00bfff',epic:'#a855f7',legendary:'#ffaa00'};
+    ctx.strokeStyle = borderColors[rarity]||'#8b5cf6';
+    ctx.lineWidth = 4;
+    ctx.roundRect(4,4,248,376,14);
+    ctx.stroke();
+
+    // Inner border
+    ctx.strokeStyle = 'rgba(139,92,246,0.15)';
+    ctx.lineWidth = 1;
+    ctx.roundRect(16,16,224,352,8);
+    ctx.stroke();
+
+    // Suit symbol
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = suit===0||suit===3 ? '#8b5cf6' : '#ef4444';
+    ctx.shadowColor = suit===0||suit===3 ? '#8b5cf6' : '#ef4444';
+    ctx.shadowBlur = 20;
+    ctx.fillText(suitSymbols[suits[suit]],128,210);
+
+    // Value
+    ctx.font = 'bold 48px Orbitron, monospace';
+    ctx.shadowBlur = 15;
+    ctx.fillText(value,128,140);
+
+    // Corner values
+    ctx.font = 'bold 22px Orbitron, monospace';
+    ctx.shadowBlur = 8;
+    ctx.textAlign = 'left';
+    ctx.fillText(value,24,40);
+    ctx.font = '18px serif';
+    ctx.fillText(suitSymbols[suits[suit]],28,62);
+
+    ctx.save();
+    ctx.translate(256,384);
+    ctx.rotate(Math.PI);
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 22px Orbitron, monospace';
+    ctx.fillText(value,24,40);
+    ctx.font = '18px serif';
+    ctx.fillText(suitSymbols[suits[suit]],28,62);
+    ctx.restore();
+
+  } else {
+    // Card back
+    var gradient2 = ctx.createLinearGradient(0,0,256,384);
+    gradient2.addColorStop(0,'#1a0a2e');
+    gradient2.addColorStop(1,'#0c1445');
+    ctx.fillStyle = gradient2;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+    ctx.lineWidth = 3;
+    ctx.roundRect(4,4,248,376,14);
+    ctx.stroke();
+
+    // Inner border
+    ctx.strokeStyle = 'rgba(139,92,246,0.12)';
+    ctx.lineWidth = 1;
+    ctx.roundRect(14,14,228,356,8);
+    ctx.stroke();
+
+    // Pattern
+    ctx.fillStyle = 'rgba(139,92,246,0.04)';
+    for(var py=20;py<370;py+=16){
+      for(var px=20;px<240;px+=16){
+        if((Math.floor(px/16)+Math.floor(py/16))%2===0){
+          ctx.fillRect(px,py,12,12);
+        }
+      }
+    }
+
+    // UG emblem
+    ctx.font = 'bold 40px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    var g = ctx.createLinearGradient(80,170,176,210);
+    g.addColorStop(0,'#8b5cf6');
+    g.addColorStop(1,'#06b6d4');
+    ctx.fillStyle = g;
+    ctx.shadowColor = '#8b5cf6';
+    ctx.shadowBlur = 20;
+    ctx.fillText('UG',128,205);
   }
+
+  var tex = new THREE.CanvasTexture(cvs);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
 }
-initBgParticles();
+
+function createCard(index){
+  var valIdx = Math.floor(Math.random()*cardValues.length);
+  var suitIdx = Math.floor(Math.random()*4);
+  var value = cardValues[valIdx];
+  var suit = suitIdx;
+
+  var rarity = rewardData.rarity || 'rare';
+
+  var frontTex = createCardTexture(value,suit,true,rarity);
+  var backTex = createCardTexture(value,suit,false,rarity);
+
+  // Card geometry - thin box
+  var cardGeo = new THREE.BoxGeometry(0.7,1.0,0.015);
+
+  // Materials: right, left, top, bottom, front, back
+  var edgeMat = new THREE.MeshStandardMaterial({color:0x1a0a2e,roughness:0.5,metalness:0.3});
+  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.4,metalness:0.1,emissive:0x222244,emissiveIntensity:0.1});
+  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.4,metalness:0.1,emissive:0x221144,emissiveIntensity:0.1});
+
+  var card = new THREE.Mesh(cardGeo,[edgeMat,edgeMat,edgeMat,edgeMat,frontMat,backMat]);
+
+  // Position cards in a fan
+  var totalCards = 5;
+  var fanAngle = (index - (totalCards-1)/2) * 0.18;
+  var fanX = (index - (totalCards-1)/2) * 0.85;
+
+  card.position.set(fanX,-0.2,0.5);
+  card.rotation.z = fanAngle;
+  card.rotation.x = -0.3;
+  card.userData = {index:index,value:value,suit:suit,origPos:card.position.clone(),origRot:card.rotation.clone(),selected:false};
+
+  cardGroup.add(card);
+  cards.push(card);
+  return card;
+}
+
+function generateCards(){
+  // Remove old
+  for(var i=0;i<cards.length;i++){
+    cardGroup.remove(cards[i]);
+    cards[i].geometry.dispose();
+  }
+  cards = [];
+  selectedCardIndex = -1;
+
+  for(var i=0;i<5;i++){
+    createCard(i);
+  }
+
+  document.getElementById('open-btn').classList.remove('visible');
+  document.getElementById('select-hint').classList.remove('hidden');
+}
+
+generateCards();
+
+// ===== PARTICLE SYSTEM =====
+var particleCount = 300;
+var particleGeo = new THREE.BufferGeometry();
+var particlePositions = new Float32Array(particleCount*3);
+var particleSizes = new Float32Array(particleCount);
+var particleAlphas = new Float32Array(particleCount);
+var particleVelocities = [];
+
+for(var i=0;i<particleCount;i++){
+  particlePositions[i*3] = (Math.random()-0.5)*12;
+  particlePositions[i*3+1] = Math.random()*6-0.5;
+  particlePositions[i*3+2] = (Math.random()-0.5)*8-1;
+  particleSizes[i] = Math.random()*3+1;
+  particleAlphas[i] = Math.random();
+  particleVelocities.push({
+    vx:(Math.random()-0.5)*0.005,
+    vy:Math.random()*0.008+0.002,
+    vz:(Math.random()-0.5)*0.003
+  });
+}
+
+particleGeo.setAttribute('position',new THREE.BufferAttribute(particlePositions,3));
+particleGeo.setAttribute('size',new THREE.BufferAttribute(particleSizes,1));
+particleGeo.setAttribute('alpha',new THREE.BufferAttribute(particleAlphas,1));
+
+var particleMat = new THREE.ShaderMaterial({
+  transparent:true,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending,
+  uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(0x8b5cf6)}},
+  vertexShader:`
+    attribute float size;
+    attribute float alpha;
+    varying float vAlpha;
+    uniform float uTime;
+    void main(){
+      vAlpha = alpha*(0.5+0.5*sin(uTime*2.0+position.x*3.0));
+      vec4 mvPos = modelViewMatrix*vec4(position,1.0);
+      gl_PointSize = size*(200.0/(-mvPos.z));
+      gl_Position = projectionMatrix*mvPos;
+    }
+  `,
+  fragmentShader:`
+    uniform vec3 uColor;
+    varying float vAlpha;
+    void main(){
+      float dist = length(gl_PointCoord-0.5);
+      if(dist>0.5) discard;
+      float a = smoothstep(0.5,0.0,dist)*vAlpha*0.4;
+      gl_FragColor = vec4(uColor,a);
+    }
+  `
+});
+
+var particles = new THREE.Points(particleGeo,particleMat);
+scene.add(particles);
 
 // ===== EXPLOSION PARTICLES =====
 var explosionParticles = [];
+var explosionGroup = new THREE.Group();
+scene.add(explosionGroup);
 
-function spawnExplosion(cx, cy, count, rarity) {
-  var colors = {
-    common: ['100,200,100','150,220,150'],
-    rare: ['0,191,255','100,210,255'],
-    epic: ['168,85,247','236,72,153','139,92,246'],
-    legendary: ['255,170,0','239,68,68','255,215,0','168,85,247']
-  };
-  var cols = colors[rarity] || colors.rare;
-  for (var i = 0; i < count; i++) {
-    var angle = Math.random() * Math.PI * 2;
-    var speed = Math.random() * 6 + 2;
-    explosionParticles.push({
-      x: cx, y: cy,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      size: Math.random() * 4 + 1,
-      alpha: 1,
-      decay: Math.random() * 0.015 + 0.008,
-      color: cols[Math.floor(Math.random() * cols.length)],
-      gravity: 0.05
-    });
+function spawnExplosion3D(count,rarity){
+  var colors = {common:[0x64c864,0x88dd88],rare:[0x00bfff,0x66d9ff],epic:[0xa855f7,0xec4899],legendary:[0xffaa00,0xef4444,0xffd700]};
+  var cols = colors[rarity]||colors.rare;
+
+  for(var i=0;i<count;i++){
+    var geo = new THREE.SphereGeometry(Math.max(0.01,Math.random()*0.04+0.01),6,6);
+    var mat = new THREE.MeshBasicMaterial({color:cols[Math.floor(Math.random()*cols.length)],transparent:true,opacity:1});
+    var mesh = new THREE.Mesh(geo,mat);
+
+    var angle = Math.random()*Math.PI*2;
+    var elev = (Math.random()-0.5)*Math.PI;
+    var speed = Math.random()*0.08+0.03;
+    mesh.position.set(0,1.5,0);
+    mesh.userData = {
+      vx:Math.cos(angle)*Math.cos(elev)*speed,
+      vy:Math.sin(elev)*speed+0.03,
+      vz:Math.sin(angle)*Math.cos(elev)*speed,
+      decay:Math.random()*0.015+0.008,
+      gravity:0.001
+    };
+    explosionGroup.add(mesh);
+    explosionParticles.push(mesh);
   }
 }
 
-// ===== SPARKLE PARTICLES =====
-var sparkles = [];
+// ===== RAYCASTER =====
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+var hoveredCard = null;
 
-function spawnSparkles(cx, cy, count, rarity) {
-  var colors = {common:'#64c864',rare:'#00bfff',epic:'#a855f7',legendary:'#ffaa00'};
-  var col = colors[rarity] || colors.rare;
-  for (var i = 0; i < count; i++) {
-    sparkles.push({
-      x: cx + (Math.random()-0.5)*200,
-      y: cy + (Math.random()-0.5)*200,
-      size: Math.random() * 3 + 1,
-      alpha: 1,
-      decay: Math.random() * 0.02 + 0.01,
-      color: col,
-      twinkle: Math.random() * Math.PI * 2,
-      twinkleSpeed: Math.random() * 0.1 + 0.05
-    });
-  }
-}
+canvas.addEventListener('mousemove',function(e){
+  mouse.x = (e.clientX/window.innerWidth)*2-1;
+  mouse.y = -(e.clientY/window.innerHeight)*2+1;
+});
 
-// ===== LIGHTNING EFFECTS =====
-var lightningActive = false;
-var lightningAlpha = 0;
-
-function drawLightning(ctx, x1, y1, x2, y2, depth, maxDepth) {
-  if (depth > maxDepth) return;
-  var midX = (x1 + x2) / 2 + (Math.random() - 0.5) * (maxDepth - depth) * 20;
-  var midY = (y1 + y2) / 2 + (Math.random() - 0.5) * (maxDepth - depth) * 20;
-  
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(midX, midY);
-  ctx.lineTo(x2, y2);
-  ctx.strokeStyle = 'rgba(139,92,246,' + (0.8 - depth * 0.15) + ')';
-  ctx.lineWidth = Math.max(1, maxDepth - depth);
-  ctx.stroke();
-  
-  if (Math.random() > 0.5) {
-    drawLightning(ctx, midX, midY, midX + (Math.random()-0.5)*80, midY + (Math.random()-0.5)*80, depth+1, maxDepth);
-  }
-}
-
-// ===== ANIMATION LOOP =====
-var animFrame;
-function animate() {
-  var w = fxCanvas.width, h = fxCanvas.height;
-  
-  // Clear FX canvas (background particles)
-  fxCtx.clearRect(0, 0, w, h);
-  partCtx.clearRect(0, 0, w, h);
-  
-  // Draw background particles
-  for (var i = 0; i < bgParticles.length; i++) {
-    var p = bgParticles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.pulse += p.pulseSpeed;
-    
-    if (p.y < -10) { p.y = h + 10; p.x = Math.random() * w; }
-    if (p.x < -10) p.x = w + 10;
-    if (p.x > w + 10) p.x = -10;
-    
-    var alpha = p.alpha * (0.6 + 0.4 * Math.sin(p.pulse));
-    fxCtx.beginPath();
-    fxCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    fxCtx.fillStyle = 'rgba(' + p.color + ',' + alpha + ')';
-    fxCtx.fill();
-  }
-  
-  // Draw explosion particles
-  for (var i = explosionParticles.length - 1; i >= 0; i--) {
-    var p = explosionParticles[i];
-    p.x += p.vx;
-    p.y += p.vy;
-    p.vy += p.gravity;
-    p.vx *= 0.99;
-    p.alpha -= p.decay;
-    
-    if (p.alpha <= 0) { explosionParticles.splice(i, 1); continue; }
-    
-    partCtx.beginPath();
-    partCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    partCtx.fillStyle = 'rgba(' + p.color + ',' + p.alpha + ')';
-    partCtx.fill();
-    
-    // Glow
-    partCtx.beginPath();
-    partCtx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-    partCtx.fillStyle = 'rgba(' + p.color + ',' + (p.alpha * 0.15) + ')';
-    partCtx.fill();
-  }
-  
-  // Draw sparkles
-  for (var i = sparkles.length - 1; i >= 0; i--) {
-    var s = sparkles[i];
-    s.alpha -= s.decay;
-    s.twinkle += s.twinkleSpeed;
-    
-    if (s.alpha <= 0) { sparkles.splice(i, 1); continue; }
-    
-    var a = s.alpha * (0.5 + 0.5 * Math.sin(s.twinkle));
-    partCtx.beginPath();
-    // Draw 4-point star
-    var sz = s.size;
-    partCtx.moveTo(s.x, s.y - sz);
-    partCtx.quadraticCurveTo(s.x + sz*0.3, s.y - sz*0.3, s.x + sz, s.y);
-    partCtx.quadraticCurveTo(s.x + sz*0.3, s.y + sz*0.3, s.x, s.y + sz);
-    partCtx.quadraticCurveTo(s.x - sz*0.3, s.y + sz*0.3, s.x - sz, s.y);
-    partCtx.quadraticCurveTo(s.x - sz*0.3, s.y - sz*0.3, s.x, s.y - sz);
-    partCtx.fillStyle = s.color.replace(')', ',' + a + ')').replace('rgb', 'rgba');
-    partCtx.fillStyle = 'rgba(' + hexToRgb(s.color) + ',' + a + ')';
-    partCtx.fill();
-  }
-  
-  // Lightning
-  if (lightningActive) {
-    lightCtx.clearRect(0, 0, lightCanvas.width, lightCanvas.height);
-    lightCtx.globalAlpha = lightningAlpha;
-    var cx = lightCanvas.width / 2, cy = lightCanvas.height / 2;
-    for (var i = 0; i < 3; i++) {
-      var angle = Math.random() * Math.PI * 2;
-      var dist = 150 + Math.random() * 100;
-      drawLightning(lightCtx, cx, cy, cx + Math.cos(angle)*dist, cy + Math.sin(angle)*dist, 0, 4);
-    }
-  } else {
-    lightCtx.clearRect(0, 0, lightCanvas.width, lightCanvas.height);
-  }
-  
-  animFrame = requestAnimationFrame(animate);
-}
-animate();
-
-function hexToRgb(hex) {
-  var r = parseInt(hex.slice(1,3),16);
-  var g = parseInt(hex.slice(3,5),16);
-  var b = parseInt(hex.slice(5,7),16);
-  return r+','+g+','+b;
-}
-
-// ===== GENERATE CARD HAND =====
-function generateCards() {
-  var hand = document.getElementById('card-hand');
-  hand.innerHTML = '';
-  
-  for (var i = 0; i < 5; i++) {
-    var valIdx = Math.floor(Math.random() * cardValues.length);
-    var suitIdx = Math.floor(Math.random() * 4);
-    var value = cardValues[valIdx];
-    var suit = suits[suitIdx];
-    var isRed = suitIdx === 1 || suitIdx === 2;
-    var colorClass = isRed ? 'red-card' : 'black-card';
-    var suitColorClass = isRed ? 'red' : 'black';
-    
-    var icon = rewardIcons[rewardData.type] || rewardIcons.default;
-    
-    var card = document.createElement('div');
-    card.className = 'poker-card ' + rewardData.rarity;
-    card.setAttribute('data-index', i);
-    card.onclick = (function(idx, el) {
-      return function() { selectCard(idx, el); }
-    })(i, card);
-    
-    card.innerHTML = 
-      '<div class="card-inner">' +
-        '<div class="card-back">' +
-          '<div class="holo-shimmer"></div>' +
-          '<span class="card-back-emblem">UG</span>' +
-        '</div>' +
-        '<div class="card-front ' + colorClass + '">' +
-          '<span class="corner-value top">' + value + '<br>' + suit + '</span>' +
-          '<div class="center-suit">' + suit + '</div>' +
-          '<div class="reward-icon">' + icon + '</div>' +
-          '<span class="corner-value bottom">' + value + '<br>' + suit + '</span>' +
-        '</div>' +
-      '</div>';
-    
-    hand.appendChild(card);
-    
-    // Stagger entrance animation
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(40px)';
-    (function(c, delay) {
-      setTimeout(function() {
-        c.style.transition = 'opacity 0.5s, transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-        c.style.opacity = '1';
-        c.style.transform = 'translateY(0)';
-      }, delay);
-    })(card, 1000 + i * 120);
-  }
-}
-generateCards();
-
-// ===== SELECT CARD =====
-function selectCard(index, el) {
-  if (isAnimating) return;
-  
-  // Deselect previous
-  var cards = document.querySelectorAll('.poker-card');
-  for (var i = 0; i < cards.length; i++) {
-    cards[i].classList.remove('selected');
-  }
-  
-  // Select new
-  el.classList.add('selected');
-  selectedCardIndex = index;
-  
-  playSound('select');
-  
-  // Sparkles on select
-  var rect = el.getBoundingClientRect();
-  spawnSparkles(rect.left + rect.width/2, rect.top + rect.height/2, 8, rewardData.rarity);
-}
-
-// ===== START REVEAL =====
-function startReveal() {
-  if (isAnimating || selectedCardIndex === -1) return;
-  isAnimating = true;
-  
-  var selectedCard = document.querySelectorAll('.poker-card')[selectedCardIndex];
-  
-  // Disable button
-  document.getElementById('open-btn').classList.add('hidden');
-  
-  playSound('reveal_start');
-  
-  // Phase 1: Selected card flies up and centers (1s)
-  selectedCard.style.transition = 'all 1s cubic-bezier(0.34,1.56,0.64,1)';
-  selectedCard.style.transform = 'translateY(-80px) scale(1.3)';
-  selectedCard.style.zIndex = '50';
-  
-  // Other cards fade out
-  var allCards = document.querySelectorAll('.poker-card');
-  for (var i = 0; i < allCards.length; i++) {
-    if (i !== selectedCardIndex) {
-      allCards[i].style.transition = 'opacity 0.6s, transform 0.6s';
-      allCards[i].style.opacity = '0';
-      allCards[i].style.transform = 'translateY(20px) scale(0.8)';
-    }
-  }
-  
-  // Phase 2: Flash + transition to reveal overlay (1.5s)
-  setTimeout(function() {
-    // Show reveal overlay
-    var overlay = document.getElementById('reveal-overlay');
-    overlay.classList.add('active');
-    
-    // Setup reveal card
-    var isRed = Math.random() > 0.5;
-    var suitIdx = Math.floor(Math.random() * 4);
-    var suit = suits[suitIdx];
-    var value = cardValues[Math.floor(Math.random() * cardValues.length)];
-    var colorClass = isRed ? 'red-card' : 'black-card';
-    
-    document.getElementById('reveal-suit').textContent = suit;
-    document.getElementById('reveal-value').textContent = value;
-    var front = document.getElementById('reveal-card-front');
-    front.className = 'reveal-card-front ' + colorClass;
-    
-    // Set rarity border
-    var rarBorderColors = {common:'rgba(100,200,100,0.3)',rare:'rgba(0,191,255,0.4)',epic:'rgba(168,85,247,0.5)',legendary:'rgba(255,170,0,0.5)'};
-    front.style.borderColor = rarBorderColors[rewardData.rarity] || rarBorderColors.rare;
-    
-    // Hide case container
-    document.getElementById('case-container').style.display = 'none';
-    
-    // Start flip after a moment
-    setTimeout(function() {
-      document.getElementById('reveal-card').classList.add('flipping');
-      playSound('card_flip');
-      
-      // Flash at midpoint of flip
-      setTimeout(function() {
-        triggerFlash(rewardData.rarity);
-        
-        // Explosion particles
-        var cx = window.innerWidth / 2;
-        var cy = window.innerHeight / 2;
-        var counts = {common:30,rare:50,epic:80,legendary:150};
-        spawnExplosion(cx, cy, counts[rewardData.rarity] || 50, rewardData.rarity);
-        spawnSparkles(cx, cy, (counts[rewardData.rarity] || 50) / 2, rewardData.rarity);
-        
-        // Screen shake for epic+
-        if (rewardData.rarity === 'epic' || rewardData.rarity === 'legendary') {
-          document.body.classList.add('shake');
-          setTimeout(function(){ document.body.classList.remove('shake'); }, 600);
-        }
-        
-        // Lightning for legendary
-        if (rewardData.rarity === 'legendary') {
-          lightningActive = true;
-          lightningAlpha = 1;
-          lightCanvas.style.opacity = '1';
-          
-          var lightPulses = 6;
-          var lightInterval = setInterval(function() {
-            lightningAlpha = 0.5 + Math.random() * 0.5;
-            lightPulses--;
-            if (lightPulses <= 0) {
-              clearInterval(lightInterval);
-              lightningActive = false;
-              lightCanvas.style.opacity = '0';
-            }
-          }, 200);
-          
-          // Extra explosions
-          setTimeout(function(){ spawnExplosion(cx, cy, 80, 'legendary'); }, 300);
-          setTimeout(function(){ spawnExplosion(cx, cy, 60, 'legendary'); spawnSparkles(cx, cy, 40, 'legendary'); }, 600);
-        }
-        
-        // Epic lightning
-        if (rewardData.rarity === 'epic') {
-          lightningActive = true;
-          lightningAlpha = 0.6;
-          lightCanvas.style.opacity = '1';
-          setTimeout(function(){
-            lightningActive = false;
-            lightCanvas.style.opacity = '0';
-          }, 800);
-        }
-        
-      }, 500); // midpoint of flip
-      
-      // Show reward info after flip completes
-      setTimeout(function() {
-        var rewardEl = document.getElementById('reveal-reward');
-        
-        // Update rarity badge
-        var badge = document.getElementById('reveal-rarity-badge');
-        badge.className = 'rarity-badge ' + rewardData.rarity;
-        var rarityLabels = {legendary:'LEGENDARY',epic:'EPIC',rare:'RARE',common:'COMMON'};
-        badge.textContent = rarityLabels[rewardData.rarity] || 'RARE';
-        
-        // Update reward name/label
-        document.getElementById('reveal-name').textContent = rewardData.name;
-        document.getElementById('reveal-label').textContent = rewardData.label;
-        
-        // Update reward image
-        var imgWrap = document.getElementById('reveal-image');
-        if (rewardData.type === 'vehicle' && rewardData.image) {
-          imgWrap.innerHTML = '<img src="' + rewardData.image + '" onerror="this.parentElement.innerHTML=\'<span class=reward-silhouette style=color:' + (rewardIconColors[rewardData.type]||'#8b5cf6') + '>' + (rewardIcons[rewardData.type]||rewardIcons.default) + '</span>\'">';
-        } else {
-          var icon = rewardIcons[rewardData.type] || rewardIcons.default;
-          var col = rewardIconColors[rewardData.type] || rewardIconColors.default;
-          imgWrap.innerHTML = '<span class="reward-silhouette" style="color:' + col + '">' + icon + '</span>';
-        }
-        
-        rewardEl.classList.add('show');
-        playSound('reward_' + rewardData.rarity);
-        
-        isAnimating = false;
-      }, 1200); // after flip completes
-      
-    }, 300); // delay before flip starts
-    
-  }, 1000); // after card flies up
-}
-
-// ===== FLASH EFFECT =====
-function triggerFlash(rarity) {
-  var flash = document.getElementById('screen-flash');
-  flash.className = 'screen-flash';
-  if (rarity === 'legendary') flash.classList.add('legendary');
-  if (rarity === 'epic') flash.classList.add('epic');
-  flash.classList.add('flash');
-  playSound('flash');
-  setTimeout(function(){ flash.className = 'screen-flash'; }, 800);
-}
-
-// ===== COLLECT REWARD =====
-function collectReward() {
-  if (typeof cef !== 'undefined' && cef.emit) {
-    cef.emit('cardcase:collect');
-  }
-  closeCase();
-}
-
-// ===== CLOSE CASE =====
-function closeCase() {
-  if (typeof cef !== 'undefined' && cef.emit) {
-    cef.emit('cardcase:close');
-  }
-  resetCaseUI();
-}
-
-function resetCaseUI() {
-  document.getElementById('reveal-overlay').classList.remove('active');
-  document.getElementById('reveal-reward').classList.remove('show');
-  document.getElementById('reveal-card').classList.remove('flipping');
-  document.getElementById('case-container').style.display = 'flex';
-  document.getElementById('open-btn').classList.remove('hidden');
-  selectedCardIndex = -1;
-  isAnimating = false;
-  explosionParticles = [];
-  sparkles = [];
-  lightningActive = false;
-  lightCanvas.style.opacity = '0';
-  
-  // Regenerate cards
-  generateCards();
-}
-
-// ===== SOUND ENGINE =====
-function playSound(type) {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    var osc = audioCtx.createOscillator();
-    var gain = audioCtx.createGain();
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    
-    var now = audioCtx.currentTime;
-    
-    switch(type) {
-      case 'select':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(800, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-        osc.start(now); osc.stop(now + 0.15);
-        break;
-      case 'reveal_start':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.3);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.start(now); osc.stop(now + 0.4);
-        break;
-      case 'card_flip':
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(200, now);
-        osc.frequency.exponentialRampToValueAtTime(800, now + 0.15);
-        gain.gain.setValueAtTime(0.04, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
-        break;
-      case 'flash':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(1500, now);
-        osc.frequency.exponentialRampToValueAtTime(200, now + 0.3);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-        osc.start(now); osc.stop(now + 0.4);
-        break;
-      case 'reward_common':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(800, now + 0.2);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.start(now); osc.stop(now + 0.3);
-        break;
-      case 'reward_rare':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1000, now + 0.2);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
-        gain.gain.setValueAtTime(0.07, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-        osc.start(now); osc.stop(now + 0.5);
-        break;
-      case 'reward_epic':
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(400, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
-        osc.frequency.exponentialRampToValueAtTime(800, now + 0.5);
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-        osc.start(now); osc.stop(now + 0.6);
-        // Second tone
-        var osc2 = audioCtx.createOscillator();
-        var gain2 = audioCtx.createGain();
-        osc2.connect(gain2); gain2.connect(audioCtx.destination);
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(800, now + 0.1);
-        osc2.frequency.exponentialRampToValueAtTime(1600, now + 0.4);
-        gain2.gain.setValueAtTime(0.04, now + 0.1);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-        osc2.start(now + 0.1); osc2.stop(now + 0.5);
-        break;
-      case 'reward_legendary':
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(300, now);
-        osc.frequency.exponentialRampToValueAtTime(1500, now + 0.4);
-        osc.frequency.exponentialRampToValueAtTime(1000, now + 0.6);
-        osc.frequency.exponentialRampToValueAtTime(1800, now + 0.8);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
-        osc.start(now); osc.stop(now + 1.0);
-        // Chord
-        var osc3 = audioCtx.createOscillator();
-        var gain3 = audioCtx.createGain();
-        osc3.connect(gain3); gain3.connect(audioCtx.destination);
-        osc3.type = 'sine';
-        osc3.frequency.setValueAtTime(600, now + 0.15);
-        osc3.frequency.exponentialRampToValueAtTime(2000, now + 0.5);
-        gain3.gain.setValueAtTime(0.05, now + 0.15);
-        gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-        osc3.start(now + 0.15); osc3.stop(now + 0.7);
-        break;
-    }
-  } catch(e) {}
-}
-
-// ===== ESC KEY =====
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape' || e.keyCode === 27) {
-    closeCase();
+canvas.addEventListener('click',function(e){
+  if(isAnimating) return;
+  raycaster.setFromCamera(mouse,camera);
+  var intersects = raycaster.intersectObjects(cards);
+  if(intersects.length>0){
+    var card = intersects[0].object;
+    selectCard(card.userData.index);
   }
 });
 
-// ===== CEF EVENTS FROM PAWN =====
-if (typeof cef !== 'undefined' && cef.addEventListener) {
-  cef.addEventListener('cardcase:init', function(name, type, rarity, label, image) {
-    rewardData.name = name || 'Mystery Reward';
-    rewardData.type = type || 'money';
-    rewardData.rarity = rarity || 'rare';
-    rewardData.label = label || 'Nagrada';
-    rewardData.image = image || '';
-    console.log('[CARDCASE] init: ' + name + ' rarity=' + rarity + ' type=' + type);
-    
-    // Regenerate cards with new rarity border
+function selectCard(index){
+  // Deselect previous
+  for(var i=0;i<cards.length;i++){
+    var c = cards[i];
+    c.userData.selected = false;
+    // Reset position smoothly
+    tweenCard(c,c.userData.origPos,c.userData.origRot,400);
+  }
+
+  var card = cards[index];
+  card.userData.selected = true;
+  selectedCardIndex = index;
+
+  // Lift card up
+  var newPos = card.userData.origPos.clone();
+  newPos.y += 0.4;
+  newPos.z += 0.2;
+  var newRot = card.userData.origRot.clone();
+  newRot.x = -0.15;
+  tweenCard(card,newPos,newRot,350);
+
+  playSound('select');
+
+  // Show open button
+  document.getElementById('open-btn').classList.add('visible');
+  document.getElementById('select-hint').classList.add('hidden');
+}
+
+function tweenCard(card,targetPos,targetRot,duration){
+  var startPos = card.position.clone();
+  var startRot = new THREE.Vector3(card.rotation.x,card.rotation.y,card.rotation.z);
+  var startTime = performance.now();
+
+  function tick(){
+    var elapsed = performance.now()-startTime;
+    var t = Math.min(elapsed/duration,1);
+    // Ease out cubic
+    t = 1-Math.pow(1-t,3);
+
+    card.position.lerpVectors(startPos,targetPos,t);
+    card.rotation.x = startRot.x+(targetRot.x-startRot.x)*t;
+    card.rotation.y = startRot.y+(targetRot.y-startRot.y)*t;
+    card.rotation.z = startRot.z+(targetRot.z-startRot.z)*t;
+
+    if(t<1) requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// ===== REVEAL ANIMATION =====
+window.startReveal = function(){
+  if(isAnimating || selectedCardIndex===-1) return;
+  isAnimating = true;
+
+  var card = cards[selectedCardIndex];
+  document.getElementById('open-btn').classList.add('hidden');
+
+  playSound('reveal_start');
+
+  // Phase 1: Other cards fly away, selected card centers
+  for(var i=0;i<cards.length;i++){
+    if(i!==selectedCardIndex){
+      var c = cards[i];
+      var flyPos = c.userData.origPos.clone();
+      flyPos.y -= 2;
+      flyPos.z -= 2;
+      tweenCard(c,flyPos,c.userData.origRot,600);
+      (function(mesh){
+        setTimeout(function(){ mesh.visible = false; },700);
+      })(c);
+    }
+  }
+
+  // Selected card moves to center, in front of portal
+  var centerPos = new THREE.Vector3(0,1.8,-0.3);
+  var centerRot = new THREE.Vector3(0,0,0);
+  tweenCard(card,centerPos,centerRot,800);
+
+  // Phase 2: Card flips
+  setTimeout(function(){
+    playSound('card_flip');
+
+    // Flip animation
+    var flipStart = performance.now();
+    var flipDuration = 1200;
+    var flipStartRot = card.rotation.y;
+
+    function flipTick(){
+      var elapsed = performance.now()-flipStart;
+      var t = Math.min(elapsed/flipDuration,1);
+
+      // Flip with overshoot
+      var flipT = t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+      card.rotation.y = flipStartRot + flipT * Math.PI;
+
+      // Scale up slightly during flip
+      var s = 1 + 0.15*Math.sin(t*Math.PI);
+      card.scale.set(s,s,s);
+
+      if(t>=0.4 && t<0.5){
+        // Flash at midpoint
+        triggerFlash(rewardData.rarity);
+        spawnExplosion3D(getExplosionCount(rewardData.rarity),rewardData.rarity);
+
+        if(rewardData.rarity==='epic'||rewardData.rarity==='legendary'){
+          document.body.classList.add('shake');
+          setTimeout(function(){document.body.classList.remove('shake');},500);
+        }
+
+        // Increase bloom for rarity
+        if(rewardData.rarity==='legendary') bloomPass.strength = 3;
+        else if(rewardData.rarity==='epic') bloomPass.strength = 2.2;
+        else bloomPass.strength = 1.6;
+
+        // Portal goes crazy
+        portalLight.intensity = 8;
+      }
+
+      if(t<1) requestAnimationFrame(flipTick);
+      else {
+        card.rotation.y = Math.PI; // Show front face
+        card.scale.set(1,1,1);
+        showReward();
+      }
+    }
+    flipTick();
+  },900);
+};
+
+function getExplosionCount(rarity){
+  return {common:20,rare:40,epic:70,legendary:120}[rarity]||40;
+}
+
+function triggerFlash(rarity){
+  var flash = document.getElementById('screen-flash');
+  flash.className = 'screen-flash';
+  if(rarity==='legendary') flash.classList.add('legendary');
+  if(rarity==='epic') flash.classList.add('epic');
+  flash.classList.add('flash');
+  playSound('flash');
+  setTimeout(function(){flash.className='screen-flash';},600);
+}
+
+function showReward(){
+  var overlay = document.getElementById('reveal-overlay');
+  overlay.classList.add('active');
+
+  // Update reward info
+  var badge = document.getElementById('reveal-rarity');
+  badge.className = 'rarity-badge '+rewardData.rarity;
+  var rarityLabels = {legendary:'LEGENDARY',epic:'EPIC',rare:'RARE',common:'COMMON'};
+  badge.textContent = rarityLabels[rewardData.rarity]||'RARE';
+
+  document.getElementById('reveal-name').textContent = rewardData.name;
+  document.getElementById('reveal-label').textContent = rewardData.label;
+
+  // Reward image
+  var imgWrap = document.getElementById('reveal-img');
+  if(rewardData.type==='vehicle'&&rewardData.image){
+    imgWrap.innerHTML = '<img src="'+rewardData.image+'" onerror="this.parentElement.innerHTML=\'<span class=reward-icon-big style=color:'+(rewardColors[rewardData.type]||'#8b5cf6')+'>'+(rewardIcons[rewardData.type]||rewardIcons.default)+'</span>\'">';
+  } else {
+    imgWrap.innerHTML = '<span class="reward-icon-big" style="color:#'+(rewardColors[rewardData.type]||0x8b5cf6).toString(16)+'">'+(rewardIcons[rewardData.type]||rewardIcons.default)+'</span>';
+  }
+
+  setTimeout(function(){
+    document.getElementById('reveal-info').classList.add('show');
+    playSound('reward_'+rewardData.rarity);
+    isAnimating = false;
+  },300);
+}
+
+// ===== COLLECT / CLOSE =====
+window.collectReward = function(){
+  if(typeof cef!=='undefined'&&cef.emit) cef.emit('cardcase:collect');
+  closeCase();
+};
+
+function closeCase(){
+  if(typeof cef!=='undefined'&&cef.emit) cef.emit('cardcase:close');
+  resetCaseUI();
+}
+window.closeCase = closeCase;
+
+function resetCaseUI(){
+  document.getElementById('reveal-overlay').classList.remove('active');
+  document.getElementById('reveal-info').classList.remove('show');
+  document.getElementById('open-btn').classList.remove('visible');
+  bloomPass.strength = 1.2;
+  portalLight.intensity = 3;
+
+  // Clean explosion particles
+  for(var i=0;i<explosionParticles.length;i++){
+    explosionGroup.remove(explosionParticles[i]);
+    explosionParticles[i].geometry.dispose();
+    explosionParticles[i].material.dispose();
+  }
+  explosionParticles = [];
+
+  generateCards();
+  isAnimating = false;
+}
+
+// ===== SOUND =====
+function playSound(type){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    var now = audioCtx.currentTime;
+
+    switch(type){
+      case 'select':
+        osc.type='sine';osc.frequency.setValueAtTime(800,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.1);
+        gain.gain.setValueAtTime(0.08,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.15);
+        osc.start(now);osc.stop(now+0.15);break;
+      case 'reveal_start':
+        osc.type='sine';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(600,now+0.3);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+        osc.start(now);osc.stop(now+0.4);break;
+      case 'card_flip':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(200,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.15);
+        gain.gain.setValueAtTime(0.04,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.2);
+        osc.start(now);osc.stop(now+0.2);break;
+      case 'flash':
+        osc.type='sine';osc.frequency.setValueAtTime(1500,now);osc.frequency.exponentialRampToValueAtTime(200,now+0.3);
+        gain.gain.setValueAtTime(0.1,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+        osc.start(now);osc.stop(now+0.4);break;
+      case 'reward_common':
+        osc.type='sine';osc.frequency.setValueAtTime(600,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.2);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.3);
+        osc.start(now);osc.stop(now+0.3);break;
+      case 'reward_rare':
+        osc.type='sine';osc.frequency.setValueAtTime(600,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.4);
+        gain.gain.setValueAtTime(0.07,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+        osc.start(now);osc.stop(now+0.5);break;
+      case 'reward_epic':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.3);
+        osc.frequency.exponentialRampToValueAtTime(800,now+0.5);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.6);
+        osc.start(now);osc.stop(now+0.6);break;
+      case 'reward_legendary':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(300,now);osc.frequency.exponentialRampToValueAtTime(1500,now+0.4);
+        osc.frequency.exponentialRampToValueAtTime(1800,now+0.8);
+        gain.gain.setValueAtTime(0.08,now);gain.gain.exponentialRampToValueAtTime(0.001,now+1.0);
+        osc.start(now);osc.stop(now+1.0);
+        var o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+        o2.connect(g2);g2.connect(audioCtx.destination);o2.type='sine';
+        o2.frequency.setValueAtTime(600,now+0.15);o2.frequency.exponentialRampToValueAtTime(2000,now+0.5);
+        g2.gain.setValueAtTime(0.04,now+0.15);g2.gain.exponentialRampToValueAtTime(0.001,now+0.7);
+        o2.start(now+0.15);o2.stop(now+0.7);break;
+    }
+  }catch(e){}
+}
+
+// ===== ANIMATION LOOP =====
+var clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  var delta = clock.getDelta();
+  var elapsed = clock.getElapsedTime();
+
+  // Rotate portal
+  portalTorus.rotation.z = elapsed*0.3;
+  portalTorus2.rotation.z = -elapsed*0.5;
+
+  // Portal shader time
+  coreMat.uniforms.uTime.value = elapsed;
+
+  // Portal light pulse
+  portalLight.intensity = 3 + Math.sin(elapsed*2)*0.5;
+
+  // Floor ring pulse
+  floorRing.material.opacity = 0.1 + Math.sin(elapsed*1.5)*0.05;
+
+  // Particle system
+  particleMat.uniforms.uTime.value = elapsed;
+  var positions = particleGeo.attributes.position.array;
+  for(var i=0;i<particleCount;i++){
+    positions[i*3] += particleVelocities[i].vx;
+    positions[i*3+1] += particleVelocities[i].vy;
+    positions[i*3+2] += particleVelocities[i].vz;
+    if(positions[i*3+1]>6){positions[i*3+1]=-0.5;positions[i*3]=(Math.random()-0.5)*12;}
+  }
+  particleGeo.attributes.position.needsUpdate = true;
+
+  // Explosion particles
+  for(var i=explosionParticles.length-1;i>=0;i--){
+    var p = explosionParticles[i];
+    p.position.x += p.userData.vx;
+    p.position.y += p.userData.vy;
+    p.position.z += p.userData.vz;
+    p.userData.vy -= p.userData.gravity;
+    p.userData.vx *= 0.99;
+    p.userData.vz *= 0.99;
+    p.material.opacity -= p.userData.decay;
+    if(p.material.opacity<=0){
+      explosionGroup.remove(p);
+      p.geometry.dispose();
+      p.material.dispose();
+      explosionParticles.splice(i,1);
+    }
+  }
+
+  // Bloom recovery
+  if(bloomPass.strength>1.2){
+    bloomPass.strength -= delta*2;
+    if(bloomPass.strength<1.2) bloomPass.strength=1.2;
+  }
+
+  // Portal light recovery
+  if(portalLight.intensity>3){
+    portalLight.intensity -= delta*5;
+    if(portalLight.intensity<3) portalLight.intensity=3;
+  }
+
+  // Hover effect on cards
+  raycaster.setFromCamera(mouse,camera);
+  var intersects = raycaster.intersectObjects(cards);
+  if(hoveredCard && (!intersects.length || intersects[0].object !== hoveredCard)){
+    if(!hoveredCard.userData.selected){
+      tweenCard(hoveredCard,hoveredCard.userData.origPos,hoveredCard.userData.origRot,200);
+    }
+    hoveredCard = null;
+    canvas.style.cursor = 'default';
+  }
+  if(intersects.length>0 && !isAnimating){
+    var card = intersects[0].object;
+    if(card !== hoveredCard){
+      hoveredCard = card;
+      if(!card.userData.selected){
+        var hoverPos = card.userData.origPos.clone();
+        hoverPos.y += 0.2;
+        hoverPos.z += 0.1;
+        var hoverRot = card.userData.origRot.clone();
+        hoverRot.x = -0.2;
+        tweenCard(card,hoverPos,hoverRot,200);
+      }
+      canvas.style.cursor = 'pointer';
+    }
+  }
+
+  composer.render();
+}
+
+animate();
+
+// ===== RESIZE =====
+window.addEventListener('resize',function(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  composer.setSize(window.innerWidth,window.innerHeight);
+});
+
+// ===== ESC KEY =====
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'||e.keyCode===27) closeCase();
+});
+
+// ===== CEF EVENTS =====
+if(typeof cef!=='undefined'&&cef.addEventListener){
+  cef.addEventListener('cardcase:init',function(name,type,rarity,label,image){
+    rewardData.name = name||'Mystery Reward';
+    rewardData.type = type||'money';
+    rewardData.rarity = rarity||'rare';
+    rewardData.label = label||'Nagrada';
+    rewardData.image = image||'';
+    console.log('[CARDCASE] init: '+name+' rarity='+rarity+' type='+type);
     generateCards();
   });
 }
+
 </script>
 </body>
 </html>
