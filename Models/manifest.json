@@ -1,5 +1,8 @@
 {
   "baseUrl": "https://raw.githubusercontent.com/bek1cc/UG/main/Models/",
   "serverIp": "217.156.22.164:7774",
-  "files": []
+  "files": [
+    "wmyva2.dff",
+    "wmyva2.txd"
+  ]
 }

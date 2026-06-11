@@ -6,20 +6,33 @@
 // ===== PAS SISTEM (Dog/Pet System) =====
 // Koristi open.mp CustomModels modul za automatski download modela
 // Igraci ne moraju nista rucno skidati - model se downloada automatski!
+//
+// SETUP: Stavi wmyva2.dff i wmyva2.txd u:
+//   open.mp/scriptfiles/artwork/
+//
+// Mod "Dog MOD serkan1969" - svi folderi imaju iste fajlove: wmyva2.dff / wmyva2.txd
+// Za sad koristimo Siberian Husky za test, kasnije dodajemo vise pasmina
 
-// Custom model ID (start from -1000 for custom objects)
+// Custom model ID (-1000 do -29999 za custom objekte u open.mp)
 #define DOG_MODEL_ID        -1000
-#define DOG_BASE_MODEL      1608        // Fallback: shark model (ajkula) - dok se ne doda pravi dog.dff/dog.txd
-#define DOG_MODEL_DFF       "dog.dff"
-#define DOG_MODEL_TXD       "dog.txd"
 
-// Dog types
+// wmyva2 je skin ID 138 u GTA SA - to je base model koji mod zamjenjuje
+// Ali mi koristimo AddSimpleModel sa base objektom 1608 (ajkula) kao placeholder
+// jer pas mod zamjenjuje PED skin, a mi ga koristimo kao objekt
+#define DOG_BASE_MODEL      1608        // Fallback base model (ajkula)
+
+// DFF/TXD imena - fajlovi iz moda (staviti u artwork/ folder)
+#define DOG_MODEL_DFF       "wmyva2.dff"
+#define DOG_MODEL_TXD       "wmyva2.txd"
+
+// Dog types (za sad samo HUSKY za test, ostalo kasnije)
 #define DOG_TYPE_NONE       0
-#define DOG_TYPE_ROTTWEILER 1
-#define DOG_TYPE_HUSKY      2
-#define DOG_TYPE_GOLDEN     3
-#define DOG_TYPE_PITBULL    4
-#define DOG_TYPE_SHEPHERD   5
+#define DOG_TYPE_HUSKY      1
+// Dodati kasnije:
+// #define DOG_TYPE_ROTTWEILER 2
+// #define DOG_TYPE_PITBULL    3
+// #define DOG_TYPE_SHEPHERD   4
+// #define DOG_TYPE_GOLDEN     5
 
 // Dog states
 #define DOG_STATE_IDLE      0
@@ -29,21 +42,13 @@
 #define DOG_STATE_RUN       4
 #define DOG_STATE_DEAD      5
 
-// Dog colors per type (RGBA hex)
-#define DOG_COLOR_ROTTWEILER    0x3B2210FF
+// Dog colors per type (RGBA hex) - za material coloring
 #define DOG_COLOR_HUSKY         0xC8BDB0FF
-#define DOG_COLOR_GOLDEN        0xC4962AFF
-#define DOG_COLOR_PITBULL       0x6B5440FF
-#define DOG_COLOR_SHEPHERD      0x5A4A3AFF
 
 // Dog names per type
 static const DogTypeNames[][] = {
         {"Nema"},
-        {"Rottweiler"},
-        {"Husky"},
-        {"Golden Retriever"},
-        {"Pitbull"},
-        {"Njemacki Ovcarski"}
+        {"Siberian Husky"}
 };
 
 // Per-player dog data
@@ -61,7 +66,7 @@ static DogHP[MAX_PLAYERS];
 static DogSkinColor[MAX_PLAYERS];
 static bool:DogModelLoaded = false;
 
-// Forward timer callback
+// Forward timer callbacks
 forward Dog_UpdateTimer(playerid);
 forward Dog_RespawnTimer(playerid);
 
@@ -69,19 +74,22 @@ forward Dog_RespawnTimer(playerid);
 stock Dog_OnGameModeInit()
 {
         // Register custom dog model via open.mp CustomModels
-        // This automatically downloads the model to players - no manual install needed!
-        // If dog.dff/dog.txd exist in artwork/ folder, they'll be used
-        // If not, the base model (shark 1608) will be used as fallback
-        if(AddSimpleModel(-1, DOG_BASE_MODEL, DOG_MODEL_ID, DOG_MODEL_DFF, DOG_MODEL_TXD))
+        // open.mp automatski skida DFF/TXD fajlove iz artwork/ foldera igračima!
+        // Fajlovi: open.mp/scriptfiles/artwork/wmyva2.dff i wmyva2.txd
+        new ret = AddSimpleModel(-1, DOG_BASE_MODEL, DOG_MODEL_ID, DOG_MODEL_DFF, DOG_MODEL_TXD);
+        if(ret)
         {
                 DogModelLoaded = true;
-                printf("[DOG] Custom dog model registered (ID: %d, base: %d)", DOG_MODEL_ID, DOG_BASE_MODEL);
+                printf("[DOG] ✅ Custom dog model registriran! (Model ID: %d, Base: %d, DFF: %s, TXD: %s)", DOG_MODEL_ID, DOG_BASE_MODEL, DOG_MODEL_DFF, DOG_MODEL_TXD);
+                printf("[DOG] Igraci ce automatski skinuti model - nema rucnog downloada!");
         }
         else
         {
                 DogModelLoaded = false;
-                printf("[DOG] WARNING: Custom dog model failed to register, using base model %d", DOG_BASE_MODEL);
+                printf("[DOG] ⚠️ Custom dog model NIJE registriran! Koristim fallback model %d", DOG_BASE_MODEL);
+                printf("[DOG] Provjeri da li su wmyva2.dff i wmyva2.txd u artwork/ folderu!");
         }
+        return 1;
 }
 
 stock Dog_OnPlayerDisconnect(playerid)
@@ -93,10 +101,10 @@ stock Dog_OnPlayerDisconnect(playerid)
 }
 
 // ===== SPAWN / DESPAWN =====
-stock Dog_Spawn(playerid, type = DOG_TYPE_ROTTWEILER, name[] = "Buddy")
+stock Dog_Spawn(playerid, type = DOG_TYPE_HUSKY, name[] = "Buddy")
 {
         if(DogActive[playerid]) return 0;
-        if(!(1 <= type <= 5)) return 0;
+        if(!(1 <= type <= 1)) return 0; // Za sad samo HUSKY (1)
 
         new Float:x, Float:y, Float:z, Float:a;
         GetPlayerPos(playerid, x, y, z);
@@ -106,7 +114,7 @@ stock Dog_Spawn(playerid, type = DOG_TYPE_ROTTWEILER, name[] = "Buddy")
         x += 2.0 * floatsin(-a, degrees);
         y += 2.0 * floatcos(-a, degrees);
 
-        // Create dog object
+        // Create dog object - koristi custom model ako je ucitan, inace fallback
         new modelToUse = DogModelLoaded ? DOG_MODEL_ID : DOG_BASE_MODEL;
         DogObject[playerid] = CreateObject(modelToUse, x, y, z - 1.0, 0.0, 0.0, a);
 
@@ -116,21 +124,11 @@ stock Dog_Spawn(playerid, type = DOG_TYPE_ROTTWEILER, name[] = "Buddy")
                 return 0;
         }
 
-        // Set dog color based on type (uses material to color the model)
-        new color;
-        switch(type)
-        {
-                case DOG_TYPE_ROTTWEILER: color = DOG_COLOR_ROTTWEILER;
-                case DOG_TYPE_HUSKY:      color = DOG_COLOR_HUSKY;
-                case DOG_TYPE_GOLDEN:     color = DOG_COLOR_GOLDEN;
-                case DOG_TYPE_PITBULL:    color = DOG_COLOR_PITBULL;
-                case DOG_TYPE_SHEPHERD:   color = DOG_COLOR_SHEPHERD;
-                default: color = DOG_COLOR_ROTTWEILER;
-        }
-        // Apply color via material (index 0 = main texture)
+        // Set dog color based on type (material coloring)
+        new color = DOG_COLOR_HUSKY;
         SetObjectMaterial(DogObject[playerid], 0, -1, "none", "none", color);
 
-        // Create 3D label
+        // Create 3D label iznad psa
         new labelStr[64];
         format(labelStr, sizeof(labelStr), "[%s]\n%s", name, DogTypeNames[type]);
         DogLabel[playerid] = Create3DTextLabel(labelStr, 0xFFFFFFFF, x, y, z + 0.8, 10.0, 0, 0);
@@ -149,7 +147,7 @@ stock Dog_Spawn(playerid, type = DOG_TYPE_ROTTWEILER, name[] = "Buddy")
         // Start follow timer (every 500ms)
         DogTimer[playerid] = SetTimerEx("Dog_UpdateTimer", 500, true, "i", playerid);
 
-        printf("[DOG] Player %d spawned dog: %s (%s)", playerid, name, DogTypeNames[type]);
+        printf("[DOG] Player %d spawned dog: %s (%s) [Model: %d]", playerid, name, DogTypeNames[type], modelToUse);
         return 1;
 }
 
@@ -185,6 +183,7 @@ public Dog_UpdateTimer(playerid)
 {
         if(!DogActive[playerid] || !IsPlayerConnected(playerid)) return;
         if(DogState[playerid] == DOG_STATE_DEAD) return;
+        if(DogObject[playerid] == INVALID_OBJECT_ID) return;
 
         new Float:px, Float:py, Float:pz;
         new Float:dx, Float:dy, Float:dz;
@@ -200,7 +199,8 @@ public Dog_UpdateTimer(playerid)
         }
         else if(DogState[playerid] == DOG_STATE_SIT || DogState[playerid] == DOG_STATE_IDLE)
         {
-                GetObjectPos(DogObject[playerid], dx, dy, dz);
+                // Ne mrdaj kad sjedi / idle
+                return;
         }
         else // FOLLOW or RUN
         {
@@ -216,19 +216,14 @@ public Dog_UpdateTimer(playerid)
         // Calculate distance
         dist = floatsqroot((dx-cx)*(dx-cx) + (dy-cy)*(dy-cy));
 
-        // Determine follow distance based on state
+        // Follow distance and speed
         new Float:followDist = 2.0;
-        new Float:speed = 0.08; // Movement speed
+        new Float:speed = 5.0; // MoveObject speed
 
         if(DogState[playerid] == DOG_STATE_RUN)
         {
                 followDist = 1.5;
-                speed = 0.15;
-        }
-        else if(DogState[playerid] == DOG_STATE_SIT)
-        {
-                // Don't move when sitting
-                return;
+                speed = 10.0;
         }
 
         if(dist > followDist)
@@ -236,25 +231,25 @@ public Dog_UpdateTimer(playerid)
                 // Calculate angle towards target
                 angle = atan2(dy - cy, dx - cx);
 
-                // Move towards target
+                // Move towards target with proper speed
                 new Float:moveX, Float:moveY;
-                moveX = cx + speed * floatcos(angle, degrees) * (dist > 10.0 ? 3.0 : 1.0);
-                moveY = cy + speed * floatsin(angle, degrees) * (dist > 10.0 ? 3.0 : 1.0);
+                moveX = cx + (dx - cx) * 0.3; // Lerp 30% ka targetu
+                moveY = cy + (dy - cy) * 0.3;
 
-                // Get ground Z (approximate - use player Z as base)
+                // Get ground Z
                 new Float:targetZ = (DogState[playerid] == DOG_STATE_STAY) ? DogStayZ[playerid] : pz;
 
                 // Smooth Z transition
                 new Float:zDiff = targetZ - cz;
-                if(zDiff > 1.0) targetZ = cz + 0.3;
-                else if(zDiff < -1.0) targetZ = cz - 0.3;
+                if(zDiff > 1.0) targetZ = cz + 0.5;
+                else if(zDiff < -1.0) targetZ = cz - 0.5;
 
-                MoveObject(DogObject[playerid], moveX, moveY, targetZ - 1.0, speed * 100.0, 0.0, 0.0, angle);
+                MoveObject(DogObject[playerid], moveX, moveY, targetZ - 1.0, speed, 0.0, 0.0, angle);
 
-                // Update 3D label position
+                // Update 3D label text
                 if(DogLabel[playerid] != INVALID_3DTEXT_ID)
                 {
-                        new labelStr[64];
+                        new labelStr[80];
                         new stateStr[16];
                         switch(DogState[playerid])
                         {
@@ -266,10 +261,6 @@ public Dog_UpdateTimer(playerid)
                         }
                         format(labelStr, sizeof(labelStr), "[%s] %s\n~y~%s~w~ | HP: %d", DogName[playerid], DogTypeNames[DogType[playerid]], stateStr, DogHP[playerid]);
                         Update3DTextLabelText(DogLabel[playerid], 0xFFFFFFFF, labelStr);
-                        // Move label slightly offset from dog
-                        new Float:labelX = moveX + 0.5 * floatcos(angle + 90.0, degrees);
-                        new Float:labelY = moveY + 0.5 * floatsin(angle + 90.0, degrees);
-                        // Can't move 3D labels attached to nothing easily, just update text
                 }
         }
 }
@@ -286,7 +277,7 @@ CMD:pas(playerid, params[])
         {
                 SPD(playerid, dialog_DOG_SPAWN, DIALOG_STYLE_LIST,
                         "Pas - Izaberi psa",
-                        "Rottweiler\nHusky\nGolden Retriever\nPitbull\nNjemacki Ovcarski",
+                        "Siberian Husky",
                         "Izaberi", "Odustani");
                 return 1;
         }
