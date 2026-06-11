@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UG Tablet - Unicate Gaming RPG</title>
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg-primary: #0a192f;
+    --bg-secondary: #0d2137;
+    --bg-tertiary: #112240;
+    --bg-card: #132b4a;
+    --accent: #3b82f6;
+    --accent-glow: rgba(59, 130, 246, 0.35);
+    --accent-dim: rgba(59, 130, 246, 0.15);
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --red: #ef4444;
+    --red-glow: rgba(239, 68, 68, 0.3);
+    --green: #22c55e;
+    --green-glow: rgba(34, 197, 94, 0.25);
+    --orange: #f97316;
+    --purple: #a855f7;
+    --gold: #fbbf24;
+    --border-glow: rgba(59, 130, 246, 0.2);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-xs: 6px;
+    --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.15), 0 0 60px rgba(59, 130, 246, 0.05);
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: radial-gradient(ellipse at center, #0d1f3c 0%, #060e1a 70%);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== TABLET FRAME ===== */
+  .tablet {
+    width: 56%;
+    min-width: 420px;
+    max-width: 720px;
+    background: var(--bg-primary);
+    border-radius: 20px;
+    border: 1.5px solid var(--border-glow);
+    box-shadow: var(--shadow-glow), 0 25px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tablet::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0.6;
+  }
+
+  .tablet-inner {
+    padding: 0;
+    position: relative;
+  }
+
+  /* ===== VIEWS ===== */
+  .view { display: none; }
+  .view.active { display: block; animation: viewFadeIn 0.35s ease-out; }
+
+  @keyframes viewFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== TOAST ===== */
+  .toast-container {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  .toast {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 0 15px var(--accent-glow);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: var(--transition);
+    white-space: nowrap;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .toast.error {
+    border-color: var(--red);
+    box-shadow: 0 0 15px var(--red-glow);
+  }
+
+  .toast.success {
+    border-color: var(--green);
+    box-shadow: 0 0 15px var(--green-glow);
+  }
+
+  /* ==============================
+     VIEW 1 — LOGIN
+     ============================== */
+  .login-view {
+    padding: 48px 36px 36px;
+    text-align: center;
+  }
+
+  .login-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .login-logo svg { filter: drop-shadow(0 0 6px var(--accent-glow)); }
+
+  .login-logo-text {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #60a5fa, #3b82f6, #818cf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* UG Logo on Login */
+  .login-logo-img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 12px var(--accent-glow)) drop-shadow(0 0 30px rgba(59, 130, 246, 0.2));
+    animation: logoGlow 3s ease-in-out infinite;
+    margin-bottom: 8px;
+  }
+
+  @keyframes logoGlow {
+    0%, 100% { filter: drop-shadow(0 0 12px var(--accent-glow)) drop-shadow(0 0 30px rgba(59, 130, 246, 0.2)); }
+    50%      { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.5)) drop-shadow(0 0 45px rgba(59, 130, 246, 0.3)); }
+  }
+
+  .login-logo-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .login-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 24px 0 4px;
+    color: var(--text-primary);
+  }
+
+  .login-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+
+  .pin-input-wrapper {
+    position: relative;
+    margin: 0 auto 18px;
+    max-width: 260px;
+  }
+
+  .pin-input-wrapper svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+  }
+
+  .pin-input {
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: 1.5px solid var(--border-glow);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px 13px 16px;
+    font-size: 24px;
+    letter-spacing: 16px;
+    color: var(--text-primary);
+    text-align: center;
+    outline: none;
+    transition: var(--transition);
+    caret-color: var(--accent);
+    -webkit-text-security: disc;
+    -moz-text-security: disc;
+  }
+
+  .pin-input::placeholder {
+    letter-spacing: 8px;
+    font-size: 18px;
+    color: var(--text-muted);
+  }
+
+  .pin-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim), 0 0 15px var(--accent-glow);
+  }
+
+  /* PIN Dots Indicator */
+  .pin-dots {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .pin-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: transparent;
+    transition: var(--transition);
+  }
+
+  .pin-dot.filled {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
+  }
+
+  .login-error {
+    color: var(--red);
+    font-size: 12px;
+    margin-bottom: 12px;
+    min-height: 18px;
+    transition: var(--transition);
+    opacity: 0;
+  }
+
+  .login-error.visible { opacity: 1; }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+    padding: 13px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+    outline: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #fff;
+    box-shadow: 0 4px 15px var(--accent-glow);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6);
+    box-shadow: 0 4px 25px rgba(59, 130, 246, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1.5px solid var(--border-glow);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    background: var(--bg-card);
+    box-shadow: 0 0 12px var(--accent-dim);
+  }
+
+  .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    box-shadow: 0 4px 15px var(--red-glow);
+  }
+
+  .btn-danger:hover {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 4px 25px rgba(239, 68, 68, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-danger:active { transform: translateY(0); }
+
+  .btn-ghost-danger {
+    background: transparent;
+    color: var(--red);
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+  }
+
+  .btn-ghost-danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: var(--red);
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+
+  .login-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 20px auto;
+    max-width: 260px;
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-weight: 600;
+  }
+
+  .login-divider::before,
+  .login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--text-muted), transparent);
+  }
+
+  .secure-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 28px;
+    padding: 7px 16px;
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--green);
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== CLOSE TABLET X BUTTON ===== */
+  .btn-close-tablet {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 500;
+  }
+  .btn-close-tablet:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--red);
+    color: var(--red);
+    box-shadow: 0 0 12px var(--red-glow);
+    transform: scale(1.1);
+  }
+  .btn-close-tablet:active {
+    transform: scale(0.95);
+  }
+
+  /* ==============================
+     VIEW 2 — MAIN MENU
+     ============================== */
+  .menu-view { padding-bottom: 10px; }
+
+  /* Status Bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 18px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-glow);
+  }
+
+  .status-left, .status-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .status-left { color: var(--accent); }
+
+  .status-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 4px var(--accent-glow));
+    opacity: 0.85;
+    transition: var(--transition);
+  }
+
+  .status-logo:hover {
+    opacity: 1;
+    filter: drop-shadow(0 0 8px var(--accent-glow));
+  }
+
+  .signal-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+  }
+
+  .signal-bars span {
+    width: 3px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  .signal-bars span:nth-child(1) { height: 4px; }
+  .signal-bars span:nth-child(2) { height: 6px; }
+  .signal-bars span:nth-child(3) { height: 8px; }
+  .signal-bars span:nth-child(4) { height: 11px; opacity: 0.35; }
+
+  .status-center {
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .status-center-brand {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(90deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .status-center-ver {
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  .status-right { color: var(--text-secondary); gap: 8px; }
+
+  .status-icon {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+
+  .battery-icon {
+    width: 22px;
+    height: 11px;
+    border: 1.5px solid var(--text-secondary);
+    border-radius: 2px;
+    position: relative;
+    padding: 1.5px;
+  }
+
+  .battery-icon::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 5px;
+    background: var(--text-secondary);
+    border-radius: 0 1px 1px 0;
+  }
+
+  .battery-fill {
+    width: 87%;
+    height: 100%;
+    background: var(--green);
+    border-radius: 1px;
+  }
+
+  /* Welcome */
+  .welcome-section {
+    padding: 20px 20px 14px;
+  }
+
+  .welcome-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .welcome-text span { color: var(--accent); }
+
+  /* App Grid */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 0 20px 16px;
+  }
+
+  .app-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius);
+    padding: 18px 10px 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .app-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  .app-card:active { transform: translateY(-1px); }
+
+  .app-card.red::before    { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .app-card.blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+  .app-card.dblue::before  { background: linear-gradient(90deg, #1e40af, #3b82f6); }
+  .app-card.orange::before { background: linear-gradient(90deg, #f97316, #fb923c); }
+  .app-card.purple::before { background: linear-gradient(90deg, #a855f7, #c084fc); }
+  .app-card.green::before  { background: linear-gradient(90deg, #22c55e, #4ade80); }
+
+  .app-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+
+  .app-card.red    .app-icon { background: rgba(239, 68, 68, 0.15);  color: #ef4444; }
+  .app-card.blue   .app-icon { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+  .app-card.dblue  .app-icon { background: rgba(30, 64, 175, 0.2);   color: #60a5fa; }
+  .app-card.orange .app-icon { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+  .app-card.purple .app-icon { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+  .app-card.green  .app-icon { background: rgba(34, 197, 94, 0.15);  color: #22c55e; }
+
+  .app-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+  }
+
+  /* Notification Badge */
+  .notif-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    min-width: 18px;
+    height: 18px;
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    box-shadow: 0 0 8px var(--red-glow);
+    animation: badgePulse 2s infinite;
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { box-shadow: 0 0 8px var(--red-glow); }
+    50%      { box-shadow: 0 0 16px rgba(239, 68, 68, 0.5); }
+  }
+
+  /* Stats Bar */
+  .stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 12px 20px;
+    margin: 4px 20px 0;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-glow);
+  }
+
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .stat-item svg { flex-shrink: 0; }
+
+  .stat-money  { color: var(--gold); }
+  .stat-level  { color: var(--accent); }
+  .stat-online { color: var(--green); }
+
+  /* Logout */
+  .logout-section { padding: 14px 20px 0; }
+
+  .btn-logout {
+    width: 100%;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px;
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-sm);
+    color: var(--red);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-logout:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: var(--red);
+    box-shadow: 0 0 12px var(--red-glow);
+  }
+
+  /* Footer */
+  .menu-footer {
+    text-align: center;
+    padding: 12px 20px 14px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+
+  .menu-footer-logo {
+    width: 14px;
+    height: 14px;
+    object-fit: contain;
+    opacity: 0.4;
+    filter: drop-shadow(0 0 3px var(--accent-glow));
+  }
+
+  /* ==============================
+     VIEW 3 — BOUNTY FORM
+     ============================== */
+  .bounty-view { padding: 0; }
+
+  .bounty-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-glow);
+  }
+
+  .bounty-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .bounty-header-left svg { color: var(--red); }
+
+  .bounty-header-title {
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-glow);
+    border-radius: var(--radius-xs);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 16px;
+  }
+
+  .btn-close:hover {
+    color: var(--red);
+    border-color: var(--red);
+    box-shadow: 0 0 8px var(--red-glow);
+  }
+
+  .bounty-form { padding: 20px 22px; }
+
+  .form-group { margin-bottom: 18px; }
+
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 7px;
+    text-transform: uppercase;
+  }
+
+  .form-input {
+    width: 100%;
+    background: var(--bg-tertiary);
+    border: 1.5px solid var(--border-glow);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--text-primary);
+    outline: none;
+    transition: var(--transition);
+    font-family: inherit;
+  }
+
+  .form-input::placeholder { color: var(--text-muted); }
+
+  .form-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim), 0 0 12px var(--accent-glow);
+  }
+
+  .form-range-hint {
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    letter-spacing: 0.3px;
+  }
+
+  .info-box {
+    display: flex;
+    gap: 10px;
+    padding: 14px;
+    background: var(--accent-dim);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+  }
+
+  .info-box svg { flex-shrink: 0; margin-top: 1px; color: var(--accent); }
+
+  .info-box-content {
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+
+  .info-box-content strong { color: var(--text-primary); font-weight: 600; }
+
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .checkbox-row input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid var(--accent);
+    border-radius: 3px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    position: relative;
+    transition: var(--transition);
+    flex-shrink: 0;
+  }
+
+  .checkbox-row input[type="checkbox"]:checked {
+    background: var(--accent);
+  }
+
+  .checkbox-row input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .bounty-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .bounty-buttons .btn {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--accent-dim); border-radius: 4px; }
+
+  /* ===== UG WATERMARK ===== */
+  .ug-watermark {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 5px var(--accent-glow); }
+    50%      { box-shadow: 0 0 15px var(--accent-glow); }
+  }
+
+  .tablet { animation: tabletGlow 4s ease-in-out infinite; }
+
+  @keyframes tabletGlow {
+    0%, 100% { box-shadow: var(--shadow-glow), 0 25px 80px rgba(0,0,0,0.6); }
+    50%      { box-shadow: 0 0 30px rgba(59, 130, 246, 0.2), 0 0 80px rgba(59, 130, 246, 0.08), 0 25px 80px rgba(0,0,0,0.6); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== TABLET ===== -->
+<div class="tablet" id="tablet">
+  <div class="tablet-inner">
+    <img src="logo.png" alt="" class="ug-watermark">
+
+    <!-- Toast Notification -->
+    <div class="toast-container">
+      <div class="toast" id="toast"></div>
+    </div>
+
+    <!-- ===================================
+         VIEW 1 — LOGIN
+         =================================== -->
+    <div class="view" id="view-login">
+      <div class="login-view">
+
+        <!-- Logo -->
+        <div class="login-logo-row">
+          <img src="logo.png" alt="UG Logo" class="login-logo-img">
+          <div class="login-logo">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span class="login-logo-text">UG TABLET</span>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <div class="login-title">PRIJAVA</div>
+        <div class="login-subtitle">Dobrodošao nazad!</div>
+
+        <!-- PIN Dots -->
+        <div class="pin-dots">
+          <div class="pin-dot" id="dot0"></div>
+          <div class="pin-dot" id="dot1"></div>
+          <div class="pin-dot" id="dot2"></div>
+          <div class="pin-dot" id="dot3"></div>
+        </div>
+
+        <!-- PIN Input -->
+        <div class="pin-input-wrapper">
+          <input type="text" class="pin-input" id="pin-input" maxlength="4" placeholder="Unesi PIN" autocomplete="off" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <!-- Error -->
+        <div class="login-error" id="login-error"></div>
+
+        <!-- Login Button -->
+        <button class="btn btn-primary" id="btn-login">
+          <span>PRIJAVI SE</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </button>
+
+        <!-- Divider -->
+        <div class="login-divider">ILI</div>
+
+        <!-- Register Button -->
+        <button class="btn btn-secondary" id="btn-register">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+          </svg>
+          <span>REGISTRUJ SE</span>
+        </button>
+
+        <!-- Secure Badge -->
+        <div class="secure-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          Secure connection
+        </div>
+
+        <!-- Close X Button -->
+        <button class="btn-close-tablet" id="btn-close-tablet" title="Zatvori tablet">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ===================================
+         VIEW 2 — MAIN MENU
+         =================================== -->
+    <div class="view active" id="view-menu">
+      <div class="menu-view">
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+          <div class="status-left">
+            <img src="logo.png" alt="UG" class="status-logo">
+            <span style="font-weight:800;">UG 4G</span>
+            <div class="signal-bars">
+              <span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+          <div class="status-center">
+            <div class="status-center-brand">UNICATE GAMING</div>
+            <div class="status-center-ver">SECURE PORTAL V2.0</div>
+          </div>
+          <div class="status-right">
+            <span id="clock">12:00</span>
+            <div class="status-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/>
+              </svg>
+            </div>
+            <div class="status-icon">
+              <div class="battery-icon"><div class="battery-fill"></div></div>
+              <span id="battery-pct" style="font-size:10px;">87%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Welcome -->
+        <div class="welcome-section">
+          <div class="welcome-text">Dobrodošao, <span id="player-name">Igrač</span></div>
+        </div>
+
+        <!-- App Grid -->
+        <div class="app-grid">
+
+          <!-- Bounty Board -->
+          <div class="app-card red" onclick="onAppClick('bounty')">
+            <div class="notif-badge" id="bounty-badge">3</div>
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
+            <div class="app-label">BOUNTY BOARD</div>
+          </div>
+
+          <!-- Profil -->
+          <div class="app-card blue" onclick="onAppClick('profile')">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="app-label">PROFIL</div>
+          </div>
+
+          <!-- Podešavanja -->
+          <div class="app-card dblue" onclick="onAppClick('settings')">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </div>
+            <div class="app-label">PODEŠAVANJA</div>
+          </div>
+
+          <!-- Trgovina -->
+          <div class="app-card orange" onclick="onAppClick('shop')">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+              </svg>
+            </div>
+            <div class="app-label">TRGOVINA</div>
+          </div>
+
+          <!-- Mapa -->
+          <div class="app-card purple" onclick="onAppClick('map')">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
+              </svg>
+            </div>
+            <div class="app-label">MAPA</div>
+          </div>
+
+          <!-- Oglasi -->
+          <div class="app-card green" onclick="onAppClick('ads')">
+            <div class="app-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <div class="app-label">OGLASI</div>
+          </div>
+
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+          <div class="stat-item stat-money">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fbbf24" stroke="#fbbf24" stroke-width="0">
+              <circle cx="12" cy="12" r="10"/><text x="12" y="16" text-anchor="middle" fill="#0a192f" font-size="12" font-weight="bold">$</text>
+            </svg>
+            <span id="stat-money">$125,000</span>
+          </div>
+          <div class="stat-item stat-level">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#3b82f6" stroke="#3b82f6" stroke-width="0">
+              <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+            </svg>
+            <span id="stat-level">Level 15</span>
+          </div>
+          <div class="stat-item stat-online">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            <span id="stat-online">47/200</span>
+          </div>
+        </div>
+
+        <!-- Logout -->
+        <div class="logout-section">
+          <button class="btn-logout" id="btn-logout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            ODJAVI SE
+          </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="menu-footer"><img src="logo.png" alt="UG" class="menu-footer-logo">UNICATE GAMING &mdash; Secure Network</div>
+
+      </div>
+    </div>
+
+    <!-- ===================================
+         VIEW 3 — BOUNTY FORM
+         =================================== -->
+    <div class="view" id="view-bounty">
+      <div class="bounty-view">
+
+        <!-- Header -->
+        <div class="bounty-header">
+          <div class="bounty-header-left">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+            </svg>
+            <span class="bounty-header-title">NARUČI UBOJSTVO</span>
+          </div>
+          <button class="btn-close" id="btn-bounty-close" title="Zatvori">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <div class="bounty-form">
+
+          <!-- Target -->
+          <div class="form-group">
+            <label class="form-label">ID IGRACA / Ime</label>
+            <input type="text" class="form-input" id="bounty-target" placeholder="Unesi ID ili ime..." autocomplete="off">
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label class="form-label">IZNOS NAGRADNE</label>
+            <input type="number" class="form-input" id="bounty-amount" placeholder="$0" min="1000" max="500000" autocomplete="off">
+            <div class="form-range-hint">$1,000 &mdash; $500,000</div>
+          </div>
+
+          <!-- Info Box -->
+          <div class="info-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <div class="info-box-content">
+              <strong>Minimum:</strong> $1,000 &nbsp;|&nbsp; <strong>Maksimum:</strong> $500,000<br>
+              <strong>Cooldown:</strong> 5 minuta između narudžbi
+              <label class="checkbox-row">
+                <input type="checkbox" id="bounty-from-bank" checked>
+                Novac se skida sa računa
+              </label>
+            </div>
+          </div>
+
+          <!-- Buttons -->
+          <div class="bounty-buttons">
+            <button class="btn btn-ghost-danger" id="btn-bounty-cancel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+              <span>ODUSTANI</span>
+            </button>
+            <button class="btn btn-danger" id="btn-bounty-confirm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+              </svg>
+              <span>POTVRDI</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===================================
+     JAVASCRIPT
+     =================================== -->
+<script>
+(function() {
+  'use strict';
+
+  // ===== CEF BRIDGE =====
+  // Graceful fallback if cef object is not available (development/testing)
+  const cefEmit = typeof cef !== 'undefined' && cef.emit
+    ? cef.emit.bind(cef)
+    : function() { console.log('[CEF EMIT]', Array.from(arguments)); };
+
+  const cefOn = typeof cef !== 'undefined' && cef.on
+    ? cef.on.bind(cef)
+    : function(event, fn) { console.log('[CEF ON]', event); };
+
+  // ===== STATE =====
+  let playerName = 'Igrač';
+  let playerMoney = 0;
+  let playerLevel = 0;
+  let playerOnline = 0;
+  let playerPhone = '';
+  let batteryLevel = 87;
+
+  // ===== DOM REFS =====
+  const $ = (sel) => document.querySelector(sel);
+  const pinInput       = $('#pin-input');
+  const loginError     = $('#login-error');
+  const btnLogin       = $('#btn-login');
+  const btnRegister    = $('#btn-register');
+  const btnLogout      = $('#btn-logout');
+  const btnBountyClose = $('#btn-bounty-close');
+  const btnBountyCancel= $('#btn-bounty-cancel');
+  const btnBountyConfirm=$('#btn-bounty-confirm');
+  const bountyTarget   = $('#bounty-target');
+  const bountyAmount   = $('#bounty-amount');
+  const bountyBadge    = $('#bounty-badge');
+  const playerNameEl   = $('#player-name');
+  const statMoneyEl    = $('#stat-money');
+  const statLevelEl    = $('#stat-level');
+  const statOnlineEl   = $('#stat-online');
+  const clockEl        = $('#clock');
+  const batteryPctEl   = $('#battery-pct');
+  const toastEl        = $('#toast');
+
+  // ===== VIEW MANAGEMENT =====
+  window.showView = function(viewName) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const target = document.getElementById('view-' + viewName);
+    if (target) {
+      target.classList.add('active');
+    }
+    if (viewName === 'menu') {
+      cefEmit('tablet:requestStats');
+      updateClock();
+    }
+    if (viewName === 'bounty') {
+      cefEmit('tablet:requestBounties');
+    }
+  };
+
+  // ===== TOAST =====
+  let toastTimer = null;
+  window.showToast = function(message, type) {
+    clearTimeout(toastTimer);
+    toastEl.textContent = message;
+    toastEl.className = 'toast show' + (type ? ' ' + type : '');
+    toastTimer = setTimeout(() => {
+      toastEl.classList.remove('show');
+    }, 3000);
+  };
+
+  // ===== UPDATE STATS =====
+  window.updateStats = function(money, level, online, phone) {
+    playerMoney = money;
+    playerLevel = level;
+    playerOnline = online;
+    playerPhone = phone || '';
+    statMoneyEl.textContent = '$' + Number(money).toLocaleString('en-US');
+    statLevelEl.textContent = 'Level ' + level;
+    statOnlineEl.textContent = online;
+  };
+
+  // ===== UPDATE BOUNTIES =====
+  window.updateBounties = function(jsonStr) {
+    try {
+      const bounties = JSON.parse(jsonStr);
+      const count = Array.isArray(bounties) ? bounties.length : (bounties.count || 0);
+      bountyBadge.textContent = count;
+      bountyBadge.style.display = count > 0 ? 'flex' : 'none';
+    } catch(e) {
+      console.error('updateBounties parse error', e);
+    }
+  };
+
+  // ===== CLOCK =====
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    clockEl.textContent = h + ':' + m;
+  }
+  setInterval(updateClock, 10000);
+  updateClock();
+
+  // ===== APP CLICK HANDLER =====
+  window.onAppClick = function(app) {
+    switch(app) {
+      case 'bounty':
+        cefEmit('tablet:requestBounties');
+        showView('bounty');
+        break;
+      case 'profile':
+        showToast('Profil uskoro dostupan!');
+        break;
+      case 'settings':
+        showToast('Podešavanja uskoro dostupna!');
+        break;
+      case 'shop':
+        showToast('Trgovina uskoro dostupna!');
+        break;
+      case 'map':
+        showToast('Mapa uskoro dostupna!');
+        break;
+      case 'ads':
+        showToast('Oglasi uskoro dostupni!');
+        break;
+    }
+  };
+
+  // ===== PIN STATE =====
+  // Store PIN separately to avoid CEF input value issues
+  let currentPin = '';
+
+  // ===== PIN DOT INDICATOR =====
+  function updatePinDots() {
+    for (let i = 0; i < 4; i++) {
+      const dot = document.getElementById('dot' + i);
+      if (dot) {
+        if (i < currentPin.length) dot.classList.add('filled');
+        else dot.classList.remove('filled');
+      }
+    }
+  }
+
+  // ===== LOGIN =====
+  btnLogin.addEventListener('click', function() {
+    // Fallback: also read directly from input value if currentPin is out of sync
+    if (currentPin.length !== 4) {
+      let val = pinInput.value.replace(/[^0-9]/g, '');
+      if (val.length === 4) currentPin = val;
+    }
+    if (currentPin.length !== 4) {
+      loginError.textContent = 'PIN mora imati tacno 4 cifre!';
+      loginError.classList.add('visible');
+      pinInput.focus();
+      return;
+    }
+    loginError.classList.remove('visible');
+    console.log('[CEF-TABLET] Emitting login with pin="' + currentPin + '" len=' + currentPin.length);
+    cefEmit('tablet:login:attempt', currentPin);
+  });
+
+  // ===== REGISTER =====
+  btnRegister.addEventListener('click', function() {
+    // Fallback: also read directly from input value if currentPin is out of sync
+    if (currentPin.length !== 4) {
+      let val = pinInput.value.replace(/[^0-9]/g, '');
+      if (val.length === 4) currentPin = val;
+    }
+    if (currentPin.length !== 4) {
+      loginError.textContent = 'PIN mora imati tacno 4 cifre!';
+      loginError.classList.add('visible');
+      pinInput.focus();
+      return;
+    }
+    loginError.classList.remove('visible');
+    console.log('[CEF-TABLET] Emitting register with pin="' + currentPin + '" len=' + currentPin.length);
+    cefEmit('tablet:register:attempt', currentPin);
+  });
+
+  // ===== LOGOUT =====
+  btnLogout.addEventListener('click', function() {
+    cefEmit('tablet:logout');
+    currentPin = '';
+    pinInput.value = '';
+    loginError.classList.remove('visible');
+    updatePinDots();
+    showView('login');
+    showToast('Uspešno ste se odjavili!', 'success');
+  });
+
+  // ===== BOUNTY CLOSE =====
+  btnBountyClose.addEventListener('click', function() {
+    cefEmit('tablet:close');
+    showView('menu');
+  });
+
+  // ===== BOUNTY CANCEL =====
+  btnBountyCancel.addEventListener('click', function() {
+    bountyTarget.value = '';
+    bountyAmount.value = '';
+    showView('menu');
+  });
+
+  // ===== BOUNTY CONFIRM =====
+  btnBountyConfirm.addEventListener('click', function() {
+    const target = bountyTarget.value.trim();
+    const amount = parseInt(bountyAmount.value, 10);
+
+    if (!target) {
+      showToast('Unesite ID ili ime igrača!', 'error');
+      bountyTarget.focus();
+      return;
+    }
+
+    if (isNaN(amount) || amount < 1000) {
+      showToast('Minimalni iznos je $1,000!', 'error');
+      bountyAmount.focus();
+      return;
+    }
+
+    if (amount > 500000) {
+      showToast('Maksimalni iznos je $500,000!', 'error');
+      bountyAmount.focus();
+      return;
+    }
+
+    cefEmit('tablet:bounty:place', JSON.stringify({
+      targetName: target,
+      amount: amount
+    }));
+
+    bountyTarget.value = '';
+    bountyAmount.value = '';
+  });
+
+  // ===== PIN INPUT — numeric only, max 4, with dot indicator =====
+  pinInput.addEventListener('input', function() {
+    // Filter to digits only, max 4
+    let val = this.value.replace(/[^0-9]/g, '');
+    if (val.length > 4) val = val.slice(0, 4);
+    this.value = val;
+    currentPin = val; // Store in JS variable for reliable CEF emit
+    updatePinDots();
+
+    // Auto-submit when 4 digits are entered
+    if (currentPin.length === 4) {
+      loginError.classList.remove('visible');
+    }
+  });
+
+  // Also handle keyup for backspace/delete to keep currentPin in sync
+  pinInput.addEventListener('keyup', function() {
+    let val = this.value.replace(/[^0-9]/g, '');
+    if (val.length > 4) val = val.slice(0, 4);
+    currentPin = val;
+    updatePinDots();
+  });
+
+  // Handle keydown to prevent non-numeric input
+  pinInput.addEventListener('keydown', function(e) {
+    // Allow backspace, delete, tab, escape, enter
+    if ([8, 9, 13, 27, 46].indexOf(e.keyCode) !== -1) return;
+    // Allow Ctrl+A, Ctrl+C, Ctrl+V, Ctrl+X
+    if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].indexOf(e.keyCode) !== -1) return;
+    // Block non-numeric
+    if ((e.keyCode < 48 || e.keyCode > 57) && (e.keyCode < 96 || e.keyCode > 105)) {
+      e.preventDefault();
+    }
+  });
+
+  // ===== Enter key on PIN =====
+  pinInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') btnLogin.click();
+  });
+
+  // ===== CEF EVENT LISTENERS =====
+
+  // Init data from server
+  cefOn('tablet:init', function(name, battery, money, score, online, phone) {
+    playerName = name || 'Igrač';
+    batteryLevel = battery || 87;
+    playerNameEl.textContent = playerName;
+
+    // Update battery display
+    batteryPctEl.textContent = battery + '%';
+    const fillEl = document.querySelector('.battery-fill');
+    if (fillEl) fillEl.style.width = battery + '%';
+
+    updateStats(money, score, online, phone);
+    showView('menu');
+  });
+
+  // Login result
+  cefOn('tablet:login:result', function(success, message) {
+    if (success) {
+      loginError.classList.remove('visible');
+      showToast(message || 'Uspešna prijava!', 'success');
+      showView('menu');
+    } else {
+      loginError.textContent = message || 'Pogrešan PIN!';
+      loginError.classList.add('visible');
+      showToast(message || 'Pogrešan PIN!', 'error');
+    }
+  });
+
+  // Bounty update
+  cefOn('tablet:bounty:update', function(jsonStr) {
+    updateBounties(jsonStr);
+  });
+
+  // Toast from server
+  cefOn('tablet:toast', function(msg) {
+    showToast(msg);
+  });
+
+  // ===== CLOSE BUTTON — X in top right corner =====
+  const btnCloseTablet = document.getElementById('btn-close-tablet');
+  if (btnCloseTablet) {
+    btnCloseTablet.addEventListener('click', function() {
+      cefEmit('tablet:close');
+    });
+  }
+
+  // ===== KEYBOARD SHORTCUT — ESC to close =====
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      cefEmit('tablet:close');
+    }
+  });
+
+  // ===== INIT — PIN UKLONJEN, prikazi menu direktno =====
+  showView('menu');
+
+})();
+</script>
+</body>
+</html>
