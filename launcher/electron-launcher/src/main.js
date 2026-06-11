@@ -55,7 +55,7 @@ process.on('unhandledRejection', (err) => { log('[UNHANDLED] ' + err); });
 //  CONFIG
 // ============================================================
 const SERVERS = {
-  production: { ip: '135.125.156.197', port: 7777, name: 'Unicate Gaming RPG' },
+  production: { ip: '217.156.22.164', port: 7774, name: 'Unicate Gaming RPG' },
   local: { ip: '127.0.0.1', port: 7777, name: 'Unicate Gaming TEST' }
 };
 

@@ -19,7 +19,7 @@ async function init() {
   } catch (e) {
     console.error('Init error:', e);
     config = {
-      SERVER_IP: '135.125.156.197', SERVER_PORT: 7777,
+      SERVER_IP: '217.156.22.164', SERVER_PORT: 7774,
       SERVER_NAME: 'Unicate Gaming RPG',
       WEBSITE_URL: 'https://ug-ogc.com',
       DISCORD_URL: 'https://discord.gg/unicategaming',

@@ -11,7 +11,7 @@
         "map": "Unicate Gaming RPG",
         "mode": "fg-ogc",
         "language": "Balkan",
-        "port": 7777,
+        "port": 7774,
         "sleep": 5.0,
         "time": 12,
         "weather": 10
@@ -45,8 +45,8 @@
         "onfoot_sync_rate": 30,
         "player_marker_mode": 1,
         "player_timeout": 10000,
-        "port": 7777,
-        "public_addr": "135.125.156.197",
+        "port": 7774,
+        "public_addr": "217.156.22.164",
         "rcon": true,
         "stream_distance": 300.0,
         "stream_rate": 1000,
@@ -55,8 +55,16 @@
         "use_cookies": true
     },
     "pawn": {
-        "scripts": ["fg-ogc"],
-        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas"]
+        "scripts": [
+            "fg-ogc"
+        ],
+        "legacy_plugins": [
+            "crashdetect",
+            "streamer",
+            "sscanf",
+            "iTD",
+            "MapAndreas"
+        ]
     },
     "rcon": {
         "allow_teleport": false,
