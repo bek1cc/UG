@@ -267,51 +267,39 @@ public Dog_UpdateTimer(playerid)
 
 // ===== DOG COMMANDS =====
 
-// /pas - Main dog menu
+// /pas - Opens CEF dog panel
 CMD:pas(playerid, params[])
 {
         if(!PlayerLogged[playerid]) return SendErrorMessage(playerid, "Morate biti ulogovani!");
 
-        // If player has no dog, show spawn dialog
-        if(!DogActive[playerid])
+        // Toggle CEF panel
+        if(CEF_DogPanelIsOpen(playerid))
         {
-                SPD(playerid, dialog_DOG_SPAWN, DIALOG_STYLE_LIST,
-                        "Pas - Izaberi psa",
-                        "Siberian Husky",
-                        "Izaberi", "Odustani");
-                return 1;
+                CEF_DogPanelClose(playerid);
         }
-
-        // If player has a dog, show control dialog
-        new stateStr[32];
-        switch(DogState[playerid])
+        else
         {
-                case DOG_STATE_FOLLOW: stateStr = "Slijedi te";
-                case DOG_STATE_SIT:    stateStr = "Sjedi";
-                case DOG_STATE_STAY:   stateStr = "Ceka na mjestu";
-                case DOG_STATE_RUN:    stateStr = "Trci";
-                case DOG_STATE_DEAD:   stateStr = "Mrtav";
-                default: stateStr = "Nepoznato";
+                CEF_DogPanelOpen(playerid);
         }
-
-        new dialogStr[256];
-        format(dialogStr, sizeof(dialogStr),
-                "Stanje psa: %s\nIme: %s\nVrsta: %s\nHP: %d\n\n\
-                Slijedi me\nSjedi\nCekaj ovdje\nTrci za mnom\nPreimenuj psa\nOtpusti psa",
-                stateStr, DogName[playerid], DogTypeNames[DogType[playerid]], DogHP[playerid]);
-
-        SPD(playerid, dialog_DOG_CONTROL, DIALOG_STYLE_LIST,
-                "Pas - Komande", dialogStr, "Izaberi", "Zatvori");
         return 1;
 }
 
-// Quick commands
+// /pasinfo - Opens CEF dog info panel (same as /pas but explicit)
+CMD:pasinfo(playerid, params[])
+{
+        if(!PlayerLogged[playerid]) return SendErrorMessage(playerid, "Morate biti ulogovani!");
+        CEF_DogPanelOpen(playerid);
+        return 1;
+}
+
+// Quick commands (also update CEF panel if open)
 CMD:pasfollow(playerid)
 {
         if(!DogActive[playerid]) return SendErrorMessage(playerid, "Nemas psa! Kucaj /pas da ga dohvatis.");
         if(DogState[playerid] == DOG_STATE_DEAD) return SendErrorMessage(playerid, "Tvoj pas je mrtav!");
         DogState[playerid] = DOG_STATE_FOLLOW;
         SendClientMessage(playerid, 0x22c55eFF, " Pas te slijedi!");
+        CEF_DogUpdateState(playerid);
         return 1;
 }
 
@@ -321,6 +309,7 @@ CMD:passjedi(playerid)
         if(DogState[playerid] == DOG_STATE_DEAD) return SendErrorMessage(playerid, "Tvoj pas je mrtav!");
         DogState[playerid] = DOG_STATE_SIT;
         SendClientMessage(playerid, 0xeab308FF, " Pas sjedi.");
+        CEF_DogUpdateState(playerid);
         return 1;
 }
 
@@ -335,6 +324,7 @@ CMD:pascekaj(playerid)
         DogStayZ[playerid] = z;
         DogState[playerid] = DOG_STATE_STAY;
         SendClientMessage(playerid, 0x06b6d4FF, " Pas ceka ovdje!");
+        CEF_DogUpdateState(playerid);
         return 1;
 }
 
@@ -344,6 +334,7 @@ CMD:pastrci(playerid)
         if(DogState[playerid] == DOG_STATE_DEAD) return SendErrorMessage(playerid, "Tvoj pas je mrtav!");
         DogState[playerid] = DOG_STATE_RUN;
         SendClientMessage(playerid, 0xef4444FF, " Pas trci za tobom!");
+        CEF_DogUpdateState(playerid);
         return 1;
 }
 
@@ -352,6 +343,11 @@ CMD:pasotpusti(playerid)
         if(!DogActive[playerid]) return SendErrorMessage(playerid, "Nemas psa!");
         Dog_Destroy(playerid);
         SendClientMessage(playerid, 0xFFAA00FF, " Otpustio si psa.");
+        // Update CEF panel to show no-dog state
+        if(CEF_DogPanelIsOpen(playerid))
+        {
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), 0, CEF_STR(""), 0);
+        }
         return 1;
 }
 
