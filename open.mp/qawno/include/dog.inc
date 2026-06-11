@@ -13,6 +13,14 @@
 // Mod "Dog MOD serkan1969" - svi folderi imaju iste fajlove: wmyva2.dff / wmyva2.txd
 // Za sad koristimo Siberian Husky za test, kasnije dodajemo vise pasmina
 
+// ===== open.mp NATIVE za CustomModels =====
+// AddSimpleModel je open.mp native, ali stariji kompajler ga ne prepoznaje
+// Deklariramo ga ovdje ako vec nije definiran
+#if !defined _AddSimpleModel_included
+    native AddSimpleModel(virtualworld, baseid, newid, const dffpath[], const txdpath[]);
+    #define _AddSimpleModel_included
+#endif
+
 // Custom model ID (-1000 do -29999 za custom objekte u open.mp)
 #define DOG_MODEL_ID        -1000
 
@@ -35,6 +43,7 @@
 // #define DOG_TYPE_GOLDEN     5
 
 // Dog states
+#define DOG_STATE_NONE      0
 #define DOG_STATE_IDLE      0
 #define DOG_STATE_FOLLOW    1
 #define DOG_STATE_SIT       2
@@ -42,29 +51,32 @@
 #define DOG_STATE_RUN       4
 #define DOG_STATE_DEAD      5
 
+// Dog CEF browser ID (koristi se i u dog.inc i u cef_dog.inc)
+#define DOG_BROWSER_ID      82
+
 // Dog colors per type (RGBA hex) - za material coloring
 #define DOG_COLOR_HUSKY         0xC8BDB0FF
 
-// Dog names per type
-static const DogTypeNames[][] = {
+// Dog names per type - GLOBAL (ne static, da cef_dog.inc i gamemode mogu pristupiti)
+new const DogTypeNames[][] = {
         {"Nema"},
         {"Siberian Husky"}
 };
 
-// Per-player dog data
-static DogObject[MAX_PLAYERS] = {INVALID_OBJECT_ID, ...};
-static DogLabel[MAX_PLAYERS] = {INVALID_3DTEXT_ID, ...};
-static bool:DogActive[MAX_PLAYERS];
-static DogType[MAX_PLAYERS];
-static DogState[MAX_PLAYERS];
-static DogName[MAX_PLAYERS][32];
-static DogTimer[MAX_PLAYERS] = {-1, ...};
-static Float:DogStayX[MAX_PLAYERS];
-static Float:DogStayY[MAX_PLAYERS];
-static Float:DogStayZ[MAX_PLAYERS];
-static DogHP[MAX_PLAYERS];
-static DogSkinColor[MAX_PLAYERS];
-static bool:DogModelLoaded = false;
+// Per-player dog data - GLOBAL (ne static, da cef_dog.inc i gamemode mogu pristupiti)
+new DogObject[MAX_PLAYERS] = {INVALID_OBJECT_ID, ...};
+new DogLabel[MAX_PLAYERS] = {INVALID_3DTEXT_ID, ...};
+new bool:DogActive[MAX_PLAYERS];
+new DogType[MAX_PLAYERS];
+new DogState[MAX_PLAYERS];
+new DogName[MAX_PLAYERS][32];
+new DogTimer[MAX_PLAYERS] = {-1, ...};
+new Float:DogStayX[MAX_PLAYERS];
+new Float:DogStayY[MAX_PLAYERS];
+new Float:DogStayZ[MAX_PLAYERS];
+new DogHP[MAX_PLAYERS];
+new DogSkinColor[MAX_PLAYERS];
+new bool:DogModelLoaded = false;
 
 // Forward timer callbacks
 forward Dog_UpdateTimer(playerid);
@@ -74,19 +86,19 @@ forward Dog_RespawnTimer(playerid);
 stock Dog_OnGameModeInit()
 {
         // Register custom dog model via open.mp CustomModels
-        // open.mp automatski skida DFF/TXD fajlove iz artwork/ foldera igračima!
+        // open.mp automatski skida DFF/TXD fajlove iz artwork/ foldera igracima!
         // Fajlovi: open.mp/scriptfiles/artwork/wmyva2.dff i wmyva2.txd
         new ret = AddSimpleModel(-1, DOG_BASE_MODEL, DOG_MODEL_ID, DOG_MODEL_DFF, DOG_MODEL_TXD);
         if(ret)
         {
                 DogModelLoaded = true;
-                printf("[DOG] ✅ Custom dog model registriran! (Model ID: %d, Base: %d, DFF: %s, TXD: %s)", DOG_MODEL_ID, DOG_BASE_MODEL, DOG_MODEL_DFF, DOG_MODEL_TXD);
+                printf("[DOG] Custom dog model registriran! (Model ID: %d, Base: %d, DFF: %s, TXD: %s)", DOG_MODEL_ID, DOG_BASE_MODEL, DOG_MODEL_DFF, DOG_MODEL_TXD);
                 printf("[DOG] Igraci ce automatski skinuti model - nema rucnog downloada!");
         }
         else
         {
                 DogModelLoaded = false;
-                printf("[DOG] ⚠️ Custom dog model NIJE registriran! Koristim fallback model %d", DOG_BASE_MODEL);
+                printf("[DOG] Custom dog model NIJE registriran! Koristim fallback model %d", DOG_BASE_MODEL);
                 printf("[DOG] Provjeri da li su wmyva2.dff i wmyva2.txd u artwork/ folderu!");
         }
         return 1;

@@ -4056,7 +4056,8 @@ static UpdateHealthBar(playerid, bool:force = false)
                                         PlayerTextDrawShow(playerid, s_HealthBarForeground[playerid]);
                                 }
                         } else {
-                                PlayerTextDrawSetPosition(playerid, s_HealthBarForeground[playerid], 551.5 + float(health) * 0.5651, 70.25);
+                                // open.mp native: PlayerTextDrawSetPosition - koristimo TextSize workaround za kompatibilnost
+                                PlayerTextDrawTextSize(playerid, s_HealthBarForeground[playerid], 551.5 + float(health) * 0.5651, 70.25);
                                 PlayerTextDrawShow(playerid, s_HealthBarForeground[playerid]);
                         }
 

@@ -3,10 +3,15 @@
 #endif
 #define _INC_cef_dog
 
-#define DOG_BROWSER_ID       82
+// DOG_BROWSER_ID je definiran u dog.inc (koji se includa prije ovog fajla)
+// Ako dog.inc nije includan, javi gresku
+#if !defined DOG_BROWSER_ID
+        #error "cef_dog.inc requires dog.inc to be included first! Use: #include <dog> before #include <cef_dog>"
+#endif
+
 #define DOG_CEF_URL          "http://cef/dog/index.html"
 
-static bool:DogCEFActive[MAX_PLAYERS];
+new bool:DogCEFActive[MAX_PLAYERS];
 
 // ===== OPEN / CLOSE =====
 stock CEF_DogPanelOpen(playerid)
