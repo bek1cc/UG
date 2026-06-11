@@ -9,12 +9,19 @@ REM Kill any running server
 taskkill /f /im omp-server.exe >nul 2>nul
 timeout /t 1 /nobreak >nul
 
-REM OpenMP folder name (with space and hash)
-set OMP=# open.mp
+REM === Find open.mp folder (handles # in name) ===
+set "OMP="
+for /d %%d in ("%~dp0*open.mp*") do set "OMP=%%d"
+if not defined OMP (
+    echo [ERROR] Cannot find open.mp folder!
+    echo Make sure this bat file is in the UG root folder.
+    pause
+    exit /b 1
+)
+echo [OK] Found open.mp: %OMP%
+echo.
 
 REM === YSI includes are now pre-patched in repo ===
-REM No runtime patching needed - all #error Did you use lines are already commented out
-REM Gamemode uses new YSI paths: YSI_Storage\y_ini, YSI_Data\y_iterate, YSI_Coding\y_timers
 
 REM === DELETE OLD .amx ===
 del /f /q "%OMP%\gamemodes\fg-ogc.amx" 2>nul
@@ -22,7 +29,6 @@ del /f /q "gamemodes\fg-ogc.amx" 2>nul
 del /f /q "fg-ogc.amx" 2>nul
 
 REM === DELETE OLD CONFLICTING INCLUDES ===
-REM Old foreach.inc conflicts with YSI y_iterate/y_foreach
 del /f /q "gamemodes\foreach.inc" 2>nul
 del /f /q "gamemodes\maps\foreach.inc" 2>nul
 del /f /q "gamemodes\systems\foreach.inc" 2>nul
@@ -51,7 +57,7 @@ if exist "gamemodes\fg-ogc.amx" (
 REM === COPY TO OPEN.MP ===
 if not exist "%OMP%\gamemodes" mkdir "%OMP%\gamemodes"
 copy /Y "gamemodes\fg-ogc.amx" "%OMP%\gamemodes\fg-ogc.amx" >nul
-echo [OK] fg-ogc.amx deployed to %OMP%\gamemodes\
+echo [OK] fg-ogc.amx deployed
 
 REM === COPY PLUGINS (including mysql and SKY) ===
 if not exist "%OMP%\plugins" mkdir "%OMP%\plugins"
@@ -98,7 +104,7 @@ echo [OK] Map data synced
 REM === VERIFY ===
 echo.
 if not exist "%OMP%\gamemodes\fg-ogc.amx" (
-    echo [ERROR] fg-ogc.amx not found in %OMP%\gamemodes\!
+    echo [ERROR] fg-ogc.amx not found in open.mp\gamemodes\!
     pause
     exit /b 1
 )
@@ -107,5 +113,5 @@ echo   Ready! Starting open.mp server...
 echo ============================================
 echo.
 pause
-cd /d "%~dp0%OMP%"
+cd /d "%OMP%"
 omp-server.exe
