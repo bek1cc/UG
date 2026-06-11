@@ -67,6 +67,13 @@ if exist "scriptfiles\cef" (
 )
 echo [OK] CEF resources deployed
 
+REM === COPY ARTWORK (custom models - DFF/TXD) ===
+if exist "scriptfiles\artwork" (
+    if not exist "%OMP%\scriptfiles\artwork" mkdir "%OMP%\scriptfiles\artwork"
+    xcopy /E /I /Y /Q "scriptfiles\artwork" "%OMP%\scriptfiles\artwork" >nul 2>nul
+)
+echo [OK] Artwork deployed
+
 REM === COPY STATIC SCRIPTFILES (only if open.mp dirs don't exist) ===
 for %%d in (Organizacije Dileri Firme AutoSaloni Garages Kontejneri Kapije Parkinzi Pumpe Bankomati Events GPS Granice Furniture Aktori Poslovi Radars Ulice Zones) do (
     if not exist "%OMP%\scriptfiles\%%d" (
