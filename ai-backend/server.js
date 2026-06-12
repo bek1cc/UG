@@ -21,8 +21,8 @@ async function initZAISdk() {
   if (zaiSdk) return zaiSdk;
   try {
     const ZAIModule = require('z-ai-web-dev-sdk');
-    const ZAI = ZAIModule.default || ZAIModule;
-    zaiSdk = await ZAI.create();
+    const ZAIClass = ZAIModule.default || ZAIModule;
+    zaiSdk = await new ZAIClass();
     console.log('[UG-AI v5] Z.AI SDK initialized OK');
     return zaiSdk;
   } catch (e) {
