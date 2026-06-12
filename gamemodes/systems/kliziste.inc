@@ -149,7 +149,6 @@ static bool:KlizActive = false;             // Da li je kliziste aktivno
 static KlizTotalDigs = 0;                   // Ukupan broj uspjesnih minigame-a
 static KlizAutoTimer = -1;                  // Timer za auto-aktivaciju
 static KlizNextActivation = 0;              // GetTickCount vrijeme sljedece aktivacije
-static KlizShakeTimer = -1;                 // Timer za tresti ekran
 
 // Globalni objekti klizista (stijene na autoputu)
 static Text3D:Kliz3D_Location = Text3D:-1;  // 3D label na lokaciji opreme
@@ -162,16 +161,11 @@ static KlizDigPickup[MAX_PLAYERS] = {-1, ...};
 // Map icon
 static KlizMapIcon = -1;
 
-// Per-player shake timer (za kameru kod ENB kompatibilnosti)
-static KlizShakeTimers[MAX_PLAYERS] = {-1, ...};
-static KlizShakeTicks[MAX_PLAYERS] = {0, ...};
-
 // Pragma unused za static varijable
 #pragma unused Kliz3D_Location
 #pragma unused KlizPickup_Location
 #pragma unused KlizMapIcon
 #pragma unused KlizAutoTimer
-#pragma unused KlizShakeTimer
 
 // Forward timer callbacka
 forward KlizTimer_AutoActivation();
@@ -617,12 +611,6 @@ stock Kliziste_Deactivate() {
             SetCameraBehindPlayer(i);
         }
 
-        // Zaustavi shake timere
-        if(KlizShakeTimers[i] != -1) {
-            KillTimer(KlizShakeTimers[i]);
-            KlizShakeTimers[i] = -1;
-        }
-        KlizShakeTicks[i] = 0;
     }
 
     // Obavijesti sve
@@ -1065,12 +1053,6 @@ public KlizTimer_ShakeEnd(playerid) {
     // kameru u cudnom polozaju na nekim klijentima
     SetCameraBehindPlayer(playerid);
 
-    // Zaustavi shake tick timer ako je jos aktivan
-    if(KlizShakeTimers[playerid] != -1) {
-        KillTimer(KlizShakeTimers[playerid]);
-        KlizShakeTimers[playerid] = -1;
-    }
-    KlizShakeTicks[playerid] = 0;
     return 1;
 }
 
@@ -1215,12 +1197,6 @@ stock Kliziste_OnDisconnect(playerid) {
     // Sakrij TDs
     Kliz_HideMinigame(playerid);
 
-    // Ubij shake timer
-    if(KlizShakeTimers[playerid] != -1) {
-        KillTimer(KlizShakeTimers[playerid]);
-        KlizShakeTimers[playerid] = -1;
-    }
-    KlizShakeTicks[playerid] = 0;
 
     // Reset
     KlizPlayerData[playerid][klizPState] = KLIZISTE_PSTATE_NONE;

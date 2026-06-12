@@ -35,9 +35,6 @@
 #endif
 #define _plastika_included
 
-#include <a_samp>
-#include <streamer>
-
 // ===========================================================================
 //  KONFIGURACIJA - KOORDINATE (FORKLIFT JOB)
 // ===========================================================================
@@ -305,8 +302,6 @@ static Text3D:Plas3D_Utovar = Text3D:-1;
 static Text3D:Plas3D_Dostava = Text3D:-1;
 
 static PlasMapIcon = -1;
-static PlasDostavaMapIcon = -1;  // Map icon za istovar cijevi
-static PlasBazaMapIcon = -1;      // Map icon za povratak u bazu
 
 #pragma unused PlasPickup_Oprema, PlasPickup_Gajba1, PlasPickup_Gajba2
 #pragma unused Plas3D_Oprema, Plas3D_Gajba1, Plas3D_Gajba2, PlasMapIcon
@@ -1501,22 +1496,15 @@ stock Plastika_Init() {
     // Kamion - small blue marker (1237 = small blue sign) - na podu
     PlasPickup_Kamion = CreateDynamicPickup(1237, 1, PLAS_KAMION_X,PLAS_KAMION_Y,PLAS_KAMION_Z);
     Plas3D_Kamion = CreateDynamic3DTextLabel("{1D75C4}[BONUS - KAMION]{FFFFFF}\nStisni {FFD700}ALT{FFFFFF} za kamion", 0xFFFFFFFF, PLAS_KAMION_X,PLAS_KAMION_Y,PLAS_KAMION_Z+0.3, 8.0);
-    #pragma unused PlasPickup_Kamion
-    #pragma unused Plas3D_Kamion
 
     // Utovar - NO pickup needed (CTRL interaction while in vehicle), just 3D label - na podu
     Plas3D_Utovar = CreateDynamic3DTextLabel("{1D75C4}[UTOVAR CIJEVI]{FFFFFF}\nStisni {FFD700}CTRL{FFFFFF} za utovar cijevi", 0xFFFFFFFF, PLAS_UTOVAR_X,PLAS_UTOVAR_Y,PLAS_UTOVAR_Z+0.3, 8.0);
-    #pragma unused Plas3D_Utovar
 
     // Dostava - small blue marker (1237) - na podu
     PlasPickup_Dostava = CreateDynamicPickup(1237, 1, PLAS_DOSTAVA_X,PLAS_DOSTAVA_Y,PLAS_DOSTAVA_Z);
     Plas3D_Dostava = CreateDynamic3DTextLabel("{1D75C4}[DOSTAVA]{FFFFFF}\nStisni {FFD700}CTRL{FFFFFF} za istovar", 0xFFFFFFFF, PLAS_DOSTAVA_X,PLAS_DOSTAVA_Y,PLAS_DOSTAVA_Z+0.3, 10.0);
-    #pragma unused PlasPickup_Dostava
-    #pragma unused Plas3D_Dostava
 
     PlasMapIcon = CreateDynamicMapIcon(PLAS_OPREMA_X,PLAS_OPREMA_Y,PLAS_OPREMA_Z, 55, 0);
-    #pragma unused PlasDostavaMapIcon
-    #pragma unused PlasBazaMapIcon
 
     // Baza return point - NE treba permanentni CP ni 3D label
     // Per-player SetPlayerCheckpoint + SetPlayerMapIcon se pali samo kad

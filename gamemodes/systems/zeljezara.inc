@@ -12,10 +12,8 @@
 //    - Zeljezara_Init()       - poziva se u OnGameModeInit
 //    - Zeljezara_OnConnect()  - poziva se u OnPlayerConnect
 //    - Zeljezara_OnDisconnect()- poziva se u OnPlayerDisconnect
-//    - Zeljezara_OnSpawn()    - poziva se u OnPlayerSpawn
 //    - Zeljezara_OnUpdate()   - poziva se u OnPlayerUpdate (za distance check)
 //    - Zeljezara_OnDeath()    - poziva se u OnPlayerDeath
-//    - Zeljezara_OnDialog()   - poziva se u OnDialogResponse
 // ===========================================================================
 
 #if defined _zeljezara_included
@@ -31,7 +29,6 @@
 #define ZELJEZARA_MIN_CHECKPOINTS      5       // Min checkpointova za kopanje
 #define ZELJEZARA_MAX_CHECKPOINTS      10      // Max checkpointova za kopanje
 #define ZELJEZARA_CP_RANGE             1.5     // Domet checkpointa za aktivaciju (blize objektu)
-#define ZELJEZARA_KOPANJE_VRIJEME      8       // Sekunde kopanja po checkpointu (stari sistem)
 #define ZELJEZARA_CLICKS_PER_CP        3       // Broj klikova (KEY_FIRE) po checkpointu
 #define ZELJEZARA_CLICK_COOLDOWN       1500    // Milisekunde cooldown izmedu klikova (1.5 sec)
 #define ZELJEZARA_PRERADA_VRIJEME      12      // Sekunde prerade metala
@@ -67,8 +64,6 @@
 #define ZELJEZARA_ANIM_KOPANJE_LIB     "BASEBALL"
 #define ZELJEZARA_ANIM_KOPANJE_NAME    "Bat_1"
 #define ZELJEZARA_ANIM_KOPANJE_TIME    4.0
-#define ZELJEZARA_ANIM_STOJI_LIB       "PED"
-#define ZELJEZARA_ANIM_STOJI_NAME      "IDLE_STANCED"
 
 // Oprema za kopanje
 #define ZELJEZARA_WEAPON_KOPANJE       6       // Shovel (lopata/alatka za kopanje)
@@ -232,9 +227,6 @@ static ZeljMapIcon = -1;
 // Mining 3D label (per-player, za CP marker iznad zeljeznog objekta)
 static Text3D:ZeljMiningLabel[MAX_PLAYERS] = {Text3D:-1, ...};
 
-// Kontejner objekti - UVIJEK vidljivi na svim mining lokacijama (kreativni objekti)
-static ZeljContainerObjs[24] = {-1, ...};
-
 // Player data
 static ZeljPlayerData[MAX_PLAYERS][e_ZeljezaraPlayer];
 
@@ -244,18 +236,9 @@ static ZeljPlayerData[MAX_PLAYERS][e_ZeljezaraPlayer];
 #pragma unused ZeljPickup_Oprema
 #pragma unused ZeljPickup_Prerada
 #pragma unused ZeljMapIcon
-#pragma unused ZeljContainerObjs
 
 // Visual mining marker model (plavi marker na kopanju)
 #define ZELJEZARA_MODEL_MINING_CP     19607
-
-// Modeli za zeljezo/zeljezni objekti na kopanju (random izbor za raznolikost)
-// Koristimo objekte slicne onima u zeljezari (935 sa metal teksturama)
-#define ZELJEZARA_IRON_MODEL_COUNT    6
-static const ZeljIronModels[ZELJEZARA_IRON_MODEL_COUNT] = {935, 935, 935, 920, 934, 853};
-#pragma unused ZeljIronModels
-// 935 = metalni komad (isti kao na traci u zeljezari, sa metal teksturama)
-// 920 = metalna kutija, 934 = metalni kontejner, 853 = metalni otpad
 
 // Forwardanje timer callbacka
 forward ZeljTimer_Kopanje(playerid);
@@ -605,10 +588,6 @@ stock Zeljezara_OnDisconnect(playerid) {
     ZeljPlayerData[playerid][zeljHasEquipment] = false;
     // Ukloni PVar za anti-cheat
     DeletePVar(playerid, "ZeljezaraMining");
-    return 1;
-}
-
-stock Zeljezara_OnSpawn(playerid) {
     return 1;
 }
 
@@ -1541,26 +1520,6 @@ stock Zeljezara_OnCP(playerid) {
 }
 
 // ===========================================================================
-//  KOMANDE - Ove funkcije treba pozvati iz CMD: hookova u gamemodeu
-// ===========================================================================
-
-stock ZeljCmd_Oprema(playerid) {
-    return Zelj_UzmiOpremu(playerid);
-}
-
-stock ZeljCmd_KopajMetal(playerid) {
-    return Zelj_PocniKopanje(playerid);
-}
-
-stock ZeljCmd_Preradi(playerid) {
-    return Zelj_PocniPreradu(playerid);
-}
-
-stock ZeljCmd_Prekini(playerid) {
-    return Zelj_Prekini(playerid);
-}
-
-// ===========================================================================
 //  INFORMACIJE O SISTEMU
 // ===========================================================================
 
@@ -1584,32 +1543,6 @@ stock ZeljCmd_Info(playerid) {
             ZeljMSG(playerid, str);
         }
     }
-    return 1;
-}
-
-// ===========================================================================
-//  DIALOG HANDLER - Za potvrdu prerade
-// ===========================================================================
-
-stock Zeljezara_OnDialog(playerid, dialogid, response, listitem, inputtext[]) {
-    #pragma unused listitem
-    #pragma unused inputtext
-    return 0; // Nema dialoga u ovom sistemu za sada
-}
-
-// ===========================================================================
-//  SAVE/LOAD - Ako treba spasiti state (opciono)
-// ===========================================================================
-
-stock Zelj_SaveData(playerid) {
-    // Cooldown se cuva
-    // Za sada ne treba poseban save jer inventory vec ima svoj save sistem
-    #pragma unused playerid
-    return 1;
-}
-
-stock Zelj_LoadData(playerid) {
-    #pragma unused playerid
     return 1;
 }
 
