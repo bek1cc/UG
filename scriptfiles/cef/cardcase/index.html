@@ -564,12 +564,19 @@ canvas.addEventListener('click',function(e){
 });
 
 function selectCard(index){
-  // Deselect previous
+  // Deselect previous - remove glow from all cards
   for(var i=0;i<cards.length;i++){
     var c = cards[i];
     c.userData.selected = false;
     // Reset position smoothly
     tweenCard(c,c.userData.origPos,c.userData.origRot,400);
+    // Remove glow
+    if(c.material && c.material.length){
+      c.material[4].emissiveIntensity = 0.1;
+      c.material[5].emissiveIntensity = 0.1;
+      c.material[4].emissive.setHex(0x222244);
+      c.material[5].emissive.setHex(0x221144);
+    }
   }
 
   var card = cards[index];
@@ -583,6 +590,14 @@ function selectCard(index){
   var newRot = card.userData.origRot.clone();
   newRot.x = -0.15;
   tweenCard(card,newPos,newRot,350);
+
+  // Add strong purple glow to selected card
+  if(card.material && card.material.length){
+    card.material[4].emissiveIntensity = 0.8;
+    card.material[5].emissiveIntensity = 0.6;
+    card.material[4].emissive.setHex(0x7c3aed);
+    card.material[5].emissive.setHex(0x7c3aed);
+  }
 
   playSound('select');
 
@@ -892,6 +907,13 @@ function animate(){
     if(!hoveredCard.userData.selected){
       tweenCard(hoveredCard,hoveredCard.userData.origPos,hoveredCard.userData.origRot,200);
     }
+    // Remove glow from previously hovered card
+    if(hoveredCard.material && hoveredCard.material.length){
+      hoveredCard.material[4].emissiveIntensity = 0.1; // front
+      hoveredCard.material[5].emissiveIntensity = 0.1; // back
+      hoveredCard.material[4].emissive.setHex(0x222244);
+      hoveredCard.material[5].emissive.setHex(0x221144);
+    }
     hoveredCard = null;
     canvas.style.cursor = 'default';
   }
@@ -906,6 +928,13 @@ function animate(){
         var hoverRot = card.userData.origRot.clone();
         hoverRot.x = -0.2;
         tweenCard(card,hoverPos,hoverRot,200);
+      }
+      // Add purple glow to hovered card
+      if(card.material && card.material.length){
+        card.material[4].emissiveIntensity = 0.6; // front
+        card.material[5].emissiveIntensity = 0.5; // back
+        card.material[4].emissive.setHex(0x6d28d9);
+        card.material[5].emissive.setHex(0x6d28d9);
       }
       canvas.style.cursor = 'pointer';
     }
