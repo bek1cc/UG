@@ -400,17 +400,20 @@ var messageHistory = [];
 var isBrowser = (typeof cef === 'undefined'); // true if opened in regular browser
 
 // ===== CEF EVENTS =====
+var domReady = false;
 if(typeof cef !== 'undefined') {
   cef.addEventListener('aidev:init', function(playerid, key) {
     PLAYER_ID = playerid || 0;
     if(key) ADMIN_KEY = key;
     console.log('[AI-DEV] Init: playerid=' + PLAYER_ID + ' key=' + (key ? 'set' : 'default'));
-    checkBackend();
+    // Wait for DOM ready before checking backend (CEF event may fire before DOMContentLoaded)
+    if(domReady) checkBackend();
   });
 }
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
+  domReady = true;
   // If in browser (not CEF), show we're in remote mode
   if(isBrowser) {
     PLAYER_ID = 1; // Default player ID for browser
@@ -487,7 +490,9 @@ async function checkBackend() {
 function initWebSocket() {
   if(WS && WS.readyState <= 1) return;
   try {
-    WS = new WebSocket('ws://127.0.0.1:3777/ws?key=' + ADMIN_KEY);
+    // Dynamic WS URL - convert BACKEND http(s) to ws(s)
+    var wsUrl = BACKEND.replace(/^http/, 'ws') + '/ws?key=' + ADMIN_KEY;
+    WS = new WebSocket(wsUrl);
     WS.onopen = function() { console.log('[AI-DEV] WS connected'); };
     WS.onmessage = function(e) {
       try {
@@ -550,6 +555,9 @@ function initChat() {
   });
 }
 
+// Timeout safety - reset isGenerating if stuck for too long
+var generateTimeout = null;
+
 async function sendMessage() {
   var input = document.getElementById('chatInput');
   var msg = input.value.trim();
@@ -559,6 +567,17 @@ async function sendMessage() {
   input.style.height = 'auto';
   setGenerating(true);
 
+  // Safety timeout - force reset after 60s if something gets stuck
+  if(generateTimeout) clearTimeout(generateTimeout);
+  generateTimeout = setTimeout(function() {
+    if(isGenerating) {
+      console.error('[AI-DEV] Timeout! Force resetting isGenerating');
+      isGenerating = false;
+      setGenerating(false);
+      addSystemMsg('Timeout: AI nije odgovorio u roku. Pokusaj ponovo.');
+    }
+  }, 60000);
+
   // Hide welcome
   var welcome = document.getElementById('welcome');
   if(welcome) welcome.style.display = 'none';
@@ -567,16 +586,23 @@ async function sendMessage() {
   addUserMsg(msg);
 
   try {
+    // Use AbortController for fetch timeout (30s)
+    var controller = new AbortController();
+    var fetchTimeout = setTimeout(function() { controller.abort(); }, 30000);
+
     var resp = await fetch(BACKEND + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
       body: JSON.stringify({ message: msg, playerid: PLAYER_ID }),
+      signal: controller.signal,
     });
+    clearTimeout(fetchTimeout);
 
     var data = await resp.json();
 
     if(data.error) {
       addSystemMsg('Error: ' + data.error);
+      if(generateTimeout) clearTimeout(generateTimeout);
       setGenerating(false);
       return;
     }
@@ -593,9 +619,12 @@ async function sendMessage() {
 
     setStatus(data.status || 'idle');
   } catch(e) {
-    addSystemMsg('Backend error: ' + e.message);
+    var errMsg = e.name === 'AbortError' ? 'Request timeout - backend ne odgovara (30s).' : 'Backend error: ' + e.message;
+    addSystemMsg(errMsg);
+    addSystemMsg('Provjeri da li je backend pokrenut: cd ai-backend && node server.js');
   }
 
+  if(generateTimeout) clearTimeout(generateTimeout);
   setGenerating(false);
 }
 
@@ -763,11 +792,15 @@ async function applyChanges() {
   }
 
   try {
+    var controller = new AbortController();
+    var fetchTimeout = setTimeout(function() { controller.abort(); }, 60000);
     var resp = await fetch(BACKEND + '/api/apply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
       body: JSON.stringify({ playerid: PLAYER_ID }),
+      signal: controller.signal,
     });
+    clearTimeout(fetchTimeout);
     var data = await resp.json();
 
     if(data.applied) {
@@ -797,7 +830,8 @@ async function applyChanges() {
 
     hideActionBar();
   } catch(e) {
-    addSystemMsg('Apply error: ' + e.message);
+    var errMsg = e.name === 'AbortError' ? 'Apply timeout - operacija traje predugo.' : 'Apply error: ' + e.message;
+    addSystemMsg(errMsg);
     setStatus('error');
   }
 
