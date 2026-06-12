@@ -108,6 +108,30 @@ if not exist "%OMP%\gamemodes\fg-ogc.amx" (
     pause
     exit /b 1
 )
+
+REM === AI BACKEND AUTO-START ===
+echo.
+echo [AI] Starting AI Dev Panel backend...
+where node >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    REM Kill old backend if running
+    taskkill /f /im node.exe /fi "WINDOWTITLE eq UG-AI*" >nul 2>nul
+    
+    REM Install deps if needed
+    if not exist "ai-backend\node_modules" (
+        echo [AI] Installing dependencies...
+        cd ai-backend && npm install --production && cd ..
+    )
+    
+    REM Start backend in background
+    start "UG-AI-Backend" /min cmd /c "cd /d "%~dp0ai-backend" && node server.js"
+    echo [AI] Backend started (minimized window)
+    timeout /t 3 /nobreak >nul
+) else (
+    echo [AI] WARNING: Node.js not found! AI Dev Panel won't work.
+    echo [AI] Install Node.js from https://nodejs.org/
+)
+
 echo ============================================
 echo   Ready! Starting open.mp server...
 echo ============================================
