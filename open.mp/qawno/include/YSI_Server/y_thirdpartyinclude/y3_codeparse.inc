@@ -94,18 +94,18 @@ Optional plugins:
 #if !defined _INC_code_parse_inc
 	#undef u@
 #endif
-#tryinclude <code-parse\code-parse>
-#tryinclude <code-parse.inc\code-parse>
-#tryinclude <code-parse.inc-master\code-parse>
-#tryinclude <code-parse.inc-master\code-parse.inc-master\code-parse>
-#tryinclude "..\..\code-parse\code-parse"
-#tryinclude "..\..\code-parse.inc\code-parse"
-#tryinclude "..\..\code-parse.inc-master\code-parse"
-#tryinclude "..\..\code-parse.inc-master\code-parse.inc-master\code-parse"
-#tryinclude "..\..\..\code-parse\code-parse"
-#tryinclude "..\..\..\code-parse.inc\code-parse"
-#tryinclude "..\..\..\code-parse.inc-master\code-parse"
-#tryinclude "..\..\..\code-parse.inc-master\code-parse.inc-master\code-parse"
+#tryinclude <code-parse/code-parse>
+#tryinclude <code-parse.inc/code-parse>
+#tryinclude <code-parse.inc-master/code-parse>
+#tryinclude <code-parse.inc-master/code-parse.inc-master/code-parse>
+#tryinclude "../../code-parse/code-parse"
+#tryinclude "../../code-parse.inc/code-parse"
+#tryinclude "../../code-parse.inc-master/code-parse"
+#tryinclude "../../code-parse.inc-master/code-parse.inc-master/code-parse"
+#tryinclude "../../../code-parse/code-parse"
+#tryinclude "../../../code-parse.inc/code-parse"
+#tryinclude "../../../code-parse.inc-master/code-parse"
+#tryinclude "../../../code-parse.inc-master/code-parse.inc-master/code-parse"
 #tryinclude "code-parse"
 #tryinclude <code-parse>
 #if defined _INC_code_parse_inc

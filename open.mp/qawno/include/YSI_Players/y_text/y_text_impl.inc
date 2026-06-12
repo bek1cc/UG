@@ -87,7 +87,7 @@ enum e_TEXT_DISPLAY_TYPE:
 	text_type_game6
 }
 
-//#include "..\y_master"
+//#include "../y_master"
 
 // End conditions for the recursive calls (strings and publics).
 #define _YT@LE@E%0>

@@ -70,5 +70,5 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#error Use `#include <YSI_Coding\y_hooks>`
+#error Use `#include <YSI_Coding/y_hooks>`
 

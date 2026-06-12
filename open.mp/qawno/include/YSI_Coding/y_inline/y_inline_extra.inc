@@ -125,10 +125,10 @@ stock HTTPCallback(HTTP_METHOD:method, const url[], const data[], Func:cb<is>)
 // These functions have now moved to `YSI_Extra`.  So to use them, you need to explicitly include
 // them:
 //
-//     #include <YSI_Extra\y_inline_mysql>
-//     #include <YSI_Extra\y_inline_bcrypt>
-//     #include <YSI_Extra\y_inline_requests>
-//     #include <YSI_Extra\y_inline_timers>
+//     #include <YSI_Extra/y_inline_mysql>
+//     #include <YSI_Extra/y_inline_bcrypt>
+//     #include <YSI_Extra/y_inline_requests>
+//     #include <YSI_Extra/y_inline_timers>
 //
 // Obviously, pick-and-choose which you want.
 //

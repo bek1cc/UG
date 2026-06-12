@@ -76,9 +76,9 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
+#include "../../YSI_Core/y_utils"
 
-#include "..\..\YSI_Coding\y_stringhash"
+#include "../../YSI_Coding/y_stringhash"
 
 #if !defined MAX_TEXT_COLOURS
 	#if defined MAX_TEXT_COLORS

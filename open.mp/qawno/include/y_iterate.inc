@@ -193,8 +193,8 @@ Iterators:
 	#error "Please include a_samp or a_npc before foreach"
 #endif
 
-#include <YSI\y_debug>
-#include <YSI\y_hooks>
+#include <YSI/y_debug>
+#include <YSI/y_hooks>
 
 #if defined SendChat || defined FOREACH_NO_PLAYERS
 	#define BOTSYNC_IS_BOT     (true)

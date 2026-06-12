@@ -53,7 +53,7 @@ Changelog:
 		First version
 \*----------------------------------------------------------------------------*/
 
-#include <YSI\internal\y_version>
+#include <YSI/internal/y_version>
 
 /*
 
@@ -66,7 +66,7 @@ native
 */
 
 // CAN'T include by default.
-//#include <YSI\y_als>
+//#include <YSI/y_als>
 
 /*
 
@@ -170,7 +170,7 @@ native
 
 */
 
-#include <YSI\y_amx>
+#include <YSI/y_amx>
 
 /*
 
@@ -197,7 +197,7 @@ native
 
 */
 
-//#include <YSI\y_areas>
+//#include <YSI/y_areas>
 
 /*
 
@@ -215,7 +215,7 @@ native
 
 */
 
-#include <YSI\y_bintree>
+#include <YSI/y_bintree>
 
 /*
 
@@ -241,7 +241,7 @@ native
 
 */
 
-#include <YSI\y_bit>
+#include <YSI/y_bit>
 
 /*
 
@@ -259,7 +259,7 @@ native
 
 */
 
-#include <YSI\y_cell>
+#include <YSI/y_cell>
 
 /*
 
@@ -288,7 +288,7 @@ native
 
 */
 
-#include <YSI\y_classes>
+#include <YSI/y_classes>
 
 /*
 
@@ -307,7 +307,7 @@ native
 
 */
 
-#include <YSI\y_colours>
+#include <YSI/y_colours>
 
 /*
 
@@ -349,7 +349,7 @@ native
 
 */
 
-#include <YSI\y_commands>
+#include <YSI/y_commands>
 
 /*
 
@@ -367,7 +367,7 @@ native
 
 */
 
-#include <YSI\y_debug>
+#include <YSI/y_debug>
 
 /*
 
@@ -392,7 +392,7 @@ native
 
 */
 
-#include <YSI\y_dialog>
+#include <YSI/y_dialog>
 
 /*
 
@@ -405,7 +405,7 @@ native
 
 */
 
-#include <YSI\y_flooding>
+#include <YSI/y_flooding>
 
 /*
 
@@ -453,7 +453,7 @@ native
 
 */
 
-#include <YSI\y_groups>
+#include <YSI/y_groups>
 
 /*
 
@@ -467,7 +467,7 @@ native
 */
 
 // Is included as then they can use hooks straight off.
-#include <YSI\y_hooks>
+#include <YSI/y_hooks>
 
 /*
 
@@ -501,7 +501,7 @@ native
 
 */
 
-#include <YSI\y_ini>
+#include <YSI/y_ini>
 
 /*
 
@@ -519,7 +519,7 @@ native
 
 */
 
-#include <YSI\y_inline>
+#include <YSI/y_inline>
 
 /*
 
@@ -549,7 +549,7 @@ native
 
 */
 
-#include <YSI\y_iterate>
+#include <YSI/y_iterate>
 
 /*
 
@@ -574,7 +574,7 @@ native
 
 */
 
-#include <YSI\y_languages>
+#include <YSI/y_languages>
 
 /*
 
@@ -587,7 +587,7 @@ native
 */
 
 // DO NOT include by default!
-//#include <YSI\y_lock>
+//#include <YSI/y_lock>
 
 /*
 
@@ -615,7 +615,7 @@ native
 
 */
 
-#include <YSI\y_malloc>
+#include <YSI/y_malloc>
 
 /*
 
@@ -631,7 +631,7 @@ native
 
 */
 
-#include <YSI\y_master>
+#include <YSI/y_master>
 
 /*
 
@@ -651,7 +651,7 @@ native
 */
 
 // DO NOT include by default!
-//#include <YSI\y_php>
+//#include <YSI/y_php>
 
 /*
 
@@ -671,7 +671,7 @@ native
 
 */
 
-#include <YSI\y_playerarray>
+#include <YSI/y_playerarray>
 
 /*
 
@@ -684,7 +684,7 @@ native
 
 */
 
-#include <YSI\y_playerset>
+#include <YSI/y_playerset>
 
 /*
 
@@ -700,7 +700,7 @@ native
 
 */
 
-#include <YSI\y_remote>
+#include <YSI/y_remote>
 
 /*
 
@@ -712,7 +712,7 @@ native
 
 */
 
-#include <YSI\y_scriptinit>
+#include <YSI/y_scriptinit>
 
 /*
 
@@ -725,7 +725,7 @@ native
 
 */
 
-#include <YSI\y_stringhash>
+#include <YSI/y_stringhash>
 
 /*
 
@@ -738,7 +738,7 @@ native
 
 */
 
-#include <YSI\y_svar>
+#include <YSI/y_svar>
 
 /*
 
@@ -808,7 +808,7 @@ native
 
 */
 
-#include <YSI\y_td>
+#include <YSI/y_td>
 
 /*
 
@@ -822,7 +822,7 @@ native
 */
 
 // DO NOT include by default!
-//#include <YSI\y_testing>
+//#include <YSI/y_testing>
 
 /*
 
@@ -841,7 +841,7 @@ native
 
 */
 
-#include <YSI\y_text>
+#include <YSI/y_text>
 
 /*
 
@@ -861,7 +861,7 @@ native
 
 */
 
-#include <YSI\y_timers>
+#include <YSI/y_timers>
 
 /*
 
@@ -899,7 +899,7 @@ native
 
 */
 
-#include <YSI\y_users>
+#include <YSI/y_users>
 
 /*
 
@@ -934,7 +934,7 @@ native
 
 */
 
-#include <YSI\y_utils>
+#include <YSI/y_utils>
 
 /*
 
@@ -947,7 +947,7 @@ native
 
 */
 
-#include <YSI\y_uvar>
+#include <YSI/y_uvar>
 
 /*
 
@@ -963,7 +963,7 @@ native
 
 */
 
-#include <YSI\y_va>
+#include <YSI/y_va>
 
 /*
 
@@ -976,7 +976,7 @@ native
 
 */
 
-#include <YSI\y_writemem>
+#include <YSI/y_writemem>
 
 /*
 
@@ -1004,7 +1004,7 @@ native
 
 */
 
-#include <YSI\y_xml>
+#include <YSI/y_xml>
 
 /*
 
@@ -1022,4 +1022,4 @@ native
 
 */
 
-#include <YSI\y_zonepulse>
+#include <YSI/y_zonepulse>

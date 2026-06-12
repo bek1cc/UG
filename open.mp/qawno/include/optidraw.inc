@@ -41,7 +41,7 @@ Required plugins:
 #endif
 
 #if !defined _optidraw_included
-	#tryinclude "optidraw_Data\od_entry"
+	#tryinclude "optidraw_Data/od_entry"
 #endif
 
 #if !defined _optidraw_included

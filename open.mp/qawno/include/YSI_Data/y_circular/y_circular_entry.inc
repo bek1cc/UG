@@ -76,11 +76,11 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
+#include "../../YSI_Core/y_utils"
 #include "y_circular_impl"
 
 #if defined YSI_TESTS
-	#include "..\y_iterate"
+	#include "../y_iterate"
 	#if defined YSI_NO_TEST_WARNINGS
 		#pragma warning push
 		#pragma warning disable 203

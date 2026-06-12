@@ -76,8 +76,8 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
-#include "..\y_bcrypt\y_bcrypt_natives"
+#include "../../YSI_Core/y_utils"
+#include "../y_bcrypt/y_bcrypt_natives"
 
 forward _YSI_BCryptCheckDone(extra, ptr);
 forward _YSI_BCryptHashDone(hashid, arg2, arg3);

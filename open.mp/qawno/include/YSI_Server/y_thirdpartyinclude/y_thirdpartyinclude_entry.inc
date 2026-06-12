@@ -90,7 +90,7 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
+#include "../../YSI_Core/y_utils"
 
 #if __COMPILER_WARNING_SUPPRESSION
 	#pragma warning push
@@ -111,7 +111,7 @@ Optional plugins:
 	#pragma warning pop
 #endif
 
-#include "..\..\YSI_Storage\y_dumpamx\y_dumpamx_entry"
+#include "../../YSI_Storage/y_dumpamx/y_dumpamx_entry"
 
 #if defined YSI_TESTS
 	#if defined YSI_NO_TEST_WARNINGS

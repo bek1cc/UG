@@ -76,9 +76,9 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
-#include "..\..\YSI_Server\y_thirdpartyinclude"
-#include "..\y_cgen"
+#include "../../YSI_Core/y_utils"
+#include "../../YSI_Server/y_thirdpartyinclude"
+#include "../y_cgen"
 
 #if defined YSI_TESTS
 	#define _Y_HOOKS_STATIC
@@ -97,8 +97,8 @@ Optional plugins:
 
 #if defined YSI_TESTS
 	// Get a new unique ID for the test hooks.
-	#include "..\y_va"
-	#include "..\y_unique\y_unique_entry"
+	#include "../y_va"
+	#include "../y_unique/y_unique_entry"
 	#if defined YSI_NO_TEST_WARNINGS
 		#pragma warning push
 		#pragma warning disable 203

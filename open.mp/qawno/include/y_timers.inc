@@ -77,7 +77,7 @@ Changelog:
 	#endinput
 #endif
 
-#include "internal\y_plugins"
+#include "internal/y_plugins"
 
 #include "y_timers/impl"
 #if defined _YSI_PLUGINS_FIXES_2

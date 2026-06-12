@@ -97,18 +97,18 @@ Optional plugins:
 // internal include guards (or the compiler's one) will prevent their multiple
 // inclusions.  I don't know why I ever made YSI use its own internal version...
 
-#tryinclude <amx\addressof_light>
-#tryinclude <amx_assembly\addressof_light>
-#tryinclude <amx_assembly-master\addressof_light>
-#tryinclude <amx_assembly-master\amx_assembly-master\addressof_light>
-#tryinclude "..\..\amx\addressof_light"
-#tryinclude "..\..\amx_assembly\addressof_light"
-#tryinclude "..\..\amx_assembly-master\addressof_light"
-#tryinclude "..\..\amx_assembly-master\amx_assembly-master\addressof_light"
-#tryinclude "..\..\..\amx\addressof_light"
-#tryinclude "..\..\..\amx_assembly\addressof_light"
-#tryinclude "..\..\..\amx_assembly-master\addressof_light"
-#tryinclude "..\..\..\amx_assembly-master\amx_assembly-master\addressof_light"
+#tryinclude <amx/addressof_light>
+#tryinclude <amx_assembly/addressof_light>
+#tryinclude <amx_assembly-master/addressof_light>
+#tryinclude <amx_assembly-master/amx_assembly-master/addressof_light>
+#tryinclude "../../amx/addressof_light"
+#tryinclude "../../amx_assembly/addressof_light"
+#tryinclude "../../amx_assembly-master/addressof_light"
+#tryinclude "../../amx_assembly-master/amx_assembly-master/addressof_light"
+#tryinclude "../../../amx/addressof_light"
+#tryinclude "../../../amx_assembly/addressof_light"
+#tryinclude "../../../amx_assembly-master/addressof_light"
+#tryinclude "../../../amx_assembly-master/amx_assembly-master/addressof_light"
 #tryinclude "addressof_light"
 #tryinclude <addressof_light>
 #if !defined ADDRESSOF_LIGHT_INC

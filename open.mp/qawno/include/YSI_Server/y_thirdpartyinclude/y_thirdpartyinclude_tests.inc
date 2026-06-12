@@ -142,15 +142,15 @@ public
 	ASSERT_EQ(res, 6);
 }
 
-#tryinclude <md-sort\md-sort>
-#tryinclude <md-sort-master\md-sort>
-#tryinclude <md-sort-master\md-sort-master\md-sort>
-#tryinclude "..\..\md-sort\md-sort"
-#tryinclude "..\..\md-sort-master\md-sort"
-#tryinclude "..\..\md-sort-master\md-sort-master\md-sort"
-#tryinclude "..\..\..\md-sort\md-sort"
-#tryinclude "..\..\..\md-sort-master\md-sort"
-#tryinclude "..\..\..\md-sort-master\md-sort-master\md-sort"
+#tryinclude <md-sort/md-sort>
+#tryinclude <md-sort-master/md-sort>
+#tryinclude <md-sort-master/md-sort-master/md-sort>
+#tryinclude "../../md-sort/md-sort"
+#tryinclude "../../md-sort-master/md-sort"
+#tryinclude "../../md-sort-master/md-sort-master/md-sort"
+#tryinclude "../../../md-sort/md-sort"
+#tryinclude "../../../md-sort-master/md-sort"
+#tryinclude "../../../md-sort-master/md-sort-master/md-sort"
 #tryinclude "md-sort"
 #tryinclude <md-sort>
 #if !defined _INC_md_sort

@@ -6,8 +6,8 @@
 
 #include <a_samp>
 
-#include <YSI\y_testing>
-#include <YSI\y_utils>
+#include <YSI/y_testing>
+#include <YSI/y_utils>
 
 #if !defined DELETE_MODE
 enum E_MOCK_PLAYER {

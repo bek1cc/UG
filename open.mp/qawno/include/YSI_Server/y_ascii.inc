@@ -90,19 +90,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_ascii
-	#tryinclude "y_ascii\y_ascii_entry"
+	#tryinclude "y_ascii/y_ascii_entry"
 #endif
 #if !defined _INC_y_ascii
-	#tryinclude "YSI_Server\y_ascii\y_ascii_entry"
+	#tryinclude "YSI_Server/y_ascii/y_ascii_entry"
 #endif
 #if !defined _INC_y_ascii
-	#tryinclude "YSI\YSI_Server\y_ascii\y_ascii_entry"
+	#tryinclude "YSI/YSI_Server/y_ascii/y_ascii_entry"
 #endif
 #if !defined _INC_y_ascii
-	#tryinclude <YSI_Server\y_ascii\y_ascii_entry>
+	#tryinclude <YSI_Server/y_ascii/y_ascii_entry>
 #endif
 #if !defined _INC_y_ascii
-	#tryinclude <YSI\YSI_Server\y_ascii\y_ascii_entry>
+	#tryinclude <YSI/YSI_Server/y_ascii/y_ascii_entry>
 #endif
 #if !defined _INC_y_ascii
 	#error Could not find y_ascii

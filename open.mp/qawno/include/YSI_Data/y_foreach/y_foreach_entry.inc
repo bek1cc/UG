@@ -105,7 +105,7 @@ Optional plugins:
     
 */
 
-#include "..\..\YSI_Core\y_utils"
+#include "../../YSI_Core/y_utils"
 
 // "y_iterate" is always higher than "foreach".
 #define _Y_ITERATE_LOCAL_VERSION        45
@@ -364,7 +364,7 @@ Optional plugins:
 #include "y_foreach_macros"
 
 #if _FOREACH_VEHICLES
-	#include "..\..\YSI_Game\y_vehicledata\y_vehicledata_entry"
+	#include "../../YSI_Game/y_vehicledata/y_vehicledata_entry"
 #endif
 
 #include "y_foreach_impl"

@@ -76,8 +76,8 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
-#include "..\..\YSI_Coding\y_stringhash"
+#include "../../YSI_Core/y_utils"
+#include "../../YSI_Coding/y_stringhash"
 
 #include "y_hashmap_impl"
 
@@ -85,7 +85,7 @@ Optional plugins:
 #if defined YSI_TESTS
 	// We need more heap space for one test.  Include this to get it without
 	// potentially breaking other tests.
-	#include "..\..\YSI_Coding\y_malloc"
+	#include "../../YSI_Coding/y_malloc"
 	#if defined YSI_NO_TEST_WARNINGS
 		#pragma warning push
 		#pragma warning disable 203

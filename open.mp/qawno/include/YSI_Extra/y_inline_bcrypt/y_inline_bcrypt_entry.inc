@@ -76,9 +76,9 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Core\y_utils"
-#include "..\..\YSI_Server\y_thirdpartyinclude\y3_indirection"
-#include "..\y_bcrypt\y_bcrypt_natives"
+#include "../../YSI_Core/y_utils"
+#include "../../YSI_Server/y_thirdpartyinclude/y3_indirection"
+#include "../y_bcrypt/y_bcrypt_natives"
 
 static stock const
 	YSI_gsc_Inline_BCryptCheckDone[] = "_Inline_BCryptCheckDone",

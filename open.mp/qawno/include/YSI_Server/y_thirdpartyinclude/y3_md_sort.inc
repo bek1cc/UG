@@ -90,15 +90,15 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-//#tryinclude <md-sort\md-sort>
-//#tryinclude <md-sort-master\md-sort>
-//#tryinclude <md-sort-master\md-sort-master\md-sort>
-//#tryinclude "..\..\md-sort\md-sort"
-//#tryinclude "..\..\md-sort-master\md-sort"
-//#tryinclude "..\..\md-sort-master\md-sort-master\md-sort"
-//#tryinclude "..\..\..\md-sort\md-sort"
-//#tryinclude "..\..\..\md-sort-master\md-sort"
-//#tryinclude "..\..\..\md-sort-master\md-sort-master\md-sort"
+//#tryinclude <md-sort/md-sort>
+//#tryinclude <md-sort-master/md-sort>
+//#tryinclude <md-sort-master/md-sort-master/md-sort>
+//#tryinclude "../../md-sort/md-sort"
+//#tryinclude "../../md-sort-master/md-sort"
+//#tryinclude "../../md-sort-master/md-sort-master/md-sort"
+//#tryinclude "../../../md-sort/md-sort"
+//#tryinclude "../../../md-sort-master/md-sort"
+//#tryinclude "../../../md-sort-master/md-sort-master/md-sort"
 //#tryinclude "md-sort"
 //#tryinclude <md-sort>
 //#if !defined _INC_md_sort

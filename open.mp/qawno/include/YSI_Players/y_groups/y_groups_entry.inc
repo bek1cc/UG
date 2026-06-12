@@ -95,32 +95,32 @@ Optional plugins:
 	 * </library>
 	 *//** */
 
-	#include "..\..\YSI_Core\y_utils"
-	#include "..\..\YSI_Data\y_bit"
+	#include "../../YSI_Core/y_utils"
+	#include "../../YSI_Data/y_bit"
 	
 	//#if !defined _INC_y_groups__funcs
 	//	#define _INC_y_groups__funcs
 	#include "y_groups_setup"
-	#include "..\..\YSI_Data\y_iterate"
+	#include "../../YSI_Data/y_iterate"
 	//#endif
 	
-	#include "..\..\YSI_Data\y_playerarray"
+	#include "../../YSI_Data/y_playerarray"
 	
-	#include "..\..\YSI_Coding\y_stringhash"
-	#include "..\..\YSI_Coding\y_remote"
+	#include "../../YSI_Coding/y_stringhash"
+	#include "../../YSI_Coding/y_remote"
 	
-	#include "..\..\YSI_Storage\y_amx"
+	#include "../../YSI_Storage/y_amx"
 	
 	
 	#define YSIM_U_DISABLE
 	#define MASTER 59
-	#include "..\..\YSI_Core\y_master"
+	#include "../../YSI_Core/y_master"
 	
-	#include "..\..\YSI_Coding\y_hooks"
+	#include "../../YSI_Coding/y_hooks"
 	
 	#include "y_groups_impl"
 	
-	#include "..\..\YSI_Core\y_master"
+	#include "../../YSI_Core/y_master"
 #endif
 
 #include "y_groups__include"
@@ -132,7 +132,7 @@ Optional plugins:
 #define _INC_y_groups
 
 #if defined _INC_y_classes
-	#include "..\..\YSI_Visual\y_classes\y_classes_classgroups"
+	#include "../../YSI_Visual/y_classes/y_classes_classgroups"
 #endif
 
 stock _YSI_HAS_y_groups(_do_not_call_me_ever_, _like_never_)
@@ -159,6 +159,6 @@ stock _YSI_HAS_y_groups(_do_not_call_me_ever_, _like_never_)
 		#pragma warning pop
 	#endif
 
-	#include "..\..\YSI_Core\y_master"
+	#include "../../YSI_Core/y_master"
 #endif
 

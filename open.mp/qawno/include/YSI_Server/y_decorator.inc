@@ -90,19 +90,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_decorator
-	#tryinclude "y_decorator\y_decorator_entry"
+	#tryinclude "y_decorator/y_decorator_entry"
 #endif
 #if !defined _INC_y_decorator
-	#tryinclude "YSI_Server\y_decorator\y_decorator_entry"
+	#tryinclude "YSI_Server/y_decorator/y_decorator_entry"
 #endif
 #if !defined _INC_y_decorator
-	#tryinclude "YSI\YSI_Server\y_decorator\y_decorator_entry"
+	#tryinclude "YSI/YSI_Server/y_decorator/y_decorator_entry"
 #endif
 #if !defined _INC_y_decorator
-	#tryinclude <YSI_Server\y_decorator\y_decorator_entry>
+	#tryinclude <YSI_Server/y_decorator/y_decorator_entry>
 #endif
 #if !defined _INC_y_decorator
-	#tryinclude <YSI\YSI_Server\y_decorator\y_decorator_entry>
+	#tryinclude <YSI/YSI_Server/y_decorator/y_decorator_entry>
 #endif
 #if !defined _INC_y_decorator
 	#error Could not find y_decorator

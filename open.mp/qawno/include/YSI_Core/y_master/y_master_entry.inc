@@ -74,15 +74,15 @@ Optional plugins:
 #define _Y_MASTER_INCLUDED
 
 #if !defined _INC_y_master
-	#include "..\y_utils"
-	#include "..\..\YSI_Server\y_thirdpartyinclude\y3_codeparse"
+	#include "../y_utils"
+	#include "../../YSI_Server/y_thirdpartyinclude/y3_codeparse"
 
 	CHAIN_HOOK(Master)
 	#undef CHAIN_ORDER
 	#define CHAIN_ORDER CHAIN_NEXT(Master)
 	
 	#if !defined YSI_NO_MASTER
-		#include "..\y_core\y_rconfix"
+		#include "../y_core/y_rconfix"
 	#endif
 	#include "y_master_once"
 	#include "y_distribute"
@@ -186,7 +186,7 @@ Optional plugins:
 
 // Only include this lot once.
 #if defined YSI_TESTS
-	#include "..\..\YSI_Coding\y_hooks"
+	#include "../../YSI_Coding/y_hooks"
 	// Get the new master.
 	#define MASTER 58
 	#include "y_master_entry"
@@ -243,7 +243,7 @@ Optional plugins:
 		#undef print
 		#undef printf
 
-		#include <YSI_Core\y_master>
+		#include <YSI_Core/y_master>
 	*/
 
 		#define MASTER 57
@@ -265,7 +265,7 @@ Optional plugins:
 		#undef print
 		#undef printf
 
-		#include <YSI_Core\y_master>
+		#include <YSI_Core/y_master>
 	*/
 
 		#define MASTER 57
@@ -287,7 +287,7 @@ Optional plugins:
 		#undef print
 		#undef printf
 
-		#include <YSI_Core\y_master>
+		#include <YSI_Core/y_master>
 	*/
 
 		#define MASTER 57
@@ -310,7 +310,7 @@ Optional plugins:
 		#undef print
 		#undef printf
 
-		#include <YSI_Core\y_master>
+		#include <YSI_Core/y_master>
 	*/
 
 		#define MASTER 57

@@ -78,8 +78,8 @@ Optional plugins:
 
 forward bool:_Testing_End();
 
-#include "..\y_utils"
-#include "..\..\YSI_Server\y_stringise"
+#include "../y_utils"
+#include "../../YSI_Server/y_stringise"
 
 CHAIN_HOOK(Testing)
 #undef CHAIN_ORDER
@@ -1457,16 +1457,16 @@ static stock y_testing_ReturnHello()
 }
 
 // Include these in a non-alphabetical order.
-#include ".\libs\y_testing_b"
-#include ".\libs\y_testing_g"
-#include ".\libs\y_testing_d"
-#include ".\libs\y_testing_i"
-#include ".\libs\y_testing_e"
-#include ".\libs\y_testing_h"
-#include ".\libs\y_testing_a"
-#include ".\libs\y_testing_j"
-#include ".\libs\y_testing_c"
-#include ".\libs\y_testing_f"
+#include "./libs/y_testing_b"
+#include "./libs/y_testing_g"
+#include "./libs/y_testing_d"
+#include "./libs/y_testing_i"
+#include "./libs/y_testing_e"
+#include "./libs/y_testing_h"
+#include "./libs/y_testing_a"
+#include "./libs/y_testing_j"
+#include "./libs/y_testing_c"
+#include "./libs/y_testing_f"
 
 #if defined YSI_NO_TEST_WARNINGS
 	#pragma warning push
@@ -1479,11 +1479,11 @@ static stock y_testing_ReturnHello()
 	#pragma warning disable 239
 	#pragma warning disable 240
 #endif
-#include "..\y_core\y_utils_tests"
-#include "..\y_core\y_als_tests"
-#include "..\y_core\y_cell_tests"
-#include "..\y_core\y_amx_tests"
-#include "..\..\YSI_Coding\y_unique\y_unique_tests"
+#include "../y_core/y_utils_tests"
+#include "../y_core/y_als_tests"
+#include "../y_core/y_cell_tests"
+#include "../y_core/y_amx_tests"
+#include "../../YSI_Coding/y_unique/y_unique_tests"
 #if defined YSI_NO_TEST_WARNINGS
 	#pragma warning pop
 #endif

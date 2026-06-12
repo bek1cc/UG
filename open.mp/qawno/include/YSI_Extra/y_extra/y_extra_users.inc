@@ -78,8 +78,8 @@ Optional plugins:
 
 // Include pretty much 90% of YSI in one fell swoop!
 
-//#include "..\y_users"
-#include "..\..\YSI_Coding\y_inline"
+//#include "../y_users"
+#include "../../YSI_Coding/y_inline"
 
 loadtext core[ysi_players], core[ysi_extras], core[ysi_dialog];
 

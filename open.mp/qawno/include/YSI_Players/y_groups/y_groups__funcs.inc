@@ -93,10 +93,10 @@ Optional plugins:
 
 //#if !defined _INC_y_groups__funcs
 //	#define _INC_y_groups__funcs
-//	#include "..\..\YSI_Core\y_utils"
-//	#include "..\..\YSI_Data\y_bit"
+//	#include "../../YSI_Core/y_utils"
+//	#include "../../YSI_Data/y_bit"
 //	#include "y_groups_setup"
-//	#include "..\..\YSI_Data\y_iterate"
+//	#include "../../YSI_Data/y_iterate"
 //#endif
 
 //#if !defined _GROUP_MAKE_TAG

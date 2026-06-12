@@ -76,15 +76,15 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "..\..\YSI_Server\y_thirdpartyinclude"
-#include "..\y_va"
-#include "..\y_cgen"
+#include "../../YSI_Server/y_thirdpartyinclude"
+#include "../y_va"
+#include "../y_cgen"
 
 #if !defined YSI_MAX_INLINE_STRING
 	#define YSI_MAX_INLINE_STRING YSI_MAX_STRING
 #endif
 
-#include "..\y_malloc"
+#include "../y_malloc"
 
 CHAIN_HOOK(Inline)
 #undef CHAIN_ORDER
@@ -96,11 +96,11 @@ CHAIN_HOOK(Inline)
 #include "y_inline_extra"
 
 #if defined YSI_TESTS
-	#include "..\y_hooks"
-	//#include "..\..\YSI_Extra\y_inline_bcrypt"
-	//#include "..\..\YSI_Extra\y_inline_mysql"
-	//#include "..\..\YSI_Extra\y_inline_requests"
-	#include "..\..\YSI_Extra\y_inline_timers"
+	#include "../y_hooks"
+	//#include "../../YSI_Extra/y_inline_bcrypt"
+	//#include "../../YSI_Extra/y_inline_mysql"
+	//#include "../../YSI_Extra/y_inline_requests"
+	#include "../../YSI_Extra/y_inline_timers"
 	#if defined YSI_NO_TEST_WARNINGS
 		#pragma warning push
 		#pragma warning disable 203

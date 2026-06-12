@@ -612,8 +612,8 @@ public y_hooks_MyFunc1(a, b)
 	g_y_hooksVar += a + b;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 HOOK__ y_hooks_MyFunc1(a, b)
 {
@@ -621,8 +621,8 @@ HOOK__ y_hooks_MyFunc1(a, b)
 	g_y_hooksVar += a + b;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 HOOK__ y_hooks_MyFunc1(a, b)
 {
@@ -630,8 +630,8 @@ HOOK__ y_hooks_MyFunc1(a, b)
 	g_y_hooksVar += a + b;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 HOOK__ y_hooks_MyFunc1(a, b)
 {
@@ -639,8 +639,8 @@ HOOK__ y_hooks_MyFunc1(a, b)
 	g_y_hooksVar += a + b;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 HOOK__ y_hooks_MyFunc1(a, b)
 {
@@ -648,8 +648,8 @@ HOOK__ y_hooks_MyFunc1(a, b)
 	g_y_hooksVar += a + b;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 HOOK__ y_hooks_MyFunc1(a, b)
 {
@@ -881,8 +881,8 @@ HOOK__ OnPlayerCustomRpl() { g_y_hooksVar += 55; }
 		ASSERT_EQ(numargs(), 4);
 	}
 
-	#tryinclude "..\YSI_Coding\y_unique"
-	#tryinclude "..\..\YSI_Coding\y_unique"
+	#tryinclude "../YSI_Coding/y_unique"
+	#tryinclude "../../YSI_Coding/y_unique"
 
 	HOOK__ OnTestNumArgs2(a, b, c, f)
 	{
@@ -1076,8 +1076,8 @@ HOOK_STOCK__ y_hooks_HookedStock(str[], v, &c)
 	return 10 + ret;
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 hook stock y_hooks_HookedStock(str[], v, &c)
 {
@@ -1182,8 +1182,8 @@ hook native strlen(const string[])
 	return continue(string);
 }
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 hook native strlen(const string[])
 {
@@ -1241,8 +1241,8 @@ hook native strlen(const string[])
 //{
 //}
 //
-//#tryinclude "..\YSI_Coding\y_unique"
-//#tryinclude "..\..\YSI_Coding\y_unique"
+//#tryinclude "../YSI_Coding/y_unique"
+//#tryinclude "../../YSI_Coding/y_unique"
 //
 //@hook() OnPlayerConnect(playerid)
 //{
@@ -1252,15 +1252,15 @@ hook native strlen(const string[])
 //{
 //}
 //
-//#tryinclude "..\YSI_Coding\y_unique"
-//#tryinclude "..\..\YSI_Coding\y_unique"
+//#tryinclude "../YSI_Coding/y_unique"
+//#tryinclude "../../YSI_Coding/y_unique"
 //
 //hook OnPlayerConnect(playerid)
 //{
 //}
 
-#tryinclude "..\YSI_Coding\y_unique"
-#tryinclude "..\..\YSI_Coding\y_unique"
+#tryinclude "../YSI_Coding/y_unique"
+#tryinclude "../../YSI_Coding/y_unique"
 
 stock TestHookedFunc(a, const string:b[], ...)
 {
