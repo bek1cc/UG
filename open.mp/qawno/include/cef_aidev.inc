@@ -97,7 +97,6 @@ public OnCefAiDevReloadCef(playerid, browserId, targetPlayer)
                 case 81: format(url, sizeof(url), "http://cef/cardcase/index.html");
                 case 82: format(url, sizeof(url), "http://cef/dog/index.html");
                 case 90: format(url, sizeof(url), "http://127.0.0.1:3777/cef/ai-dev-panel/index.html");
-                case 95: format(url, sizeof(url), "http://cef/tstudio/index.html");
                 default:
                 {
                         printf("[AI-DEV] Unknown browser ID %d, cannot reload", browserId);
