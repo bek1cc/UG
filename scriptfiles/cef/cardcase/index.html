@@ -16,28 +16,28 @@ canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0
 /* Header */
 .header{position:absolute;top:0;left:0;right:0;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
 .header-logo{display:flex;align-items:center;gap:10px}
-.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.4))}
+.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(96,165,250,0.4))}
 .header-title{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:4px;text-transform:uppercase;
-  background:linear-gradient(135deg,#e0d4ff,#c4b5fd,#67e8f9);
+  background:linear-gradient(135deg,#c4e0ff,#93c5fd,#67e8f9);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(196,181,253,0.5);letter-spacing:2px}
+.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(147,197,253,0.5);letter-spacing:2px}
 
 /* Card select hint */
-.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(196,181,253,0.5);
+.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(147,197,253,0.5);
   text-transform:uppercase;margin-bottom:14px;transition:opacity 0.5s;pointer-events:none}
 .select-hint.hidden{opacity:0}
 
 /* Open button */
-.open-btn{padding:12px 44px;border:2px solid rgba(139,92,246,0.45);border-radius:12px;
+.open-btn{padding:12px 44px;border:2px solid rgba(96,165,250,0.45);border-radius:12px;
   font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#e0d4ff;cursor:pointer;pointer-events:all;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(109,40,217,0.08));
+  color:#c4e0ff;cursor:pointer;pointer-events:all;
+  background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(59,130,246,0.08));
   transition:all 0.3s;backdrop-filter:blur(6px);opacity:0;
-  box-shadow:0 0 20px rgba(139,92,246,0.1)}
+  box-shadow:0 0 20px rgba(96,165,250,0.1)}
 .open-btn.visible{opacity:1}
-.open-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.15));
-  border-color:rgba(139,92,246,0.7);color:#fff;
-  box-shadow:0 0 40px rgba(139,92,246,0.2),0 0 80px rgba(139,92,246,0.08);transform:scale(1.04)}
+.open-btn:hover{background:linear-gradient(135deg,rgba(96,165,250,0.3),rgba(59,130,246,0.15));
+  border-color:rgba(96,165,250,0.7);color:#fff;
+  box-shadow:0 0 40px rgba(96,165,250,0.2),0 0 80px rgba(96,165,250,0.08);transform:scale(1.04)}
 .open-btn.hidden{display:none}
 
 /* ESC hint */
@@ -46,7 +46,7 @@ canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0
 
 /* ===== REVEAL OVERLAY ===== */
 #reveal-overlay{position:fixed;inset:0;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(5,2,15,0.65);backdrop-filter:blur(6px);pointer-events:all}
+  background:rgba(5,4,18,0.65);backdrop-filter:blur(6px);pointer-events:all}
 #reveal-overlay.active{display:flex}
 
 .reveal-info{text-align:center;opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
@@ -64,46 +64,46 @@ canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0
   box-shadow:0 0 20px rgba(255,170,0,0.15)}
 
 .reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;letter-spacing:2px;
-  background:linear-gradient(135deg,#e0d4ff,#c4b5fd,#67e8f9,#c4b5fd);
+  background:linear-gradient(135deg,#c4e0ff,#93c5fd,#67e8f9,#93c5fd);
   background-size:200% 200%;animation:nameShimmer 3s ease-in-out infinite;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
   margin-top:6px}
 @keyframes nameShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
-.reveal-info .reward-label{font-size:12px;color:rgba(196,181,253,0.45);letter-spacing:1px;margin-top:3px}
+.reveal-info .reward-label{font-size:12px;color:rgba(147,197,253,0.45);letter-spacing:1px;margin-top:3px}
 
 /* Vehicle image in reveal */
 .reward-img-wrap{width:300px;height:170px;display:flex;align-items:center;justify-content:center;margin:14px auto;position:relative}
 .reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;
-  filter:drop-shadow(0 0 30px rgba(139,92,246,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));
+  filter:drop-shadow(0 0 30px rgba(96,165,250,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));
   transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
 .reward-img-wrap:hover img{transform:scale(1.06) translateY(-3px);
-  filter:drop-shadow(0 0 45px rgba(139,92,246,0.8)) drop-shadow(0 0 70px rgba(109,40,217,0.25)) drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
+  filter:drop-shadow(0 0 45px rgba(96,165,250,0.8)) drop-shadow(0 0 70px rgba(59,130,246,0.25)) drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
 
 /* Car glow behind image */
 .reward-img-wrap::before{content:'';position:absolute;inset:-30px;border-radius:50%;
-  background:radial-gradient(circle,rgba(139,92,246,0.15) 0%,rgba(109,40,217,0.06) 40%,transparent 70%);
+  background:radial-gradient(circle,rgba(96,165,250,0.15) 0%,rgba(59,130,246,0.06) 40%,transparent 70%);
   pointer-events:none;animation:carGlowPulse 2s ease-in-out infinite}
 @keyframes carGlowPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 
 .reward-img-wrap::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:220px;height:25px;
-  background:radial-gradient(ellipse,rgba(139,92,246,0.18) 0%,transparent 70%);pointer-events:none}
+  background:radial-gradient(ellipse,rgba(96,165,250,0.18) 0%,transparent 70%);pointer-events:none}
 
 .reward-svg-icon{width:80px;height:80px;filter:drop-shadow(0 0 12px currentColor)}
 
-.collect-btn{margin-top:18px;padding:12px 40px;border:2px solid rgba(139,92,246,0.45);border-radius:10px;
+.collect-btn{margin-top:18px;padding:12px 40px;border:2px solid rgba(96,165,250,0.45);border-radius:10px;
   font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#e0d4ff;cursor:pointer;
-  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(109,40,217,0.08));
+  color:#c4e0ff;cursor:pointer;
+  background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(59,130,246,0.08));
   transition:all 0.3s;backdrop-filter:blur(6px);
-  box-shadow:0 0 15px rgba(139,92,246,0.08)}
-.collect-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.15));
-  border-color:rgba(139,92,246,0.7);
-  box-shadow:0 0 40px rgba(139,92,246,0.2),0 0 70px rgba(139,92,246,0.08);color:#fff;transform:scale(1.04)}
+  box-shadow:0 0 15px rgba(96,165,250,0.08)}
+.collect-btn:hover{background:linear-gradient(135deg,rgba(96,165,250,0.3),rgba(59,130,246,0.15));
+  border-color:rgba(96,165,250,0.7);
+  box-shadow:0 0 40px rgba(96,165,250,0.2),0 0 70px rgba(96,165,250,0.08);color:#fff;transform:scale(1.04)}
 
 /* Screen flash */
 .screen-flash{position:fixed;inset:0;z-index:14;pointer-events:none;opacity:0;
-  background:radial-gradient(circle,rgba(139,92,246,0.5) 0%,transparent 60%)}
+  background:radial-gradient(circle,rgba(96,165,250,0.5) 0%,transparent 60%)}
 .screen-flash.flash{animation:flashAnim 0.6s ease-out forwards}
 .screen-flash.legendary{background:radial-gradient(circle,rgba(255,170,0,0.7) 0%,rgba(239,68,68,0.3) 30%,transparent 60%)}
 .screen-flash.epic{background:radial-gradient(circle,rgba(168,85,247,0.6) 0%,rgba(236,72,153,0.2) 40%,transparent 60%)}
@@ -187,11 +187,11 @@ var renderer = new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.4;
+renderer.toneMappingExposure = 1.8;
 
 var scene = new THREE.Scene();
-scene.background = new THREE.Color(0x040812);
-scene.fog = new THREE.FogExp2(0x060a14,0.06);
+scene.background = new THREE.Color(0x080c18);
+scene.fog = new THREE.FogExp2(0x080c18,0.04);
 
 var camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
 camera.position.set(0,2.5,6);
@@ -203,19 +203,23 @@ composer.addPass(new RenderPass(scene,camera));
 var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),1.5,0.4,0.25);
 composer.addPass(bloomPass);
 
-// Lights - BRIGHTER
-var ambientLight = new THREE.AmbientLight(0x222244,0.8);
+// Lights - BRIGHT, LESS PURPLE, CLEAN
+var ambientLight = new THREE.AmbientLight(0x334466,1.2);
 scene.add(ambientLight);
 
-var portalLight = new THREE.PointLight(0x8b5cf6,4,15);
+var portalLight = new THREE.PointLight(0x60a5fa,5,15);
 portalLight.position.set(0,2,-1);
 scene.add(portalLight);
 
-var rimLight = new THREE.PointLight(0x06b6d4,2,10);
+var rimLight = new THREE.PointLight(0x22d3ee,3,10);
 rimLight.position.set(2,1,3);
 scene.add(rimLight);
 
-var spotLight = new THREE.SpotLight(0xc4b5fd,3,20,Math.PI/6,0.5);
+var warmLight = new THREE.PointLight(0xffeedd,1.5,12);
+warmLight.position.set(-2,2,4);
+scene.add(warmLight);
+
+var spotLight = new THREE.SpotLight(0x93c5fd,4,20,Math.PI/6,0.5);
 spotLight.position.set(0,6,0);
 spotLight.target.position.set(0,0,0);
 scene.add(spotLight);
@@ -231,7 +235,7 @@ scene.add(floor);
 
 // Floor glow ring
 var ringGeo = new THREE.RingGeometry(1.8,2.2,64);
-var ringMat = new THREE.MeshBasicMaterial({color:0x8b5cf6,transparent:true,opacity:0.2,side:THREE.DoubleSide});
+var ringMat = new THREE.MeshBasicMaterial({color:0x60a5fa,transparent:true,opacity:0.25,side:THREE.DoubleSide});
 var floorRing = new THREE.Mesh(ringGeo,ringMat);
 floorRing.rotation.x = -Math.PI/2;
 floorRing.position.y = -0.48;
@@ -244,7 +248,7 @@ scene.add(portalGroup);
 
 // Portal torus
 var torusGeo = new THREE.TorusGeometry(1.3,0.06,16,100);
-var torusMat = new THREE.MeshStandardMaterial({color:0xa78bfa,emissive:0xa78bfa,emissiveIntensity:2.5,roughness:0.2,metalness:0.8});
+var torusMat = new THREE.MeshStandardMaterial({color:0x60a5fa,emissive:0x60a5fa,emissiveIntensity:3,roughness:0.2,metalness:0.8});
 var portalTorus = new THREE.Mesh(torusGeo,torusMat);
 portalGroup.add(portalTorus);
 
@@ -261,7 +265,7 @@ var coreMat = new THREE.ShaderMaterial({
   side:THREE.DoubleSide,
   uniforms:{
     uTime:{value:0},
-    uColor1:{value:new THREE.Color(0xa78bfa)},
+    uColor1:{value:new THREE.Color(0x60a5fa)},
     uColor2:{value:new THREE.Color(0x22d3ee)}
   },
   vertexShader:`
@@ -296,7 +300,7 @@ var glowGeo = new THREE.PlaneGeometry(5,5);
 var glowMat = new THREE.ShaderMaterial({
   transparent:true,
   side:THREE.DoubleSide,
-  uniforms:{uColor:{value:new THREE.Color(0xa78bfa)}},
+  uniforms:{uColor:{value:new THREE.Color(0x60a5fa)}},
   vertexShader:`
     varying vec2 vUv;
     void main(){
@@ -330,63 +334,65 @@ function createCardTexture(value,suit,isFront,rarity){
   var ctx = cvs.getContext('2d');
 
   if(isFront){
-    // Card front - BRIGHTER with holographic gradient
+    // Card front - LIGHT, CLEAN, VIVID
     var gradient = ctx.createLinearGradient(0,0,256,384);
-    gradient.addColorStop(0,'#141428');
-    gradient.addColorStop(0.3,'#1a1a40');
-    gradient.addColorStop(0.6,'#161640');
-    gradient.addColorStop(1,'#1a1440');
+    gradient.addColorStop(0,'#1e2140');
+    gradient.addColorStop(0.3,'#222650');
+    gradient.addColorStop(0.6,'#1e2448');
+    gradient.addColorStop(1,'#222855');
     ctx.fillStyle = gradient;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // HOLOGRAPHIC SHIMMER - diagonal rainbow stripe
+    // HOLOGRAPHIC SHIMMER - vivid rainbow
     var holoGrad = ctx.createLinearGradient(0,0,256,384);
-    holoGrad.addColorStop(0,'rgba(139,92,246,0.06)');
-    holoGrad.addColorStop(0.2,'rgba(6,182,212,0.08)');
-    holoGrad.addColorStop(0.4,'rgba(168,85,247,0.06)');
-    holoGrad.addColorStop(0.6,'rgba(59,130,246,0.08)');
-    holoGrad.addColorStop(0.8,'rgba(168,85,247,0.06)');
-    holoGrad.addColorStop(1,'rgba(6,182,212,0.08)');
+    holoGrad.addColorStop(0,'rgba(100,200,255,0.1)');
+    holoGrad.addColorStop(0.2,'rgba(255,100,200,0.08)');
+    holoGrad.addColorStop(0.4,'rgba(100,255,200,0.1)');
+    holoGrad.addColorStop(0.6,'rgba(255,200,100,0.08)');
+    holoGrad.addColorStop(0.8,'rgba(100,200,255,0.1)');
+    holoGrad.addColorStop(1,'rgba(255,100,200,0.08)');
     ctx.fillStyle = holoGrad;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // Border - BRIGHTER with glow
-    var borderColors = {common:'#64c864',rare:'#00bfff',epic:'#a855f7',legendary:'#ffaa00'};
-    ctx.strokeStyle = borderColors[rarity]||'#a78bfa';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = borderColors[rarity]||'#a78bfa';
-    ctx.shadowBlur = 18;
+    // Border - VIVID with strong glow
+    var borderColors = {common:'#64c864',rare:'#00bfff',epic:'#c084fc',legendary:'#ffaa00'};
+    ctx.strokeStyle = borderColors[rarity]||'#60a5fa';
+    ctx.lineWidth = 5;
+    ctx.shadowColor = borderColors[rarity]||'#60a5fa';
+    ctx.shadowBlur = 25;
     ctx.roundRect(4,4,248,376,14);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Inner border - brighter
-    ctx.strokeStyle = 'rgba(167,139,250,0.25)';
+    // Inner border - visible
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
     ctx.lineWidth = 1;
     ctx.roundRect(16,16,224,352,8);
     ctx.stroke();
 
-    // Suit symbol - BRIGHTER glow
+    // Suit symbol - VIVID glow
     ctx.font = '80px serif';
     ctx.textAlign = 'center';
-    ctx.fillStyle = suit===0||suit===3 ? '#c4b5fd' : '#f87171';
-    ctx.shadowColor = suit===0||suit===3 ? '#a78bfa' : '#ef4444';
-    ctx.shadowBlur = 30;
+    ctx.fillStyle = suit===0||suit===3 ? '#93c5fd' : '#fca5a5';
+    ctx.shadowColor = suit===0||suit===3 ? '#60a5fa' : '#f87171';
+    ctx.shadowBlur = 35;
     ctx.fillText(suitSymbols[suits[suit]],128,210);
 
-    // Value - BRIGHTER
+    // Value - BRIGHT white
     ctx.font = 'bold 48px Orbitron, monospace';
-    ctx.shadowBlur = 22;
-    ctx.fillStyle = '#e0d4ff';
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = '#ffffff';
+    ctx.fillStyle = '#ffffff';
     ctx.fillText(value,128,140);
 
     // Corner values
     ctx.font = 'bold 22px Orbitron, monospace';
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = suit===0||suit===3 ? '#60a5fa' : '#f87171';
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#c4b5fd';
+    ctx.fillStyle = suit===0||suit===3 ? '#93c5fd' : '#fca5a5';
     ctx.fillText(value,24,40);
     ctx.font = '18px serif';
     ctx.fillText(suitSymbols[suits[suit]],28,62);
@@ -402,42 +408,42 @@ function createCardTexture(value,suit,isFront,rarity){
     ctx.restore();
 
   } else {
-    // Card back - BRIGHTER with holographic feel
+    // Card back - LIGHTER, clean holographic feel
     var gradient2 = ctx.createLinearGradient(0,0,256,384);
-    gradient2.addColorStop(0,'#1a0e30');
-    gradient2.addColorStop(0.5,'#1e1240');
-    gradient2.addColorStop(1,'#141040');
+    gradient2.addColorStop(0,'#1a1e3a');
+    gradient2.addColorStop(0.5,'#1e2245');
+    gradient2.addColorStop(1,'#1a2040');
     ctx.fillStyle = gradient2;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // Holographic overlay
+    // Holographic overlay - vivid
     var holo2 = ctx.createLinearGradient(0,0,256,384);
-    holo2.addColorStop(0,'rgba(167,139,250,0.05)');
-    holo2.addColorStop(0.3,'rgba(6,182,212,0.06)');
-    holo2.addColorStop(0.7,'rgba(167,139,250,0.05)');
-    holo2.addColorStop(1,'rgba(6,182,212,0.06)');
+    holo2.addColorStop(0,'rgba(96,165,250,0.08)');
+    holo2.addColorStop(0.3,'rgba(34,211,238,0.1)');
+    holo2.addColorStop(0.7,'rgba(96,165,250,0.08)');
+    holo2.addColorStop(1,'rgba(34,211,238,0.1)');
     ctx.fillStyle = holo2;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // Border - BRIGHTER
-    ctx.strokeStyle = 'rgba(167,139,250,0.45)';
+    // Border - VIVID blue
+    ctx.strokeStyle = 'rgba(96,165,250,0.55)';
     ctx.lineWidth = 3;
-    ctx.shadowColor = '#a78bfa';
-    ctx.shadowBlur = 14;
+    ctx.shadowColor = '#60a5fa';
+    ctx.shadowBlur = 18;
     ctx.roundRect(4,4,248,376,14);
     ctx.stroke();
     ctx.shadowBlur = 0;
 
     // Inner border
-    ctx.strokeStyle = 'rgba(167,139,250,0.2)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
     ctx.lineWidth = 1;
     ctx.roundRect(14,14,228,356,8);
     ctx.stroke();
 
-    // Pattern - subtle holographic grid
-    ctx.fillStyle = 'rgba(167,139,250,0.06)';
+    // Pattern - holographic grid - visible
+    ctx.fillStyle = 'rgba(96,165,250,0.08)';
     for(var py=20;py<370;py+=16){
       for(var px=20;px<240;px+=16){
         if((Math.floor(px/16)+Math.floor(py/16))%2===0){
@@ -446,15 +452,15 @@ function createCardTexture(value,suit,isFront,rarity){
       }
     }
 
-    // UG emblem - BRIGHTER glow
+    // UG emblem - VIVID glow
     ctx.font = 'bold 40px Orbitron, monospace';
     ctx.textAlign = 'center';
     var g = ctx.createLinearGradient(80,170,176,210);
-    g.addColorStop(0,'#c4b5fd');
+    g.addColorStop(0,'#60a5fa');
     g.addColorStop(1,'#22d3ee');
     ctx.fillStyle = g;
-    ctx.shadowColor = '#a78bfa';
-    ctx.shadowBlur = 30;
+    ctx.shadowColor = '#60a5fa';
+    ctx.shadowBlur = 35;
     ctx.fillText('UG',128,205);
   }
 
@@ -476,10 +482,10 @@ function createCard(index){
 
   var cardGeo = new THREE.BoxGeometry(0.7,1.0,0.015);
 
-  // Materials - BRIGHTER emissive for holographic glow
-  var edgeMat = new THREE.MeshStandardMaterial({color:0x2a1a4e,roughness:0.5,metalness:0.3});
-  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.3,metalness:0.2,emissive:0x3a2a5e,emissiveIntensity:0.25});
-  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.3,metalness:0.2,emissive:0x2a1a5e,emissiveIntensity:0.25});
+  // Materials - LIGHTER, less purple, cleaner
+  var edgeMat = new THREE.MeshStandardMaterial({color:0x2a2e55,roughness:0.5,metalness:0.3});
+  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.3,metalness:0.2,emissive:0x2a3a6e,emissiveIntensity:0.35});
+  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.3,metalness:0.2,emissive:0x2a3a6e,emissiveIntensity:0.35});
 
   var card = new THREE.Mesh(cardGeo,[edgeMat,edgeMat,edgeMat,edgeMat,frontMat,backMat]);
 
