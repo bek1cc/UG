@@ -1,0 +1,14 @@
+{
+  "name": "ug-ai-dev-backend",
+  "version": "4.1.0",
+  "description": "UG AI Developer Panel Backend - Z.AI GLM Integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "z-ai-web-dev-sdk": "latest"
+  }
+}

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unicate Gaming - Inventar</title>
+<style>
+/* ========== RESET & BASE ========== */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{width:100%;height:100%;background:transparent;font-family:-apple-system,'SF Pro Display','Segoe UI',Roboto,Helvetica,Arial,sans-serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+body{display:flex;align-items:center;justify-content:center;padding:10px}
+
+/* ========== ANIMATIONS ========== */
+@keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 4px rgba(245,158,11,0.4),0 0 8px rgba(245,158,11,0.2)}50%{box-shadow:0 0 8px rgba(245,158,11,0.8),0 0 20px rgba(245,158,11,0.4),0 0 30px rgba(245,158,11,0.2)}}
+@keyframes pulseGlowDot{0%,100%{box-shadow:0 0 3px rgba(245,158,11,0.6)}50%{box-shadow:0 0 8px rgba(245,158,11,1),0 0 16px rgba(245,158,11,0.6)}}
+@keyframes slideInToast{0%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(0.9)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes slideOutToast{0%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(0.95)}}
+@keyframes springUp{0%{transform:translateY(100%);opacity:0}60%{transform:translateY(-8px);opacity:1}80%{transform:translateY(3px)}100%{transform:translateY(0);opacity:1}}
+@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes catGlowWeapon{0%,100%{box-shadow:inset 0 0 20px rgba(239,68,68,0.03)}50%{box-shadow:inset 0 0 20px rgba(239,68,68,0.06)}}
+@keyframes catGlowDrug{0%,100%{box-shadow:inset 0 0 20px rgba(168,85,247,0.03)}50%{box-shadow:inset 0 0 20px rgba(168,85,247,0.06)}}
+@keyframes catGlowMaterial{0%,100%{box-shadow:inset 0 0 20px rgba(234,179,8,0.03)}50%{box-shadow:inset 0 0 20px rgba(234,179,8,0.06)}}
+@keyframes catGlowFood{0%,100%{box-shadow:inset 0 0 20px rgba(34,197,94,0.03)}50%{box-shadow:inset 0 0 20px rgba(34,197,94,0.06)}}
+@keyframes catGlowArmor{0%,100%{box-shadow:inset 0 0 20px rgba(59,130,246,0.03)}50%{box-shadow:inset 0 0 20px rgba(59,130,246,0.06)}}
+@keyframes shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+
+/* ========== MAIN CONTAINER ========== */
+.inv-container{
+  width:780px;height:600px;
+  background:linear-gradient(165deg,#0a0f1e 0%,#0d1526 40%,#0b1120 100%);
+  border-radius:18px;overflow:hidden;position:relative;
+  box-shadow:0 0 0 1px rgba(99,130,255,0.08),0 0 60px rgba(0,0,0,0.7),0 30px 80px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.04);
+  display:flex;flex-direction:column;
+}
+
+/* Dot pattern overlay */
+.inv-container::before{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(rgba(99,130,255,0.04) 1px,transparent 1px);
+  background-size:16px 16px;
+  pointer-events:none;z-index:0;
+}
+
+/* All direct children above pattern */
+.inv-container>*{position:relative;z-index:1}
+
+/* ========== HEADER ========== */
+.inv-header{
+  flex-shrink:0;height:54px;
+  background:linear-gradient(135deg,rgba(13,20,38,0.95),rgba(22,33,55,0.95));
+  border-bottom:1px solid rgba(99,130,255,0.1);
+  display:flex;align-items:center;padding:0 18px;gap:14px;
+  backdrop-filter:blur(24px);
+}
+.inv-logo{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#4f6df5,#2a3eb1);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 12px rgba(79,109,245,0.35),inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.inv-logo svg{width:18px;height:18px;fill:#fff}
+.inv-title{font-size:15px;font-weight:800;color:#e2e8f0;letter-spacing:1.2px;flex:1;text-transform:uppercase}
+.inv-weight{font-size:11px;color:#64748b;display:flex;align-items:center;gap:6px}
+.inv-weight-bar{width:100px;height:6px;background:rgba(30,41,59,0.8);border-radius:3px;overflow:hidden;box-shadow:inset 0 1px 3px rgba(0,0,0,0.3)}
+.inv-weight-fill{
+  height:100%;border-radius:3px;
+  background:linear-gradient(90deg,#22c55e,#3b82f6,#8b5cf6);
+  background-size:200% 100%;
+  animation:gradientShift 4s ease infinite;
+  transition:width 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.inv-weight-fill.overweight{
+  background:linear-gradient(90deg,#f59e0b,#ef4444,#f59e0b);
+  background-size:200% 100%;
+  animation:gradientShift 1.5s ease infinite;
+}
+.inv-close{
+  width:30px;height:30px;border-radius:8px;border:none;
+  background:rgba(255,255,255,0.04);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.2s;
+  backdrop-filter:blur(8px);
+}
+.inv-close:hover{background:rgba(239,68,68,0.15);transform:scale(1.05)}
+.inv-close:active{transform:scale(0.92);background:rgba(239,68,68,0.25)}
+.inv-close svg{width:14px;height:14px;fill:none;stroke:#94a3b8;stroke-width:2.5;stroke-linecap:round}
+.inv-close:hover svg{stroke:#f87171}
+
+/* ========== PLAYER INFO BAR ========== */
+.inv-player-bar{
+  flex-shrink:0;height:50px;
+  background:rgba(13,20,38,0.7);
+  border-bottom:1px solid rgba(99,130,255,0.06);
+  display:flex;align-items:center;padding:0 18px;gap:14px;
+  backdrop-filter:blur(16px);
+}
+.inv-player-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,#1a2e50,#0f1d3a);
+  display:flex;align-items:center;justify-content:center;
+  border:2px solid rgba(79,109,245,0.2);
+  box-shadow:0 0 12px rgba(79,109,245,0.1);
+}
+.inv-player-avatar svg{width:16px;height:16px;fill:#6380f5}
+.inv-player-name{font-size:13px;font-weight:700;color:#e2e8f0;letter-spacing:0.3px}
+.inv-player-id{font-size:11px;color:#4b5e80;margin-left:4px}
+.inv-stat{display:flex;align-items:center;gap:5px;font-size:11px;color:#7a8baa}
+.inv-stat svg{width:13px;height:13px;fill:#4b5e80}
+.inv-stat .val{color:#e2e8f0;font-weight:700}
+
+/* ========== CATEGORY TABS ========== */
+.inv-tabs-wrap{
+  flex-shrink:0;position:relative;
+  background:rgba(13,20,38,0.5);
+  border-bottom:1px solid rgba(99,130,255,0.06);
+  backdrop-filter:blur(12px);
+}
+.inv-tabs{
+  height:44px;
+  display:flex;align-items:center;padding:0 14px;gap:3px;
+  overflow-x:auto;
+}
+.inv-tabs::-webkit-scrollbar{display:none}
+.inv-tab{
+  padding:7px 13px;border-radius:8px;border:none;
+  background:transparent;color:#4b5e80;font-size:12px;font-weight:500;
+  cursor:pointer;white-space:nowrap;transition:all 0.25s;
+  display:flex;align-items:center;gap:6px;position:relative;
+}
+.inv-tab:hover{color:#94a3b8;background:rgba(255,255,255,0.03)}
+.inv-tab.active{color:#e2e8f0;font-weight:700}
+.inv-tab.active::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:60%;height:2px;border-radius:1px;
+  background:linear-gradient(90deg,#4f6df5,#8b5cf6);
+  box-shadow:0 0 8px rgba(79,109,245,0.4);
+  animation:slideInToast 0.3s ease;
+}
+.inv-tab svg{width:14px;height:14px;fill:currentColor}
+.inv-tab .tab-count{
+  font-size:10px;padding:1px 6px;border-radius:5px;
+  background:rgba(79,109,245,0.12);color:#6380f5;font-weight:700;
+}
+.inv-tab.active .tab-count{background:rgba(79,109,245,0.2);color:#8ba4f7}
+
+/* ========== GRID ========== */
+.inv-content{flex:1;overflow-y:auto;padding:10px 14px}
+.inv-content::-webkit-scrollbar{width:5px}
+.inv-content::-webkit-scrollbar-track{background:transparent}
+.inv-content::-webkit-scrollbar-thumb{background:rgba(79,109,245,0.15);border-radius:3px}
+.inv-content::-webkit-scrollbar-thumb:hover{background:rgba(79,109,245,0.25)}
+
+.inv-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:9px;
+  perspective:800px;
+}
+
+/* ========== ITEM SLOT - 3D CARD ========== */
+.inv-slot{
+  aspect-ratio:1;border-radius:14px;
+  background:linear-gradient(145deg,rgba(18,28,48,0.8),rgba(10,16,30,0.95));
+  border:1px solid rgba(99,130,255,0.06);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  overflow:hidden;
+  transform-style:preserve-3d;
+  box-shadow:0 4px 12px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* Top-left light reflection */
+.inv-slot::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 25% 20%,rgba(255,255,255,0.05) 0%,transparent 60%);
+  pointer-events:none;z-index:1;
+}
+
+/* Bottom depth shadow */
+.inv-slot::after{
+  content:'';position:absolute;bottom:0;left:10%;right:10%;height:40%;
+  background:linear-gradient(to top,rgba(0,0,0,0.2),transparent);
+  pointer-events:none;z-index:1;border-radius:0 0 14px 14px;
+}
+
+.inv-slot:hover{
+  border-color:rgba(99,130,255,0.2);
+  background:linear-gradient(145deg,rgba(24,38,65,0.9),rgba(16,24,45,0.98));
+  transform:translateY(-4px) rotateX(3deg) scale(1.02);
+  box-shadow:0 12px 28px rgba(0,0,0,0.5),0 0 24px rgba(79,109,245,0.08),inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* Floating card animation on items */
+.inv-slot:not(.empty):hover{
+  animation:floatCard 2s ease-in-out infinite;
+}
+
+.inv-slot.selected{
+  border-color:rgba(79,109,245,0.5);
+  box-shadow:0 0 0 2px rgba(79,109,245,0.12),0 8px 24px rgba(79,109,245,0.15),0 0 30px rgba(79,109,245,0.08);
+  background:linear-gradient(145deg,rgba(28,44,75,0.9),rgba(18,30,55,0.98));
+  transform:translateY(-2px) scale(1.01);
+}
+.inv-slot.selected:hover{
+  animation:none;
+  transform:translateY(-4px) scale(1.03);
+}
+
+.inv-slot.empty{
+  border:1px dashed rgba(99,130,255,0.06);
+  background:rgba(10,14,24,0.3);
+  cursor:default;
+  box-shadow:none;
+}
+.inv-slot.empty::before,.inv-slot.empty::after{display:none}
+.inv-slot.empty:hover{transform:none;box-shadow:none;border-color:rgba(99,130,255,0.06)}
+
+/* Item icon container - 3D floating card */
+.inv-slot-icon{
+  width:42px;height:42px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:2;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 3px 8px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.inv-slot:hover .inv-slot-icon{
+  transform:scale(1.1) translateZ(10px);
+  box-shadow:0 6px 16px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.inv-slot-icon svg{width:26px;height:26px;fill:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4))}
+
+/* Category-based icon backgrounds - with glow */
+.cat-weapon .inv-slot-icon{background:linear-gradient(135deg,rgba(239,68,68,0.18),rgba(185,28,28,0.12))}
+.cat-weapon .inv-slot-icon svg{fill:#f87171}
+.cat-weapon{animation:catGlowWeapon 3s ease infinite}
+
+.cat-drug .inv-slot-icon{background:linear-gradient(135deg,rgba(168,85,247,0.18),rgba(126,34,206,0.12))}
+.cat-drug .inv-slot-icon svg{fill:#c084fc}
+.cat-drug{animation:catGlowDrug 3s ease infinite}
+
+.cat-material .inv-slot-icon{background:linear-gradient(135deg,rgba(234,179,8,0.18),rgba(161,98,7,0.12))}
+.cat-material .inv-slot-icon svg{fill:#fbbf24}
+.cat-material{animation:catGlowMaterial 3s ease infinite}
+
+.cat-food .inv-slot-icon{background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(22,163,74,0.12))}
+.cat-food .inv-slot-icon svg{fill:#4ade80}
+.cat-food{animation:catGlowFood 3s ease infinite}
+
+.cat-tool .inv-slot-icon{background:linear-gradient(135deg,rgba(148,163,184,0.18),rgba(100,116,139,0.12))}
+.cat-tool .inv-slot-icon svg{fill:#94a3b8}
+
+.cat-key .inv-slot-icon{background:linear-gradient(135deg,rgba(245,158,11,0.18),rgba(217,119,6,0.12))}
+.cat-key .inv-slot-icon svg{fill:#fbbf24}
+
+.cat-license .inv-slot-icon{background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(2,132,199,0.12))}
+.cat-license .inv-slot-icon svg{fill:#38bdf8}
+
+.cat-money .inv-slot-icon{background:linear-gradient(135deg,rgba(34,197,94,0.18),rgba(22,163,74,0.12))}
+.cat-money .inv-slot-icon svg{fill:#22c55e}
+
+.cat-special .inv-slot-icon{background:linear-gradient(135deg,rgba(244,63,94,0.18),rgba(225,29,72,0.12))}
+.cat-special .inv-slot-icon svg{fill:#fb7185}
+
+.cat-armor .inv-slot-icon{background:linear-gradient(135deg,rgba(59,130,246,0.18),rgba(29,78,216,0.12))}
+.cat-armor .inv-slot-icon svg{fill:#60a5fa}
+.cat-armor{animation:catGlowArmor 3s ease infinite}
+
+.cat-phone .inv-slot-icon{background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(79,70,229,0.12))}
+.cat-phone .inv-slot-icon svg{fill:#818cf8}
+
+.cat-seed .inv-slot-icon{background:linear-gradient(135deg,rgba(132,204,22,0.18),rgba(101,163,13,0.12))}
+.cat-seed .inv-slot-icon svg{fill:#a3e635}
+
+/* Item name */
+.inv-slot-name{
+  font-size:9px;color:#7a8baa;margin-top:3px;text-align:center;line-height:1.15;
+  max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  position:relative;z-index:2;font-weight:500;
+}
+
+/* Item count badge - 3D pill */
+.inv-slot-count{
+  position:absolute;top:5px;right:5px;z-index:3;
+  min-width:20px;height:17px;padding:0 5px;
+  border-radius:9px;
+  background:linear-gradient(135deg,rgba(79,109,245,0.9),rgba(55,80,200,0.95));
+  color:#fff;font-size:9px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.15);
+  letter-spacing:0.3px;
+}
+
+/* Rarity indicator dot */
+.inv-slot-rarity{
+  position:absolute;top:5px;left:5px;z-index:3;
+  width:7px;height:7px;border-radius:50%;
+  box-shadow:0 0 4px currentColor;
+}
+.rarity-common{background:#64748b;color:#64748b}
+.rarity-uncommon{background:#22c55e;color:#22c55e}
+.rarity-rare{background:#3b82f6;color:#3b82f6}
+.rarity-epic{background:#a855f7;color:#a855f7}
+.rarity-legendary{background:#f59e0b;color:#f59e0b;animation:pulseGlowDot 2s ease infinite}
+
+/* Legendary slot glow */
+.inv-slot.rarity-legendary{
+  animation:pulseGlow 2.5s ease infinite;
+  border-color:rgba(245,158,11,0.2);
+}
+
+/* ========== DETAIL PANEL ========== */
+.inv-detail{
+  flex-shrink:0;height:0;overflow:hidden;
+  background:rgba(13,20,38,0.95);
+  border-top:1px solid rgba(79,109,245,0.1);
+  transition:height 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  display:flex;gap:18px;padding:0 18px;
+  backdrop-filter:blur(24px);
+}
+.inv-detail.open{height:100px;padding:14px 18px}
+.inv-detail-icon{
+  width:66px;height:66px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  box-shadow:0 4px 16px rgba(0,0,0,0.3),inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.inv-detail-icon svg{width:36px;height:36px;fill:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.4))}
+.inv-detail-info{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.inv-detail-name{font-size:16px;font-weight:800;color:#e2e8f0;letter-spacing:0.3px}
+.inv-detail-desc{font-size:11px;color:#4b5e80;margin-top:2px}
+.inv-detail-meta{display:flex;gap:14px;margin-top:5px}
+.inv-detail-meta span{font-size:10px;color:#7a8baa;display:flex;align-items:center;gap:4px}
+.inv-detail-meta svg{width:11px;height:11px;fill:#4b5e80}
+.inv-detail-actions{display:flex;flex-direction:column;gap:5px;justify-content:center}
+.inv-action-btn{
+  padding:8px 18px;border-radius:9px;border:none;
+  font-size:11px;font-weight:700;cursor:pointer;
+  transition:all 0.2s;letter-spacing:0.5px;
+  text-transform:uppercase;
+  box-shadow:0 2px 8px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.inv-action-btn:active{transform:scale(0.93)}
+.btn-use{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;box-shadow:0 3px 12px rgba(34,197,94,0.3),inset 0 1px 0 rgba(255,255,255,0.1)}
+.btn-use:hover{box-shadow:0 6px 20px rgba(34,197,94,0.4),inset 0 1px 0 rgba(255,255,255,0.1);transform:translateY(-1px)}
+.btn-drop{background:rgba(239,68,68,0.08);color:#f87171;border:1px solid rgba(239,68,68,0.15)}
+.btn-drop:hover{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.25)}
+.btn-give{background:rgba(79,109,245,0.08);color:#8ba4f7;border:1px solid rgba(79,109,245,0.15)}
+.btn-give:hover{background:rgba(79,109,245,0.15);border-color:rgba(79,109,245,0.25)}
+
+/* ========== TOAST ========== */
+.inv-toast{
+  position:absolute;top:62px;left:50%;transform:translateX(-50%) translateY(-30px) scale(0.9);
+  padding:10px 24px;border-radius:12px;
+  background:rgba(13,20,38,0.95);border:1px solid rgba(79,109,245,0.2);
+  backdrop-filter:blur(20px);
+  font-size:12px;color:#e2e8f0;font-weight:600;letter-spacing:0.3px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 20px rgba(79,109,245,0.05);
+  opacity:0;pointer-events:none;z-index:100;
+  animation:slideOutToast 0.3s ease forwards;
+}
+.inv-toast.show{
+  opacity:1;
+  animation:slideInToast 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+.inv-toast.success{border-color:rgba(34,197,94,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 16px rgba(34,197,94,0.1)}
+.inv-toast.error{border-color:rgba(239,68,68,0.3);box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 16px rgba(239,68,68,0.1)}
+
+/* ========== EMPTY STATE ========== */
+.inv-empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px;color:#2a3650;
+}
+.inv-empty svg{width:48px;height:48px;fill:#141e30;margin-bottom:8px}
+.inv-empty span{font-size:13px}
+</style>
+</head>
+<body>
+<div class="inv-container">
+  <!-- HEADER -->
+  <div class="inv-header">
+    <div class="inv-logo">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H4V4h16v16z"/><path d="M7 7h4v4H7zm6 0h4v4h-4zm-6 6h4v4H7zm6 0h4v4h-4z"/></svg>
+    </div>
+    <span class="inv-title">Inventar</span>
+    <div class="inv-weight">
+      <span id="weightText">0/30 kg</span>
+      <div class="inv-weight-bar"><div class="inv-weight-fill" id="weightFill" style="width:0%"></div></div>
+    </div>
+    <button class="inv-close" onclick="emitClose()">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- PLAYER INFO -->
+  <div class="inv-player-bar">
+    <div class="inv-player-avatar">
+      <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+    </div>
+    <span class="inv-player-name" id="playerName">Igrac</span>
+    <span class="inv-player-id" id="playerId"></span>
+    <div style="flex:1"></div>
+    <div class="inv-stat">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <span>Level <span class="val" id="playerLevel">0</span></span>
+    </div>
+    <div class="inv-stat">
+      <svg viewBox="0 0 24 24"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+      <span><span class="val" id="playerMoney">0</span>$</span>
+    </div>
+    <div class="inv-stat">
+      <svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+      <span>XP <span class="val" id="playerXP">0</span></span>
+    </div>
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="inv-tabs-wrap">
+    <div class="inv-tabs" id="tabsContainer"></div>
+  </div>
+
+  <!-- ITEM GRID -->
+  <div class="inv-content">
+    <div class="inv-grid" id="invGrid"></div>
+  </div>
+
+  <!-- DETAIL PANEL -->
+  <div class="inv-detail" id="detailPanel">
+    <div class="inv-detail-icon" id="detailIcon"></div>
+    <div class="inv-detail-info">
+      <div class="inv-detail-name" id="detailName">-</div>
+      <div class="inv-detail-desc" id="detailDesc">-</div>
+      <div class="inv-detail-meta" id="detailMeta"></div>
+    </div>
+    <div class="inv-detail-actions">
+      <button class="inv-action-btn btn-use" id="btnUse" onclick="emitUse()">KORISTI</button>
+      <div style="display:flex;gap:5px">
+        <button class="inv-action-btn btn-give" onclick="emitGive()">DAJ</button>
+        <button class="inv-action-btn btn-drop" onclick="emitDrop()">BACI</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="inv-toast" id="toast"></div>
+</div>
+
+<script>
+// ==================== CEF BRIDGE ====================
+var cef = window.cef || {
+  emit: function() { console.log('[CEF EMIT]', arguments); },
+  on: function(event, fn) { console.log('[CEF ON]', event); }
+};
+
+// ==================== ICON DATABASE ====================
+var ICONS = {
+  // WEAPONS
+  brass_knuckles: '<svg viewBox="0 0 24 24"><path d="M18 4c-1 0-1.9.5-2.5 1.2C14.9 4.5 14 4 13 4c-1.1 0-2 .6-2.5 1.4C10 4.6 9.1 4 8 4 6.3 4 5 5.3 5 7v6c0 1.7 1.3 3 3 3h8c1.7 0 3-1.3 3-3V7c0-1.7-1.3-3-3-3h2z" opacity=".3"/><path d="M18 2c-1.1 0-2.1.4-2.8 1.2C14.4 2.4 13.3 2 12 2s-2.4.4-3.2 1.2C8.1 2.4 7.1 2 6 2 3.2 2 1 4.2 1 7v6c0 2.8 2.2 5 5 5h12c2.8 0 5-2.2 5-5V7c0-2.8-2.2-5-5-5zm3 11c0 1.7-1.3 3-3 3H6c-1.7 0-3-1.3-3-3V7c0-1.7 1.3-3 3-3 .8 0 1.6.3 2.1.9l.9.9.9-.9C10.4 4.3 11.2 4 12 4s1.6.3 2.1.9l.9.9.9-.9c.5-.6 1.3-.9 2.1-.9 1.7 0 3 1.3 3 3v6z"/></svg>',
+  pistol: '<svg viewBox="0 0 24 24"><path d="M7 5h10v2h1V3H6v4h1zm5 13l4-3H8l4 3z"/><path d="M22 7H10V5H2v6h8V9h2v1h10V7zM9 9H4V7h5v2zm11 1h-8V9h8v1zM10 13H2v8h8v-8zm-2 6H4v-4h4v4zm6-4h7v2h-7zm0 4h7v2h-7z"/></svg>',
+  rifle: '<svg viewBox="0 0 24 24"><path d="M20 7h-4V5H6v2H2v2h4v2h10V9h4v2h2V9h-2V7zM6 11v8h2v-6h8v6h2v-8H6z"/><rect x="9" y="13" width="6" height="6"/></svg>',
+  shotgun: '<svg viewBox="0 0 24 24"><path d="M2 8v4h2v8h4v-8h8v8h4v-8h2V8H2zm18 2h-2V8h2v2zM6 10H4V8h2v2z"/></svg>',
+  melee: '<svg viewBox="0 0 24 24"><path d="M4 2l4 4-2 2 6 6 2-2 4 4-4 4-6-6 2-2-6-6z" opacity=".3"/><path d="M3.5 18.5L5 20l-2 2-1.5-1.5L3.5 18.5zM21 3l-8 8-2-2 8-8 2 2zM7 15l4-4 2 2-4 4-2-2z"/></svg>',
+  explosive: '<svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="8" opacity=".3"/><path d="M12 4c-1 0-2 .2-2.9.5L9 4H7v2h1.3l.2.3C6.2 7.8 5 10.3 5 13c0 3.9 3.1 7 7 7s7-3.1 7-7c0-2.7-1.2-5.2-3.5-6.7l.2-.3H17V4h-2l-.1.5C14 4.2 13 4 12 4zm0 14c-2.8 0-5-2.2-5-5s2.2-5 5-5 5 2.2 5 5-2.2 5-5 5z"/></svg>',
+
+  // DRUGS
+  marijuana: '<svg viewBox="0 0 24 24"><path d="M12 2C9 2 6.5 3.5 5 6c-1.5 2.5-1.5 5.5 0 8l2-1c-1-2-.8-4.2.7-6C9.2 5.2 10.6 4.3 12 4c1.4.3 2.8 1.2 4.3 3 1.5 1.8 1.7 4 .7 6l2 1c1.5-2.5 1.5-5.5 0-8C17.5 3.5 15 2 12 2z" opacity=".3"/><path d="M12 2c-1 0-2 .2-3 .5.6.8 1.4 1.5 2.3 2 .7-.3 1.4-.5 2.2-.5 3.3 0 6 2.7 6 6 0 2-1 3.8-2.5 4.9l1.5 1.2C19.7 14.8 21 12.6 21 10c0-5-4-9-9-9z"/><path d="M9 12c0-1.7 1.3-3 3-3s3 1.3 3 3-1.3 3-3 3-3-1.3-3-3z" opacity=".5"/><path d="M7 10c0 2.8 2.2 5 5 5s5-2.2 5-5-2.2-5-5-5-5 2.2-5 5zm8 0c0 1.7-1.3 3-3 3s-3-1.3-3-3 1.3-3 3-3 3 1.3 3 3zM12 17v5M8 19h8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  cocaine: '<svg viewBox="0 0 24 24"><path d="M12 2L4 7v10l8 5 8-5V7l-8-5z" opacity=".15"/><path d="M12 4l6 3.75v7.5L12 19l-6-3.75v-7.5L12 4z" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M9 10h6M9 12h6M9 14h4" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>',
+  heroin: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3" opacity=".3"/><path d="M12 5c-1.7 0-3 1.3-3 3s1.3 3 3 3 3-1.3 3-3-1.3-3-3-3zm0 4c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/><path d="M9 14c0 2 1 3 3 5 2-2 3-3 3-5H9z" opacity=".4"/><path d="M8 13h8v1c0 1.7-1.3 3-3 3h-2c-1.7 0-3-1.3-3-3v-1z" opacity=".3"/></svg>',
+  meth: '<svg viewBox="0 0 24 24"><polygon points="12,2 4,8 4,16 12,22 20,16 20,8" opacity=".2" fill="currentColor"/><polygon points="12,4 6,8.5 6,15.5 12,20 18,15.5 18,8.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M10 9l4 3-4 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  crack: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" opacity=".2"/><path d="M12 6v12M6 12h12M8 8l8 8M16 8l-8 8" stroke="currentColor" stroke-width="1" opacity=".4"/><circle cx="12" cy="12" r="3" opacity=".5"/><circle cx="12" cy="12" r="1.5"/></svg>',
+  lsd: '<svg viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="16" rx="2" opacity=".2"/><rect x="8" y="6" width="8" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="10" r="2" opacity=".5"/><circle cx="10" cy="13" r="1" opacity=".4"/><circle cx="14" cy="13" r="1" opacity=".4"/></svg>',
+  opium: '<svg viewBox="0 0 24 24"><path d="M12 3c-3 0-6 2-6 6 0 2.5 1.5 4.5 3 6h6c1.5-1.5 3-3.5 3-6 0-4-3-6-6-6z" opacity=".2"/><path d="M12 3c-3 0-6 2-6 6 0 2.5 1.5 4.5 3 6h6c1.5-1.5 3-3.5 3-6 0-4-3-6-6-6z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 15h6v2c0 1.7-1.3 3-3 3s-3-1.3-3-3v-2z" opacity=".3"/><path d="M12 3V1M9 4l-1-2M15 4l1-2" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="12" cy="8" r="2" opacity=".4"/></svg>',
+
+  // MATERIALS
+  stone: '<svg viewBox="0 0 24 24"><path d="M6 20l3-8 5 4-3 4H6zm4-10l4-6 6 4-4 6-6-4z" opacity=".3"/><path d="M4 20h4l3-8-4-2-3 10zm6-12l4 2 4-6-4-2-4 6z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  metal: '<svg viewBox="0 0 24 24"><rect x="5" y="6" width="14" height="12" rx="1" opacity=".15"/><path d="M7 6h10v2H7zM7 10h10v2H7zM7 14h10v2H7z" opacity=".4"/><rect x="6" y="5" width="12" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  wood: '<svg viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="8" rx="1" opacity=".2"/><path d="M4 10h16M4 14h16" stroke="currentColor" stroke-width=".8" opacity=".3"/><ellipse cx="12" cy="12" rx="8" ry="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="9" cy="12" r="1" opacity=".3"/><circle cx="15" cy="11" r=".8" opacity=".3"/></svg>',
+  iron: '<svg viewBox="0 0 24 24"><path d="M6 8h12v8H6z" opacity=".15"/><path d="M6 8l3-3h6l3 3M6 16l3 3h6l3-3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><line x1="6" y1="8" x2="6" y2="16" stroke="currentColor" stroke-width="1.5"/><line x1="18" y1="8" x2="18" y2="16" stroke="currentColor" stroke-width="1.5"/></svg>',
+  plastic: '<svg viewBox="0 0 24 24"><path d="M12 2L4 7v6l8 5 8-5V7l-8-5z" opacity=".2"/><path d="M12 4l6 3.5v5L12 16l-6-3.5v-5L12 4z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  scrap: '<svg viewBox="0 0 24 24"><path d="M5 9l3-4 4 2 5-3 2 5-3 4 2 4-5 1-3-3-5 1z" opacity=".2"/><path d="M5 9l3-4 4 2 5-3 2 5-3 4 2 4-5 1-3-3-5 1z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+
+  // FOOD & DRINK
+  pizza: '<svg viewBox="0 0 24 24"><path d="M12 3L2 12h20L12 3z" opacity=".2"/><circle cx="12" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="9" r="1" opacity=".4"/><circle cx="14" cy="8" r=".8" opacity=".4"/><circle cx="12" cy="12" r="1" opacity=".4"/><path d="M12 3c5 0 9 4 9 9" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="3" x2="12" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>',
+  hamburger: '<svg viewBox="0 0 24 24"><path d="M4 12h16v2H4zM5 16h14v1H5z" opacity=".3"/><path d="M4 10c0-4 3.6-7 8-7s8 3 8 7H4z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 12h16M5 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="4" y="16" width="16" height="3" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  chicken: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6" ry="5" opacity=".2"/><path d="M8 8c-2 0-3 2-3 4s1 4 3 4M16 8c2 0 3 2 3 4s-1 4-3 4" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="6" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  juice: '<svg viewBox="0 0 24 24"><rect x="7" y="4" width="10" height="14" rx="2" opacity=".2"/><rect x="7" y="4" width="10" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="4" x2="10" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="14" y1="4" x2="14" y2="2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="9" y="8" width="6" height="3" rx="1" opacity=".3"/></svg>',
+  beer: '<svg viewBox="0 0 24 24"><path d="M7 6h8v14H7z" opacity=".2"/><path d="M7 6h8v14H7z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M15 8h2c1.1 0 2 .9 2 2v4c0 1.1-.9 2-2 2h-2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 4c0-1 1-2 2-2s2 1 2 2" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>',
+  campfire: '<svg viewBox="0 0 24 24"><path d="M12 2c-2 3-5 5.5-5 9 0 2.8 2.2 5 5 5s5-2.2 5-5c0-3.5-3-6-5-9z" opacity=".3"/><path d="M12 4c-1.5 2-4 4-4 7 0 2.2 1.8 4 4 4s4-1.8 4-4c0-3-2.5-5-4-7z" fill="none" stroke="#f97316" stroke-width="1.5"/><path d="M12 8c-.8 1.2-2 2.5-2 4 0 1.1.9 2 2 2s2-.9 2-2c0-1.5-1.2-2.8-2-4z" fill="#ef4444" opacity=".5"/><path d="M6 19h12M8 17l-1 2M16 17l1 2M12 16v3" stroke="#92400e" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // TOOLS
+  screwdriver: '<svg viewBox="0 0 24 24"><path d="M14 4l-4 4 6 6 4-4-6-6z" opacity=".3"/><path d="M4 20l6-6M14 4l-4 4 6 6 4-4-6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  crowbar: '<svg viewBox="0 0 24 24"><path d="M4 20L16 8l2-4 2 2-4 2L4 20z" opacity=".2"/><path d="M4 20L14 10M16 8l2-4 2 2-4 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  hammer: '<svg viewBox="0 0 24 24"><path d="M4 20l6-6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 12l4-4h4v4l-4 4-4-4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  fuelcan: '<svg viewBox="0 0 24 24"><rect x="6" y="6" width="10" height="14" rx="2" opacity=".2"/><rect x="6" y="6" width="10" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M16 10h2v4h-2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 3h4v3H9z" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  dynamite: '<svg viewBox="0 0 24 24"><rect x="8" y="6" width="8" height="12" rx="1" opacity=".2"/><rect x="8" y="6" width="8" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="6" x2="12" y2="2" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="2" r="1" fill="currentColor" opacity=".5"/></svg>',
+  lockpick: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 12v8M10 16h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  rope: '<svg viewBox="0 0 24 24"><path d="M4 8c2-3 6-3 8 0s6 3 8 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".4"/><path d="M4 12c2-3 6-3 8 0s6 3 8 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M4 16c2-3 6-3 8 0s6 3 8 0" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" opacity=".4"/></svg>',
+  toolkit: '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2" opacity=".2"/><rect x="3" y="8" width="18" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 8V6c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v2" fill="none" stroke="currentColor" stroke-width="1.3"/><line x1="12" y1="12" x2="12" y2="16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="14" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  toolkit_box: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2" opacity=".15"/><rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 6V4c0-.6.4-1 1-1h4c.6 0 1 .4 1 1v2" fill="none" stroke="currentColor" stroke-width="1.2"/><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1" opacity=".3"/><circle cx="7" cy="9" r="1" opacity=".3"/><circle cx="17" cy="9" r="1" opacity=".3"/></svg>',
+
+  // ARMOR
+  vest: '<svg viewBox="0 0 24 24"><path d="M12 3L4 7v10l8 4 8-4V7l-8-4z" opacity=".2"/><path d="M12 3L4 7v10l8 4 8-4V7l-8-4z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 7v6M9 10h6" stroke="currentColor" stroke-width="1.2" opacity=".4"/></svg>',
+
+  // MONEY
+  wallet: '<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2" opacity=".2"/><rect x="2" y="6" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17" cy="13" r="2" opacity=".4"/><path d="M6 6V4c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v2" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>',
+  gold: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" opacity=".2"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" opacity=".6">$</text></svg>',
+
+  // KEYS
+  key: '<svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8h8M17 8v3M15 8v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+  car_key: '<svg viewBox="0 0 24 24"><circle cx="7" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M10 7h5l2 2 2-2h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+
+  // LICENSES
+  license: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2" opacity=".2"/><rect x="3" y="4" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" opacity=".3"/><path d="M13 8h5M13 11h5M13 14h3" stroke="currentColor" stroke-width="1" opacity=".4"/></svg>',
+
+  // PHONE
+  phone: '<svg viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2" opacity=".2"/><rect x="6" y="2" width="12" height="20" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="18" x2="14" y2="18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // SEEDS
+  seed: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="14" rx="4" ry="3" opacity=".3"/><path d="M12 14V6M10 8c1-2 3-2 4 0" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // BAG
+  bag: '<svg viewBox="0 0 24 24"><path d="M5 8h14v12c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V8z" opacity=".2"/><path d="M5 8h14v12c0 1.1-.9 2-2 2H7c-1.1 0-2-.9-2-2V8z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 8V5c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v3" fill="none" stroke="currentColor" stroke-width="1.3"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1" opacity=".3"/></svg>',
+
+  // JEWELRY
+  jewelry: '<svg viewBox="0 0 24 24"><circle cx="12" cy="10" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="10" r="2" opacity=".3"/><path d="M9 15l-2 5M15 15l2 5M12 15v5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".5"/><circle cx="12" cy="10" r="1" opacity=".5"/></svg>',
+
+  // SPECIAL
+  mask: '<svg viewBox="0 0 24 24"><path d="M12 4C7 4 3 7 3 12c0 2 1 4 3 5l2-2c1.3.7 2.6 1 4 1s2.7-.3 4-1l2 2c2-1 3-3 3-5 0-5-4-8-9-8z" opacity=".2"/><path d="M12 6c-4 0-7 2.5-7 6 0 1.5.6 3 1.8 4L9 14c1 .5 2 .8 3 .8s2-.3 3-.8l2.2 2c1.2-1 1.8-2.5 1.8-4 0-3.5-3-6-7-6z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  laptop: '<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="12" rx="1" opacity=".15"/><rect x="4" y="4" width="16" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M2 18h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  cigarette: '<svg viewBox="0 0 24 24"><rect x="6" y="10" width="10" height="4" rx="1" opacity=".2"/><rect x="6" y="10" width="10" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.3"/><rect x="16" y="10" width="2" height="4" fill="currentColor" opacity=".4"/><path d="M18 10c1-2 0-4-1-5" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/></svg>',
+  lighter: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="8" height="12" rx="1" opacity=".2"/><rect x="8" y="8" width="8" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8V5M11 5h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="4" r="1.5" fill="currentColor" opacity=".3"/></svg>',
+  helmet: '<svg viewBox="0 0 24 24"><path d="M4 14c0-4.4 3.6-8 8-8s8 3.6 8 8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M2 14h20v2H2z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+  watch: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4l3 2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 2h6v3H9zM9 19h6v3H9z" opacity=".3"/></svg>',
+  injection: '<svg viewBox="0 0 24 24"><rect x="10" y="6" width="4" height="12" rx="1" opacity=".2"/><rect x="10" y="6" width="4" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="6" x2="12" y2="3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // INGREDIENTS
+  ingredient: '<svg viewBox="0 0 24 24"><path d="M9 3h6v4H9zM7 7h10l-1 12H8L7 7z" opacity=".2"/><path d="M9 3h6v4H9z" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 7h10l-1 12H8L7 7z" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>',
+
+  // FRUIT
+  fruit: '<svg viewBox="0 0 24 24"><circle cx="12" cy="14" r="6" opacity=".2"/><circle cx="12" cy="14" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 8V5M11 5c1-1 2-1 3 0" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+
+  // MECHANIC
+  wrench: '<svg viewBox="0 0 24 24"><path d="M6 18L18 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="17" cy="7" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="17" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+
+  // BOOMBOX
+  boombox: '<svg viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="10" rx="2" opacity=".2"/><rect x="3" y="8" width="18" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="13" r="2.5" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="16" cy="13" r="2.5" fill="none" stroke="currentColor" stroke-width="1.2"/><rect x="10" y="10" width="4" height="2" rx="1" opacity=".3"/></svg>',
+
+  // WATER
+  water: '<svg viewBox="0 0 24 24"><path d="M12 2C8 7 4 10 4 14c0 4.4 3.6 8 8 8s8-3.6 8-8c0-4-4-7-8-12z" opacity=".2"/><path d="M12 4C9 8 6 10.5 6 14c0 3.3 2.7 6 6 6s6-2.7 6-6c0-3.5-3-6-6-10z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+
+  // GRASS
+  grass: '<svg viewBox="0 0 24 24"><path d="M4 20c2-4 3-8 3-12M10 20c1-3 2-6 2-10M16 20c2-4 3-8 3-12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // GUN LICENSE
+  gun_license: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 10h8M8 13h5" stroke="currentColor" stroke-width="1" opacity=".4"/><circle cx="18" cy="16" r="4" opacity=".2"/><path d="M17 15l2 2M19 15l-2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>',
+
+  // ID CARD
+  id_card: '<svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="11" r="2.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M4 16c1-2 2.5-3 4-3s3 1 4 3" fill="none" stroke="currentColor" stroke-width="1" opacity=".4"/><path d="M14 9h5M14 12h5M14 15h3" stroke="currentColor" stroke-width="1" opacity=".3"/></svg>'
+};
+
+// ==================== CATEGORY DEFINITIONS ====================
+var CATEGORIES = [
+  { id: 'all',      label: 'Sve',         icon: null },
+  { id: 'weapon',   label: 'Oruzje',      icon: 'pistol' },
+  { id: 'drug',     label: 'Droga',       icon: 'marijuana' },
+  { id: 'material', label: 'Materijali',  icon: 'metal' },
+  { id: 'food',     label: 'Hrana',       icon: 'hamburger' },
+  { id: 'tool',     label: 'Alati',       icon: 'screwdriver' },
+  { id: 'armor',    label: 'Oprema',      icon: 'vest' },
+  { id: 'key',      label: 'Kljucevi',    icon: 'key' },
+  { id: 'license',  label: 'Dokumenta',   icon: 'license' },
+  { id: 'seed',     label: 'Sjemenke',    icon: 'seed' },
+  { id: 'special',  label: 'Specijalno',  icon: 'laptop' },
+];
+
+// ==================== STATE ====================
+var items = [];
+var selectedSlot = -1;
+var currentFilter = 'all';
+var totalWeight = 0;
+var maxWeight = 30;
+var toastTimer = null;
+
+// ==================== HELPERS ====================
+function $(id) { return document.getElementById(id); }
+
+function getIcon(iconKey) {
+  if (ICONS[iconKey]) return ICONS[iconKey];
+  // fallback generic
+  return '<svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2" opacity=".3"/></svg>';
+}
+
+function emitClose() { cef.emit('inventory:close'); }
+function emitUse()   { if(selectedSlot>=0) cef.emit('inventory:use', selectedSlot); }
+function emitDrop()  { if(selectedSlot>=0) cef.emit('inventory:drop', selectedSlot); }
+function emitGive()  { if(selectedSlot>=0) cef.emit('inventory:give', selectedSlot); }
+
+function showToast(msg, type) {
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'inv-toast show' + (type ? ' ' + type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { t.className = 'inv-toast'; }, 2500);
+}
+
+// ==================== RENDER TABS ====================
+function renderTabs() {
+  var c = $('tabsContainer');
+  c.innerHTML = '';
+  for (var i = 0; i < CATEGORIES.length; i++) {
+    var cat = CATEGORIES[i];
+    var count = 0;
+    if (cat.id === 'all') {
+      count = items.filter(function(x){return x}).length;
+    } else {
+      count = items.filter(function(x){return x && x.category === cat.id}).length;
+    }
+    var tab = document.createElement('button');
+    tab.className = 'inv-tab' + (currentFilter === cat.id ? ' active' : '');
+    var iconHtml = cat.icon ? getIcon(cat.icon) : '';
+    tab.innerHTML = iconHtml + cat.label + (count > 0 ? '<span class="tab-count">' + count + '</span>' : '');
+    tab.setAttribute('data-cat', cat.id);
+    tab.onclick = function() {
+      currentFilter = this.getAttribute('data-cat');
+      renderTabs();
+      renderGrid();
+    };
+    c.appendChild(tab);
+  }
+}
+
+// ==================== RENDER GRID ====================
+function renderGrid() {
+  var grid = $('invGrid');
+  grid.innerHTML = '';
+  var maxSlots = 30;
+  for (var i = 0; i < maxSlots; i++) {
+    var item = items[i];
+    var div = document.createElement('div');
+
+    if (item && (currentFilter === 'all' || item.category === currentFilter)) {
+      var catClass = 'cat-' + (item.category || 'special');
+      div.className = 'inv-slot ' + catClass + (selectedSlot === i ? ' selected' : '');
+      if (item.rarity) div.className += ' rarity-' + item.rarity;
+
+      var iconHtml = '<div class="inv-slot-icon">' + getIcon(item.icon || 'ingredient') + '</div>';
+      var nameHtml = '<span class="inv-slot-name">' + (item.name || '?') + '</span>';
+      var countHtml = (item.quantity && item.quantity > 1) ? '<span class="inv-slot-count">x' + item.quantity + '</span>' : '';
+      var rarityHtml = item.rarity ? '<span class="inv-slot-rarity rarity-' + item.rarity + '"></span>' : '';
+
+      div.innerHTML = rarityHtml + iconHtml + nameHtml + countHtml;
+      div.setAttribute('data-slot', i);
+      div.onclick = function() {
+        var slot = parseInt(this.getAttribute('data-slot'));
+        selectSlot(slot);
+      };
+    } else if (!item) {
+      div.className = 'inv-slot empty';
+      div.innerHTML = '';
+    } else {
+      // Item exists but filtered out
+      div.className = 'inv-slot empty';
+      div.style.opacity = '0.15';
+      div.innerHTML = '';
+    }
+    grid.appendChild(div);
+  }
+}
+
+// ==================== SELECT SLOT ====================
+function selectSlot(slot) {
+  selectedSlot = slot;
+  renderGrid();
+  var item = items[slot];
+  var panel = $('detailPanel');
+  if (item) {
+    panel.classList.add('open');
+    $('detailName').textContent = item.name || '-';
+    $('detailDesc').textContent = item.desc || '';
+    var catClass = 'cat-' + (item.category || 'special');
+    $('detailIcon').className = 'inv-detail-icon ' + catClass;
+    $('detailIcon').innerHTML = getIcon(item.icon || 'ingredient');
+
+    var metaHtml = '';
+    if (item.quantity > 1) metaHtml += '<span>Qty: <b>' + item.quantity + '</b></span>';
+    if (item.weight) metaHtml += '<span><svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:#4b5e80"><path d="M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"/></svg>' + item.weight + ' kg</span>';
+    if (item.value) metaHtml += '<span><svg viewBox="0 0 24 24" style="width:11px;height:11px;fill:#4b5e80"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>' + item.value + '$</span>';
+    $('detailMeta').innerHTML = metaHtml;
+
+    // Show/hide action buttons based on category
+    $('btnUse').style.display = (item.category === 'key' || item.category === 'license') ? 'none' : '';
+  } else {
+    panel.classList.remove('open');
+  }
+}
+
+// ==================== CEF EVENTS ====================
+cef.on('inventory:init', function(data) {
+  try {
+    items = JSON.parse(data);
+    renderTabs();
+    renderGrid();
+    var count = items.filter(function(x){return x}).length;
+    showToast('Inventar ucitan (' + count + '/30)', 'success');
+  } catch(e) { console.error('inventory:init parse error', e); }
+});
+
+cef.on('inventory:update', function(data) {
+  try {
+    items = JSON.parse(data);
+    selectedSlot = -1;
+    $('detailPanel').classList.remove('open');
+    renderTabs();
+    renderGrid();
+  } catch(e) { console.error('inventory:update parse error', e); }
+});
+
+cef.on('inventory:toast', function(msg, type) {
+  showToast(msg, type || '');
+});
+
+cef.on('inventory:playerInfo', function(name, id, level, money, xp) {
+  $('playerName').textContent = name || 'Igrac';
+  $('playerId').textContent = id ? 'ID: ' + id : '';
+  $('playerLevel').textContent = level || 0;
+  $('playerMoney').textContent = (money || 0).toLocaleString();
+  $('playerXP').textContent = xp || 0;
+});
+
+cef.on('inventory:weight', function(current, max) {
+  totalWeight = current;
+  maxWeight = max;
+  $('weightText').textContent = current + '/' + max + ' kg';
+  var fill = $('weightFill');
+  fill.style.width = (max > 0 ? Math.min((current/max)*100, 100) : 0) + '%';
+  if (current/max > 0.8) {
+    fill.classList.add('overweight');
+  } else {
+    fill.classList.remove('overweight');
+  }
+});
+</script>
+</body>
+</html>
