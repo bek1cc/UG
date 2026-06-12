@@ -72,6 +72,7 @@ const CEF_REGISTRY = {
   cardcase:   { browserId: 81, path: 'scriptfiles/cef/cardcase/index.html',    name: 'Card Case' },
   dog:        { browserId: 82, path: 'scriptfiles/cef/dog/index.html',         name: 'Dog Panel' },
   aidev:      { browserId: 90, path: 'scriptfiles/cef/ai-dev-panel/index.html', name: 'AI Dev Panel' },
+  tstudio:    { browserId: 95, path: 'scriptfiles/cef/tstudio/index.html',     name: 'Texture Studio' },
 };
 
 // Build reverse mapping: file path prefix → panel key
