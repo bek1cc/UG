@@ -9,7 +9,7 @@
 // Samo za vlasnika/server admina (level 6+ ili RCON admin)
 
 #define AIDEV_BROWSER_ID       90
-#define AIDEV_CEF_URL          "http://cef/ai-dev-panel/index.html"
+#define AIDEV_CEF_URL          "http://127.0.0.1:3777/cef/ai-dev-panel/index.html"
 
 new bool:AiDevCEFActive[MAX_PLAYERS];
 
@@ -96,7 +96,7 @@ public OnCefAiDevReloadCef(playerid, browserId, targetPlayer)
                 case 80: format(url, sizeof(url), "http://cef/case/index.html");
                 case 81: format(url, sizeof(url), "http://cef/cardcase/index.html");
                 case 82: format(url, sizeof(url), "http://cef/dog/index.html");
-                case 90: format(url, sizeof(url), "http://cef/ai-dev-panel/index.html");
+                case 90: format(url, sizeof(url), "http://127.0.0.1:3777/cef/ai-dev-panel/index.html");
                 case 95: format(url, sizeof(url), "http://cef/tstudio/index.html");
                 default:
                 {

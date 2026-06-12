@@ -385,10 +385,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hid
 
 <script>
 // ===== CONFIG =====
-// Auto-detect backend URL: same host if opened from browser, or localhost for CEF
-var BACKEND = (typeof cef === 'undefined' && window.location.protocol === 'http:')
-  ? window.location.origin
-  : 'http://127.0.0.1:3777';
+// Auto-detect backend URL
+// If loaded from backend (http://host:3777/cef/...), use same origin
+// If loaded from CEF (cef://...), try localhost
+var BACKEND = '';
+if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+  // Loaded from HTTP server (backend or browser) - use same origin
+  BACKEND = window.location.origin;
+} else {
+  // Loaded from CEF (cef:// protocol) - try localhost
+  BACKEND = 'http://127.0.0.1:3777';
+}
 var ADMIN_KEY = 'ug-admin-2024';
 var PLAYER_ID = 0;
 var WS = null;
@@ -459,25 +466,16 @@ async function checkBackend() {
     var data = await resp.json();
     var status = document.getElementById('connectionStatus');
     status.className = 'sidebar-status ok';
-    status.title = 'Connected to ' + data.model;
-
-    document.getElementById('modelLabel').textContent = data.model || 'glm-5.1';
-    document.getElementById('settingsModel').textContent = data.model || 'glm-5.1';
-    document.getElementById('settingsRoot').textContent = data.projectRoot || '-';
+    status.title = 'Backend connected';
 
     var apiEl = document.getElementById('apiStatus');
     if(data.sdkAvailable) {
       apiEl.textContent = 'SDK Auto-Auth ✓';
       apiEl.className = 'api-status api-ok';
-    } else if(data.apiKeyConfigured) {
-      apiEl.textContent = 'API Key ✓';
-      apiEl.className = 'api-status api-ok';
     } else {
-      apiEl.textContent = 'NOT SET - Need SDK or API key';
+      apiEl.textContent = 'SDK NOT READY';
       apiEl.className = 'api-status api-err';
     }
-
-    initWebSocket();
   } catch(e) {
     var status = document.getElementById('connectionStatus');
     status.className = 'sidebar-status error';
@@ -586,14 +584,14 @@ async function sendMessage() {
   addUserMsg(msg);
 
   try {
-    // Use AbortController for fetch timeout (30s)
+    // Use AbortController for fetch timeout (60s)
     var controller = new AbortController();
-    var fetchTimeout = setTimeout(function() { controller.abort(); }, 30000);
+    var fetchTimeout = setTimeout(function() { controller.abort(); }, 60000);
 
     var resp = await fetch(BACKEND + '/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Admin-Key': ADMIN_KEY },
-      body: JSON.stringify({ message: msg, playerid: PLAYER_ID }),
+      body: JSON.stringify({ message: msg, playerid: PLAYER_ID, history: messageHistory }),
       signal: controller.signal,
     });
     clearTimeout(fetchTimeout);
@@ -609,7 +607,9 @@ async function sendMessage() {
 
     // Add AI message
     addAIMsg(data.response, data.parsed);
-    messageHistory.push({ user: msg, ai: data.response });
+    // Build history for future requests (role-based format for API)
+    messageHistory.push({ role: 'user', content: msg });
+    messageHistory.push({ role: 'assistant', content: data.response });
 
     // If there are pending changes, show action bar
     if(data.parsed && data.parsed.files && data.parsed.files.length > 0) {
