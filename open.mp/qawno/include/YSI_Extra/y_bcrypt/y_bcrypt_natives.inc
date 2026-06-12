@@ -76,8 +76,8 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#include "../../YSI_Server/y_natives"
-#include "../../YSI_Server/y_serverdata"
+#include "..\..\YSI_Server\y_natives"
+#include "..\..\YSI_Server\y_serverdata"
 
 enum E_BCRYPT_PLUGIN_VERSION
 {

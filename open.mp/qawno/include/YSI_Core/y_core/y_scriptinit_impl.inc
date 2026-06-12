@@ -224,10 +224,10 @@ static
 	E_SCRIPTINIT_STATE:YSI_g_sScriptInitState = E_SCRIPTINIT_STATE_NONE;
 
 #if defined DEBUG_DUMP
-	#tryinclude "../../amx/disasm"
-	#tryinclude <amx_assembly/disasm>
-	#tryinclude "../../amx_assembly/disasm"
-	#tryinclude "../../../amx_assembly/disasm"
+	#tryinclude "..\..\amx\disasm"
+	#tryinclude <amx_assembly\disasm>
+	#tryinclude "..\..\amx_assembly\disasm"
+	#tryinclude "..\..\..\amx_assembly\disasm"
 	#tryinclude "disasm"
 	#tryinclude <disasm>
 

@@ -90,15 +90,15 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-#tryinclude <indirection/indirection>
-#tryinclude <indirection-master/indirection>
-#tryinclude <indirection-master/indirection-master/indirection>
-#tryinclude "../../indirection/indirection"
-#tryinclude "../../indirection-master/indirection"
-#tryinclude "../../indirection-master/indirection-master/indirection"
-#tryinclude "../../../indirection/indirection"
-#tryinclude "../../../indirection-master/indirection"
-#tryinclude "../../../indirection-master/indirection-master/indirection"
+#tryinclude <indirection\indirection>
+#tryinclude <indirection-master\indirection>
+#tryinclude <indirection-master\indirection-master\indirection>
+#tryinclude "..\..\indirection\indirection"
+#tryinclude "..\..\indirection-master\indirection"
+#tryinclude "..\..\indirection-master\indirection-master\indirection"
+#tryinclude "..\..\..\indirection\indirection"
+#tryinclude "..\..\..\indirection-master\indirection"
+#tryinclude "..\..\..\indirection-master\indirection-master\indirection"
 #tryinclude "indirection"
 #tryinclude <indirection>
 #if !defined _INC_indirection

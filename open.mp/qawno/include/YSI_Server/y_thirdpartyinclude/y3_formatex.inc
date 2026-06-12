@@ -90,15 +90,15 @@ Optional plugins:
 	Me - sscanf2, fixes2, Whirlpool.
 */
 
-//#tryinclude <formatex/formatex>
-//#tryinclude <formatex-master/formatex>
-//#tryinclude <formatex-master/formatex-master/formatex>
-//#tryinclude "../../formatex/formatex"
-//#tryinclude "../../formatex-master/formatex"
-//#tryinclude "../../formatex-master/formatex-master/formatex"
-//#tryinclude "../../../formatex/formatex"
-//#tryinclude "../../../formatex-master/formatex"
-//#tryinclude "../../../formatex-master/formatex-master/formatex"
+//#tryinclude <formatex\formatex>
+//#tryinclude <formatex-master\formatex>
+//#tryinclude <formatex-master\formatex-master\formatex>
+//#tryinclude "..\..\formatex\formatex"
+//#tryinclude "..\..\formatex-master\formatex"
+//#tryinclude "..\..\formatex-master\formatex-master\formatex"
+//#tryinclude "..\..\..\formatex\formatex"
+//#tryinclude "..\..\..\formatex-master\formatex"
+//#tryinclude "..\..\..\formatex-master\formatex-master\formatex"
 //#tryinclude "formatex"
 //#tryinclude <formatex>
 //#if !defined _INC_md_sort

@@ -100,8 +100,8 @@ Optional plugins:
 
 /// <p/>
 
-#include "../../YSI_Core/y_utils"
-#include "../../YSI_Server/y_thirdpartyinclude"
+#include "..\..\YSI_Core\y_utils"
+#include "..\..\YSI_Server\y_thirdpartyinclude"
 
 #define DUMP_AMX_BLOCK_CELLS (12)
 #define DUMP_AMX_BLOCK_BYTES (DUMP_AMX_BLOCK_CELLS * 4)

@@ -46,7 +46,7 @@ Required plugins:
 
 #include <a_samp>
 
-#tryinclude "../modelsizes"
+#tryinclude "..\modelsizes"
 #tryinclude "modelsizes"
 #tryinclude <modelsizes>
 
@@ -57,7 +57,7 @@ Required plugins:
 #if !defined _streamer_included
 	#tryinclude <streamer>
 	#tryinclude "streamer"
-	#tryinclude "../streamer"
+	#tryinclude "..\streamer"
 #endif
 
 #if !defined _streamer_included

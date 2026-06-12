@@ -90,19 +90,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_natives
-	#tryinclude "y_natives/y_natives_entry"
+	#tryinclude "y_natives\y_natives_entry"
 #endif
 #if !defined _INC_y_natives
-	#tryinclude "YSI_Server/y_natives/y_natives_entry"
+	#tryinclude "YSI_Server\y_natives\y_natives_entry"
 #endif
 #if !defined _INC_y_natives
-	#tryinclude "YSI/YSI_Server/y_natives/y_natives_entry"
+	#tryinclude "YSI\YSI_Server\y_natives\y_natives_entry"
 #endif
 #if !defined _INC_y_natives
-	#tryinclude <YSI_Server/y_natives/y_natives_entry>
+	#tryinclude <YSI_Server\y_natives\y_natives_entry>
 #endif
 #if !defined _INC_y_natives
-	#tryinclude <YSI/YSI_Server/y_natives/y_natives_entry>
+	#tryinclude <YSI\YSI_Server\y_natives\y_natives_entry>
 #endif
 #if !defined _INC_y_natives
 	#error Could not find y_natives

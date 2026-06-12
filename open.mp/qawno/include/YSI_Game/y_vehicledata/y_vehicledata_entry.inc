@@ -1288,7 +1288,7 @@ stock Vehicle_Speed(vehicleid)
 #undef e_VEHICLE_FLAGS_END
 
 #if defined YSI_TESTS
-	#include "../../YSI_Core/y_utils"
+	#include "..\..\YSI_Core\y_utils"
 	#if defined YSI_NO_TEST_WARNINGS
 		#pragma warning push
 		#pragma warning disable 203

@@ -159,7 +159,7 @@ Operators:
 // Ini file reading is not distributed.  User file reading may be, though I
 // doubt it.
 
-#include "internal/y_version"
+#include "internal\y_version"
 
 //#tryinclude <sscanf>
 
@@ -168,7 +168,7 @@ Operators:
 #include "y_debug"
 #include "y_inline"
 
-#include "internal/y_natives"
+#include "internal\y_natives"
 
 #define MAX_INI_LINE                    (MAX_INI_ENTRY_NAME + MAX_INI_ENTRY_TEXT + 32)
 

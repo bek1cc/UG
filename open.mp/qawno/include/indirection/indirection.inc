@@ -48,16 +48,16 @@
 /// <p/>
 
 #if !defined AMX_HEADER_INC
-	#tryinclude "../amx/amx_header"
+	#tryinclude "..\amx\amx_header"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude <amx_assembly/amx_header>
+	#tryinclude <amx_assembly\amx_header>
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude "../amx_assembly/amx_header"
+	#tryinclude "..\amx_assembly\amx_header"
 #endif
 #if !defined AMX_HEADER_INC
-	#tryinclude "../../amx_assembly/amx_header"
+	#tryinclude "..\..\amx_assembly\amx_header"
 #endif
 #if !defined AMX_HEADER_INC
 	#tryinclude "amx_header"

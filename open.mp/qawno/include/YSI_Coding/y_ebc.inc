@@ -94,19 +94,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_ebc
-	#tryinclude "y_ebc/y_ebc_entry"
+	#tryinclude "y_ebc\y_ebc_entry"
 #endif
 #if !defined _INC_y_ebc
-	#tryinclude "YSI_Coding/y_ebc/y_ebc_entry"
+	#tryinclude "YSI_Coding\y_ebc\y_ebc_entry"
 #endif
 #if !defined _INC_y_ebc
-	#tryinclude "YSI/YSI_Coding/y_ebc/y_ebc_entry"
+	#tryinclude "YSI\YSI_Coding\y_ebc\y_ebc_entry"
 #endif
 #if !defined _INC_y_ebc
-	#tryinclude <YSI_Coding/y_ebc/y_ebc_entry>
+	#tryinclude <YSI_Coding\y_ebc\y_ebc_entry>
 #endif
 #if !defined _INC_y_ebc
-	#tryinclude <YSI/YSI_Coding/y_ebc/y_ebc_entry>
+	#tryinclude <YSI\YSI_Coding\y_ebc\y_ebc_entry>
 #endif
 #if !defined _INC_y_ebc
 	#error Could not find y_ebc

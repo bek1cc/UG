@@ -73,19 +73,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_weapondata
-	#tryinclude "y_weapondata/y_weapondata_entry"
+	#tryinclude "y_weapondata\y_weapondata_entry"
 #endif
 #if !defined _INC_y_weapondata
-	#tryinclude "YSI_Game/y_weapondata/y_weapondata_entry"
+	#tryinclude "YSI_Game\y_weapondata\y_weapondata_entry"
 #endif
 #if !defined _INC_y_weapondata
-	#tryinclude "YSI/YSI_Game/y_weapondata/y_weapondata_entry"
+	#tryinclude "YSI\YSI_Game\y_weapondata\y_weapondata_entry"
 #endif
 #if !defined _INC_y_weapondata
-	#tryinclude <YSI_Game/y_weapondata/y_weapondata_entry>
+	#tryinclude <YSI_Game\y_weapondata\y_weapondata_entry>
 #endif
 #if !defined _INC_y_weapondata
-	#tryinclude <YSI/YSI_Game/y_weapondata/y_weapondata_entry>
+	#tryinclude <YSI\YSI_Game\y_weapondata\y_weapondata_entry>
 #endif
 #if !defined _INC_y_weapondata
 	#error Could not find y_weapondata

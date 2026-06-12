@@ -72,19 +72,19 @@ Optional plugins:
 */
 
 #if !defined _INC_y_inline_bcrypt
-	#tryinclude "y_inline_bcrypt/y_inline_bcrypt_entry"
+	#tryinclude "y_inline_bcrypt\y_inline_bcrypt_entry"
 #endif
 #if !defined _INC_y_inline_bcrypt
-	#tryinclude "YSI_Extra/y_inline_bcrypt/y_inline_bcrypt_entry"
+	#tryinclude "YSI_Extra\y_inline_bcrypt\y_inline_bcrypt_entry"
 #endif
 #if !defined _INC_y_inline_bcrypt
-	#tryinclude "YSI/YSI_Extra/y_inline_bcrypt/y_inline_bcrypt_entry"
+	#tryinclude "YSI\YSI_Extra\y_inline_bcrypt\y_inline_bcrypt_entry"
 #endif
 #if !defined _INC_y_inline_bcrypt
-	#tryinclude <YSI_Extra/y_inline_bcrypt/y_inline_bcrypt_entry>
+	#tryinclude <YSI_Extra\y_inline_bcrypt\y_inline_bcrypt_entry>
 #endif
 #if !defined _INC_y_inline_bcrypt
-	#tryinclude <YSI/YSI_Extra/y_inline_bcrypt/y_inline_bcrypt_entry>
+	#tryinclude <YSI\YSI_Extra\y_inline_bcrypt\y_inline_bcrypt_entry>
 #endif
 #if !defined _INC_y_inline_bcrypt
 	#error Could not find y_inline_bcrypt

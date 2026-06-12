@@ -132,7 +132,7 @@ const YSI_VERSION_BCD = (YSI_VERSION_MAJOR << 24) | (YSI_VERSION_MINOR << 16) | 
 
 // The most first include, since it determines compiler settings that might be
 // used by literally any other include.
-#include "../../YSI_Server/y_thirdpartyinclude/y3_addressof"
+#include "..\..\YSI_Server\y_thirdpartyinclude\y3_addressof"
 #include "y_interning"
 #include "y_emit"
 #include "y_compilerdata"
@@ -143,9 +143,9 @@ const YSI_VERSION_BCD = (YSI_VERSION_MAJOR << 24) | (YSI_VERSION_MINOR << 16) | 
 
 // Avoid an error with `forward OnRuntimeError(code, &bool:suppress);` in here after already ALS
 // hooking it (#266).
-#tryinclude "../../crashdetect"
+#tryinclude "..\..\crashdetect"
 #tryinclude <crashdetect>
-#tryinclude "../../../crashdetect"
+#tryinclude "..\..\..\crashdetect"
 #tryinclude "crashdetect"
 
 // `FIX_OnRconCommand` and `FIX_OnClientCheckResponse` might use `_FIXES_DEFAULT`.
@@ -423,7 +423,7 @@ stock const YSIM_VERMAX[] = "X";
 #include "y_cell_impl"
 #include "y_amx_impl"
 #include "y_shortfunc"
-#include "../../YSI_Players/y_android/y_android_entry"
+#include "..\..\YSI_Players\y_android\y_android_entry"
 
 /*-------------------------------------------------------------------------*//**
  * <remarks>
@@ -715,11 +715,11 @@ stock _YSI_ConstMod(const &var, const val)
 
 // These are conditional, and use most of the preceeding code.
 #if defined YSI_TESTS
-	#include "../y_testing"
+	#include "..\y_testing"
 #endif
 
 #if defined YSI_YES_MODE_CACHE
-	#include "../../YSI_Server/y_thirdpartyinclude/y_thirdpartyinclude_entry"
+	#include "..\..\YSI_Server\y_thirdpartyinclude\y_thirdpartyinclude_entry"
 #endif
 
 /*-------------------------------------------------------------------------*//**
