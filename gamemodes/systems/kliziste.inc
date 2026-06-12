@@ -138,7 +138,8 @@ enum e_KlizistePlayer {
     PlayerText:klizProgressTD,      // Globalni progress TD
     PlayerText:klizStatusTD,        // Status TD (gore lijevo)
     bool:klizTDShown,               // Da li su TDs prikazani
-    klizLastAltPress                // Debounce za ALT key
+    klizLastAltPress,               // Debounce za ALT key
+    klizLastTDUpdate                // Throttle TD updates
 }
 
 static KlizPlayerData[MAX_PLAYERS][e_KlizistePlayer];
@@ -1246,7 +1247,12 @@ stock Kliziste_OnUpdate(playerid) {
     if(!KlizActive) return 0;
 
     if(KlizPlayerData[playerid][klizPState] != KLIZISTE_PSTATE_NONE) {
-        Kliz_UpdateProgressTD(playerid);
+        // Throttle TD updates to every 500ms instead of per-frame
+        new tick = GetTickCount();
+        if(tick - KlizPlayerData[playerid][klizLastTDUpdate] >= 500) {
+            KlizPlayerData[playerid][klizLastTDUpdate] = tick;
+            Kliz_UpdateProgressTD(playerid);
+        }
     }
 
     return 0;

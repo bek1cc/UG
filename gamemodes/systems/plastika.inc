@@ -753,7 +753,7 @@ stock PlasMini_StartPhase(playerid) {
     PlasMini_CreateMarkerTD(playerid);
     PlasMini_UpdateStars(playerid);
 
-    PlastikaPlayerData[playerid][plasTimerMini] = SetTimerEx("PlasTimer_MiniUpdate", 100, true, "i", playerid);
+    PlastikaPlayerData[playerid][plasTimerMini] = SetTimerEx("PlasTimer_MiniUpdate", 200, true, "i", playerid);
 }
 
 stock PlasMini_StopPhase(playerid, bool:hit) {
