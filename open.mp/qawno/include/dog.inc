@@ -358,7 +358,7 @@ CMD:pasotpusti(playerid)
         // Update CEF panel to show no-dog state
         if(CEF_DogPanelIsOpen(playerid))
         {
-                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), 0, CEF_STR(""), 0);
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), CEF_INT(0), CEF_STR(""), CEF_INT(0));
         }
         return 1;
 }

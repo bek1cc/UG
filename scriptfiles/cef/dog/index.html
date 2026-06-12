@@ -449,35 +449,38 @@ body{
 
 <script>
 // ===== CEF Event Listeners =====
+// IMPORTANT: CEF passes arguments as INDIVIDUAL function parameters, NOT as a single object.
+// Example: CEF_EmitEvent(playerid, browserid, "dog:init", CEF_STR(name), CEF_STR(breed), hp, CEF_STR(state), active)
+// arrives as: function(name, breed, hp, state, active)
 let dogData = { name: '', breed: '', hp: 0, state: '', active: false };
 
 // Listen for data from Pawn
 if(typeof cef !== 'undefined') {
-  cef.addEventListener('dog:init', function(data) {
-    dogData = data;
+  cef.addEventListener('dog:init', function(name, breed, hp, state, active) {
+    dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: active ? true : false };
     updateUI();
   });
 
-  cef.addEventListener('dog:update', function(data) {
-    dogData = data;
+  cef.addEventListener('dog:update', function(name, breed, hp, state, active) {
+    dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: active ? true : false };
     updateUI();
   });
 
-  cef.addEventListener('dog:renameResult', function(data) {
-    if(data.success) {
-      dogData.name = data.name;
+  cef.addEventListener('dog:renameResult', function(success, message) {
+    if(success) {
+      dogData.name = message || '';
       updateUI();
-      showToast('Pas se zove: ' + data.name);
+      showToast('Pas se zove: ' + dogData.name);
     } else {
-      showToast(data.error || 'Greska pri preimenovanju', true);
+      showToast(message || 'Greska pri preimenovanju', true);
     }
   });
 
-  cef.addEventListener('dog:spawnResult', function(data) {
-    if(data.success) {
-      dogData = { name: data.name, breed: data.breed, hp: data.hp, state: data.state, active: true };
+  cef.addEventListener('dog:spawnResult', function(success, name, breed, hp, state) {
+    if(success) {
+      dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: true };
       updateUI();
-      showToast('Doveo si psa: ' + data.name);
+      showToast('Doveo si psa: ' + dogData.name);
     }
   });
 }

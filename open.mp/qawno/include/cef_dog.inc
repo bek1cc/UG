@@ -33,9 +33,9 @@ stock CEF_DogPanelClose(playerid)
         return 1;
 }
 
-stock bool:CEF_DogPanelIsOpen(playerid)
+stock CEF_DogPanelIsOpen(playerid)
 {
-        return DogCEFActive[playerid];
+        return DogCEFActive[playerid] ? true : false;
 }
 
 // ===== SEND DATA TO CEF =====
@@ -58,9 +58,9 @@ stock CEF_DogSendData(playerid)
         CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init",
                 CEF_STR(DogName[playerid]),
                 CEF_STR(DogTypeNames[DogType[playerid]]),
-                DogHP[playerid],
+                CEF_INT(DogHP[playerid]),
                 CEF_STR(stateStr),
-                DogActive[playerid] ? 1 : 0);
+                CEF_INT(DogActive[playerid] ? 1 : 0));
 
         CEF_FocusBrowser(playerid, DOG_BROWSER_ID, true);
 }
@@ -86,9 +86,9 @@ stock CEF_DogUpdateState(playerid)
         CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:update",
                 CEF_STR(DogName[playerid]),
                 CEF_STR(DogTypeNames[DogType[playerid]]),
-                DogHP[playerid],
+                CEF_INT(DogHP[playerid]),
                 CEF_STR(stateStr),
-                1); // active
+                CEF_INT(1)); // active
 }
 
 // ===== BROWSER CREATED CALLBACK =====
@@ -159,19 +159,19 @@ public OnCefDogRename(playerid, name[])
 
         if(!DogActive[playerid])
         {
-                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", 0, CEF_STR("Nemas psa!"));
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", CEF_INT(0), CEF_STR("Nemas psa!"));
                 return 1;
         }
 
         new len = strlen(name);
         if(len < 2 || len > 20)
         {
-                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", 0, CEF_STR("Ime mora biti 2-20 karaktera!"));
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", CEF_INT(0), CEF_STR("Ime mora biti 2-20 karaktera!"));
                 return 1;
         }
 
         format(DogName[playerid], 32, "%s", name);
-        CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", 1, CEF_STR(name));
+        CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:renameResult", CEF_INT(1), CEF_STR(name));
         CEF_DogUpdateState(playerid);
 
         return 1;
@@ -185,7 +185,7 @@ public OnCefDogRelease(playerid)
         {
                 Dog_Destroy(playerid);
                 // Update panel to show no-dog state
-                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), 0, CEF_STR(""), 0);
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), CEF_INT(0), CEF_STR(""), CEF_INT(0));
         }
         return 1;
 }
@@ -200,9 +200,9 @@ public OnCefDogSpawn(playerid)
                 CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init",
                         CEF_STR(DogName[playerid]),
                         CEF_STR(DogTypeNames[DogType[playerid]]),
-                        DogHP[playerid],
+                        CEF_INT(DogHP[playerid]),
                         CEF_STR("Slijedi"),
-                        1);
+                        CEF_INT(1));
                 return 1;
         }
 
@@ -211,7 +211,7 @@ public OnCefDogSpawn(playerid)
 
         // Send spawn result to CEF
         CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:spawnResult",
-                1, CEF_STR("Buddy"), CEF_STR(DogTypeNames[DOG_TYPE_HUSKY]), 100, CEF_STR("Slijedi"));
+                CEF_INT(1), CEF_STR("Buddy"), CEF_STR(DogTypeNames[DOG_TYPE_HUSKY]), CEF_INT(100), CEF_STR("Slijedi"));
 
         return 1;
 }
@@ -223,8 +223,8 @@ stock CefDog_OnGameModeInit()
 
         // Register CEF events from browser
         CEF_RegisterEvent("dog:close", "OnCefDogClose");
-        CEF_RegisterEvent("dog:command", "OnCefDogCommand");
-        CEF_RegisterEvent("dog:rename", "OnCefDogRename");
+        CEF_RegisterEvent("dog:command", "OnCefDogCommand", Argument_String);
+        CEF_RegisterEvent("dog:rename", "OnCefDogRename", Argument_String);
         CEF_RegisterEvent("dog:release", "OnCefDogRelease");
         CEF_RegisterEvent("dog:spawn", "OnCefDogSpawn");
 

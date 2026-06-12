@@ -1,8 +1,8 @@
-	
+        
 
     /*
             SA-MP "GetVehicleColor v2.1" Include
-            Copyright © 2011 RyDeR`
+            Copyright Â© 2011 RyDeR`
     */
      
     #if defined _Included_GetVehicleColor
@@ -124,10 +124,13 @@
             return 0;
     }
      
+    #pragma warning push
+    #pragma warning disable 201
     #define AddStaticVehicle n_AddStaticVehicle
     #define AddStaticVehicleEx n_AddStaticVehicleEx
     #define CreateVehicle n_CreateVehicle
     #define DestroyVehicle n_DestroyVehicle
+    #pragma warning pop
     #define ChangeVehicleColor n_ChangeVehicleColor
      
     #if defined _ALS_OnVehicleRespray
