@@ -16,60 +16,90 @@ canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0
 /* Header */
 .header{position:absolute;top:0;left:0;right:0;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
 .header-logo{display:flex;align-items:center;gap:10px}
-.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 12px rgba(139,92,246,0.5))}
+.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(139,92,246,0.4))}
 .header-title{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:4px;text-transform:uppercase;
-  background:linear-gradient(135deg,#8b5cf6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(139,92,246,0.5);letter-spacing:2px}
+  background:linear-gradient(135deg,#e0d4ff,#c4b5fd,#67e8f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(196,181,253,0.5);letter-spacing:2px}
 
 /* Card select hint */
-.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(139,92,246,0.35);
+.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(196,181,253,0.5);
   text-transform:uppercase;margin-bottom:14px;transition:opacity 0.5s;pointer-events:none}
 .select-hint.hidden{opacity:0}
 
 /* Open button */
-.open-btn{padding:12px 44px;border:2px solid rgba(139,92,246,0.35);border-radius:12px;
+.open-btn{padding:12px 44px;border:2px solid rgba(139,92,246,0.45);border-radius:12px;
   font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#c4b5fd;cursor:pointer;pointer-events:all;
-  background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.04));
-  transition:all 0.3s;backdrop-filter:blur(6px);opacity:0}
+  color:#e0d4ff;cursor:pointer;pointer-events:all;
+  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(109,40,217,0.08));
+  transition:all 0.3s;backdrop-filter:blur(6px);opacity:0;
+  box-shadow:0 0 20px rgba(139,92,246,0.1)}
 .open-btn.visible{opacity:1}
-.open-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(6,182,212,0.1));
-  border-color:rgba(139,92,246,0.6);box-shadow:0 0 30px rgba(139,92,246,0.15);color:#fff;transform:scale(1.04)}
+.open-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.15));
+  border-color:rgba(139,92,246,0.7);color:#fff;
+  box-shadow:0 0 40px rgba(139,92,246,0.2),0 0 80px rgba(139,92,246,0.08);transform:scale(1.04)}
 .open-btn.hidden{display:none}
 
 /* ESC hint */
 .esc-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;
-  color:rgba(255,255,255,0.12);letter-spacing:1px;pointer-events:none}
+  color:rgba(255,255,255,0.15);letter-spacing:1px;pointer-events:none}
 
 /* ===== REVEAL OVERLAY ===== */
 #reveal-overlay{position:fixed;inset:0;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);pointer-events:all}
+  background:rgba(5,2,15,0.65);backdrop-filter:blur(6px);pointer-events:all}
 #reveal-overlay.active{display:flex}
 
 .reveal-info{text-align:center;opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
 .reveal-info.show{opacity:1;transform:translateY(0)}
-.reveal-info .rarity-badge{display:inline-block;padding:5px 18px;border-radius:20px;font-family:'Orbitron',monospace;
-  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
-.rarity-badge.common{background:rgba(100,200,100,0.12);border:1px solid rgba(100,200,100,0.3);color:#64c864}
-.rarity-badge.rare{background:rgba(0,191,255,0.12);border:1px solid rgba(0,191,255,0.3);color:#00bfff}
-.rarity-badge.epic{background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.3);color:#a855f7}
-.rarity-badge.legendary{background:rgba(255,170,0,0.12);border:1px solid rgba(255,170,0,0.3);color:#ffaa00}
-.reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:2px;
-  background:linear-gradient(135deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.reveal-info .reward-label{font-size:12px;color:rgba(255,255,255,0.35);letter-spacing:1px;margin-top:3px}
-.reward-img-wrap{width:240px;height:130px;display:flex;align-items:center;justify-content:center;margin:12px auto;position:relative}
-.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 20px rgba(139,92,246,0.5));transition:transform 0.3s}
-.reward-img-wrap:hover img{transform:scale(1.05)}
-.reward-img-wrap::before{content:'';position:absolute;inset:-20px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 70%);pointer-events:none}
+.reveal-info .rarity-badge{display:inline-block;padding:6px 20px;border-radius:20px;font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;
+  transition:all 0.3s}
+.rarity-badge.common{background:rgba(100,200,100,0.12);border:1px solid rgba(100,200,100,0.35);color:#64c864;
+  box-shadow:0 0 15px rgba(100,200,100,0.12)}
+.rarity-badge.rare{background:rgba(0,191,255,0.12);border:1px solid rgba(0,191,255,0.35);color:#00bfff;
+  box-shadow:0 0 15px rgba(0,191,255,0.12)}
+.rarity-badge.epic{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#a855f7;
+  box-shadow:0 0 20px rgba(168,85,247,0.15)}
+.rarity-badge.legendary{background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);color:#ffaa00;
+  box-shadow:0 0 20px rgba(255,170,0,0.15)}
+
+.reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,#e0d4ff,#c4b5fd,#67e8f9,#c4b5fd);
+  background-size:200% 200%;animation:nameShimmer 3s ease-in-out infinite;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-top:6px}
+@keyframes nameShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+.reveal-info .reward-label{font-size:12px;color:rgba(196,181,253,0.45);letter-spacing:1px;margin-top:3px}
+
+/* Vehicle image in reveal */
+.reward-img-wrap{width:300px;height:170px;display:flex;align-items:center;justify-content:center;margin:14px auto;position:relative}
+.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 30px rgba(139,92,246,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));
+  transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
+.reward-img-wrap:hover img{transform:scale(1.06) translateY(-3px);
+  filter:drop-shadow(0 0 45px rgba(139,92,246,0.8)) drop-shadow(0 0 70px rgba(109,40,217,0.25)) drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
+
+/* Car glow behind image */
+.reward-img-wrap::before{content:'';position:absolute;inset:-30px;border-radius:50%;
+  background:radial-gradient(circle,rgba(139,92,246,0.15) 0%,rgba(109,40,217,0.06) 40%,transparent 70%);
+  pointer-events:none;animation:carGlowPulse 2s ease-in-out infinite}
+@keyframes carGlowPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+.reward-img-wrap::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:220px;height:25px;
+  background:radial-gradient(ellipse,rgba(139,92,246,0.18) 0%,transparent 70%);pointer-events:none}
+
 .reward-svg-icon{width:80px;height:80px;filter:drop-shadow(0 0 12px currentColor)}
 
-.collect-btn{margin-top:16px;padding:10px 38px;border:2px solid rgba(139,92,246,0.35);border-radius:10px;
+.collect-btn{margin-top:18px;padding:12px 40px;border:2px solid rgba(139,92,246,0.45);border-radius:10px;
   font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
-  color:#c4b5fd;cursor:pointer;
-  background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(6,182,212,0.05));
-  transition:all 0.3s;backdrop-filter:blur(6px)}
-.collect-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.12));
-  border-color:rgba(139,92,246,0.6);box-shadow:0 0 25px rgba(139,92,246,0.15);color:#fff;transform:scale(1.04)}
+  color:#e0d4ff;cursor:pointer;
+  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(109,40,217,0.08));
+  transition:all 0.3s;backdrop-filter:blur(6px);
+  box-shadow:0 0 15px rgba(139,92,246,0.08)}
+.collect-btn:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(109,40,217,0.15));
+  border-color:rgba(139,92,246,0.7);
+  box-shadow:0 0 40px rgba(139,92,246,0.2),0 0 70px rgba(139,92,246,0.08);color:#fff;transform:scale(1.04)}
 
 /* Screen flash */
 .screen-flash{position:fixed;inset:0;z-index:14;pointer-events:none;opacity:0;
@@ -135,15 +165,14 @@ var isAnimating = false;
 var audioCtx = null;
 
 var suits = ['spade','heart','diamond','club'];
-var suitSymbols = {spade:'♠',heart:'♥',diamond:'♦',club:'♣'};
+var suitSymbols = {spade:'\u2660',heart:'\u2665',diamond:'\u2666',club:'\u2663'};
 var suitColors = {spade:0x8b5cf6,heart:0xef4444,diamond:0xef4444,club:0x8b5cf6};
 var cardValues = ['A','K','Q','J','10','9'];
 
 var rewardColors = {vehicle:0x8b5cf6,money:0x22c55e,level:0xeab308,respect:0xef4444,weapon:0xf97316,vip:0x06b6d4,default:0x8b5cf6};
 
-// SVG icons for all reward types (NO EMOJI) - modded car icon for vehicles
+// SVG icons for non-vehicle reward types
 var rewardSVGs = {
-  vehicle: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M12 50 L18 32 L28 26 L52 26 L62 32 L68 50 Z" fill="none" stroke="#8b5cf6" stroke-width="2.5"/><rect x="8" y="50" width="64" height="12" rx="3" fill="#8b5cf6" opacity="0.25" stroke="#8b5cf6" stroke-width="1.5"/><circle cx="22" cy="62" r="6" fill="#8b5cf6" opacity="0.4" stroke="#8b5cf6" stroke-width="2"/><circle cx="58" cy="62" r="6" fill="#8b5cf6" opacity="0.4" stroke="#8b5cf6" stroke-width="2"/><rect x="22" y="30" width="14" height="14" rx="2" fill="#8b5cf6" opacity="0.15"/><rect x="40" y="30" width="16" height="14" rx="2" fill="#8b5cf6" opacity="0.15"/><line x1="18" y1="44" x2="62" y2="44" stroke="#8b5cf6" stroke-width="1" opacity="0.5"/></svg>',
   money: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.3"/><text x="40" y="50" text-anchor="middle" font-family="Orbitron,monospace" font-size="32" font-weight="900" fill="#22c55e">$</text></svg>',
   level: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><polygon points="40,4 49,30 78,30 54,48 63,76 40,58 17,76 26,48 2,30 31,30" fill="#eab308" opacity="0.9"/></svg>',
   respect: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M40 8 L52 32 L78 36 L58 54 L64 80 L40 66 L16 80 L22 54 L2 36 L28 32 Z" fill="none" stroke="#ef4444" stroke-width="2.5"/><circle cx="40" cy="42" r="10" fill="#ef4444" opacity="0.8"/></svg>',
@@ -158,35 +187,35 @@ var renderer = new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false
 renderer.setSize(window.innerWidth,window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.4;
 
 var scene = new THREE.Scene();
-scene.background = new THREE.Color(0x020810);
-scene.fog = new THREE.FogExp2(0x020810,0.08);
+scene.background = new THREE.Color(0x040812);
+scene.fog = new THREE.FogExp2(0x060a14,0.06);
 
 var camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
 camera.position.set(0,2.5,6);
 camera.lookAt(0,0.5,0);
 
-// Post-processing
+// Post-processing - BRIGHTER bloom
 var composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene,camera));
-var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),1.2,0.5,0.3);
+var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),1.5,0.4,0.25);
 composer.addPass(bloomPass);
 
-// Lights
-var ambientLight = new THREE.AmbientLight(0x111133,0.5);
+// Lights - BRIGHTER
+var ambientLight = new THREE.AmbientLight(0x222244,0.8);
 scene.add(ambientLight);
 
-var portalLight = new THREE.PointLight(0x8b5cf6,3,15);
+var portalLight = new THREE.PointLight(0x8b5cf6,4,15);
 portalLight.position.set(0,2,-1);
 scene.add(portalLight);
 
-var rimLight = new THREE.PointLight(0x06b6d4,1.5,10);
+var rimLight = new THREE.PointLight(0x06b6d4,2,10);
 rimLight.position.set(2,1,3);
 scene.add(rimLight);
 
-var spotLight = new THREE.SpotLight(0x8b5cf6,2,20,Math.PI/6,0.5);
+var spotLight = new THREE.SpotLight(0xc4b5fd,3,20,Math.PI/6,0.5);
 spotLight.position.set(0,6,0);
 spotLight.target.position.set(0,0,0);
 scene.add(spotLight);
@@ -194,7 +223,7 @@ scene.add(spotLight.target);
 
 // ===== FLOOR =====
 var floorGeo = new THREE.PlaneGeometry(30,30);
-var floorMat = new THREE.MeshStandardMaterial({color:0x030810,roughness:0.8,metalness:0.2});
+var floorMat = new THREE.MeshStandardMaterial({color:0x050a14,roughness:0.8,metalness:0.2});
 var floor = new THREE.Mesh(floorGeo,floorMat);
 floor.rotation.x = -Math.PI/2;
 floor.position.y = -0.5;
@@ -202,7 +231,7 @@ scene.add(floor);
 
 // Floor glow ring
 var ringGeo = new THREE.RingGeometry(1.8,2.2,64);
-var ringMat = new THREE.MeshBasicMaterial({color:0x8b5cf6,transparent:true,opacity:0.15,side:THREE.DoubleSide});
+var ringMat = new THREE.MeshBasicMaterial({color:0x8b5cf6,transparent:true,opacity:0.2,side:THREE.DoubleSide});
 var floorRing = new THREE.Mesh(ringGeo,ringMat);
 floorRing.rotation.x = -Math.PI/2;
 floorRing.position.y = -0.48;
@@ -215,25 +244,25 @@ scene.add(portalGroup);
 
 // Portal torus
 var torusGeo = new THREE.TorusGeometry(1.3,0.06,16,100);
-var torusMat = new THREE.MeshStandardMaterial({color:0x8b5cf6,emissive:0x8b5cf6,emissiveIntensity:2,roughness:0.2,metalness:0.8});
+var torusMat = new THREE.MeshStandardMaterial({color:0xa78bfa,emissive:0xa78bfa,emissiveIntensity:2.5,roughness:0.2,metalness:0.8});
 var portalTorus = new THREE.Mesh(torusGeo,torusMat);
 portalGroup.add(portalTorus);
 
 // Inner torus
 var torusGeo2 = new THREE.TorusGeometry(1.1,0.03,16,80);
-var torusMat2 = new THREE.MeshStandardMaterial({color:0x06b6d4,emissive:0x06b6d4,emissiveIntensity:1.5,roughness:0.3,metalness:0.7});
+var torusMat2 = new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x22d3ee,emissiveIntensity:2,roughness:0.3,metalness:0.7});
 var portalTorus2 = new THREE.Mesh(torusGeo2,torusMat2);
 portalGroup.add(portalTorus2);
 
-// Portal core (transparent disc)
+// Portal core
 var coreGeo = new THREE.CircleGeometry(1.05,64);
 var coreMat = new THREE.ShaderMaterial({
   transparent:true,
   side:THREE.DoubleSide,
   uniforms:{
     uTime:{value:0},
-    uColor1:{value:new THREE.Color(0x8b5cf6)},
-    uColor2:{value:new THREE.Color(0x06b6d4)}
+    uColor1:{value:new THREE.Color(0xa78bfa)},
+    uColor2:{value:new THREE.Color(0x22d3ee)}
   },
   vertexShader:`
     varying vec2 vUv;
@@ -252,7 +281,7 @@ var coreMat = new THREE.ShaderMaterial({
       float dist = length(center);
       float angle = atan(center.y,center.x);
       float swirl = sin(angle*3.0 + uTime*2.0)*0.1;
-      float alpha = smoothstep(0.5,0.1,dist+swirl)*0.25;
+      float alpha = smoothstep(0.5,0.1,dist+swirl)*0.3;
       vec3 col = mix(uColor1,uColor2,sin(angle+uTime)*0.5+0.5);
       alpha *= (0.7 + 0.3*sin(uTime*1.5 + dist*5.0));
       gl_FragColor = vec4(col,alpha);
@@ -267,7 +296,7 @@ var glowGeo = new THREE.PlaneGeometry(5,5);
 var glowMat = new THREE.ShaderMaterial({
   transparent:true,
   side:THREE.DoubleSide,
-  uniforms:{uColor:{value:new THREE.Color(0x8b5cf6)}},
+  uniforms:{uColor:{value:new THREE.Color(0xa78bfa)}},
   vertexShader:`
     varying vec2 vUv;
     void main(){
@@ -280,7 +309,7 @@ var glowMat = new THREE.ShaderMaterial({
     varying vec2 vUv;
     void main(){
       float dist = length(vUv-0.5);
-      float alpha = smoothstep(0.5,0.0,dist)*0.12;
+      float alpha = smoothstep(0.5,0.0,dist)*0.15;
       gl_FragColor = vec4(uColor,alpha);
     }
   `
@@ -301,44 +330,63 @@ function createCardTexture(value,suit,isFront,rarity){
   var ctx = cvs.getContext('2d');
 
   if(isFront){
-    // Card front
+    // Card front - BRIGHTER with holographic gradient
     var gradient = ctx.createLinearGradient(0,0,256,384);
-    gradient.addColorStop(0,'#0f172a');
-    gradient.addColorStop(1,'#1e1b4b');
+    gradient.addColorStop(0,'#141428');
+    gradient.addColorStop(0.3,'#1a1a40');
+    gradient.addColorStop(0.6,'#161640');
+    gradient.addColorStop(1,'#1a1440');
     ctx.fillStyle = gradient;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // Border
+    // HOLOGRAPHIC SHIMMER - diagonal rainbow stripe
+    var holoGrad = ctx.createLinearGradient(0,0,256,384);
+    holoGrad.addColorStop(0,'rgba(139,92,246,0.06)');
+    holoGrad.addColorStop(0.2,'rgba(6,182,212,0.08)');
+    holoGrad.addColorStop(0.4,'rgba(168,85,247,0.06)');
+    holoGrad.addColorStop(0.6,'rgba(59,130,246,0.08)');
+    holoGrad.addColorStop(0.8,'rgba(168,85,247,0.06)');
+    holoGrad.addColorStop(1,'rgba(6,182,212,0.08)');
+    ctx.fillStyle = holoGrad;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border - BRIGHTER with glow
     var borderColors = {common:'#64c864',rare:'#00bfff',epic:'#a855f7',legendary:'#ffaa00'};
-    ctx.strokeStyle = borderColors[rarity]||'#8b5cf6';
+    ctx.strokeStyle = borderColors[rarity]||'#a78bfa';
     ctx.lineWidth = 4;
+    ctx.shadowColor = borderColors[rarity]||'#a78bfa';
+    ctx.shadowBlur = 18;
     ctx.roundRect(4,4,248,376,14);
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
-    // Inner border
-    ctx.strokeStyle = 'rgba(139,92,246,0.15)';
+    // Inner border - brighter
+    ctx.strokeStyle = 'rgba(167,139,250,0.25)';
     ctx.lineWidth = 1;
     ctx.roundRect(16,16,224,352,8);
     ctx.stroke();
 
-    // Suit symbol
+    // Suit symbol - BRIGHTER glow
     ctx.font = '80px serif';
     ctx.textAlign = 'center';
-    ctx.fillStyle = suit===0||suit===3 ? '#8b5cf6' : '#ef4444';
-    ctx.shadowColor = suit===0||suit===3 ? '#8b5cf6' : '#ef4444';
-    ctx.shadowBlur = 20;
+    ctx.fillStyle = suit===0||suit===3 ? '#c4b5fd' : '#f87171';
+    ctx.shadowColor = suit===0||suit===3 ? '#a78bfa' : '#ef4444';
+    ctx.shadowBlur = 30;
     ctx.fillText(suitSymbols[suits[suit]],128,210);
 
-    // Value
+    // Value - BRIGHTER
     ctx.font = 'bold 48px Orbitron, monospace';
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = 22;
+    ctx.fillStyle = '#e0d4ff';
     ctx.fillText(value,128,140);
 
     // Corner values
     ctx.font = 'bold 22px Orbitron, monospace';
-    ctx.shadowBlur = 8;
+    ctx.shadowBlur = 10;
     ctx.textAlign = 'left';
+    ctx.fillStyle = '#c4b5fd';
     ctx.fillText(value,24,40);
     ctx.font = '18px serif';
     ctx.fillText(suitSymbols[suits[suit]],28,62);
@@ -354,28 +402,42 @@ function createCardTexture(value,suit,isFront,rarity){
     ctx.restore();
 
   } else {
-    // Card back
+    // Card back - BRIGHTER with holographic feel
     var gradient2 = ctx.createLinearGradient(0,0,256,384);
-    gradient2.addColorStop(0,'#1a0a2e');
-    gradient2.addColorStop(1,'#0c1445');
+    gradient2.addColorStop(0,'#1a0e30');
+    gradient2.addColorStop(0.5,'#1e1240');
+    gradient2.addColorStop(1,'#141040');
     ctx.fillStyle = gradient2;
     ctx.roundRect(0,0,256,384,16);
     ctx.fill();
 
-    // Border
-    ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+    // Holographic overlay
+    var holo2 = ctx.createLinearGradient(0,0,256,384);
+    holo2.addColorStop(0,'rgba(167,139,250,0.05)');
+    holo2.addColorStop(0.3,'rgba(6,182,212,0.06)');
+    holo2.addColorStop(0.7,'rgba(167,139,250,0.05)');
+    holo2.addColorStop(1,'rgba(6,182,212,0.06)');
+    ctx.fillStyle = holo2;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border - BRIGHTER
+    ctx.strokeStyle = 'rgba(167,139,250,0.45)';
     ctx.lineWidth = 3;
+    ctx.shadowColor = '#a78bfa';
+    ctx.shadowBlur = 14;
     ctx.roundRect(4,4,248,376,14);
     ctx.stroke();
+    ctx.shadowBlur = 0;
 
     // Inner border
-    ctx.strokeStyle = 'rgba(139,92,246,0.12)';
+    ctx.strokeStyle = 'rgba(167,139,250,0.2)';
     ctx.lineWidth = 1;
     ctx.roundRect(14,14,228,356,8);
     ctx.stroke();
 
-    // Pattern
-    ctx.fillStyle = 'rgba(139,92,246,0.04)';
+    // Pattern - subtle holographic grid
+    ctx.fillStyle = 'rgba(167,139,250,0.06)';
     for(var py=20;py<370;py+=16){
       for(var px=20;px<240;px+=16){
         if((Math.floor(px/16)+Math.floor(py/16))%2===0){
@@ -384,15 +446,15 @@ function createCardTexture(value,suit,isFront,rarity){
       }
     }
 
-    // UG emblem
+    // UG emblem - BRIGHTER glow
     ctx.font = 'bold 40px Orbitron, monospace';
     ctx.textAlign = 'center';
     var g = ctx.createLinearGradient(80,170,176,210);
-    g.addColorStop(0,'#8b5cf6');
-    g.addColorStop(1,'#06b6d4');
+    g.addColorStop(0,'#c4b5fd');
+    g.addColorStop(1,'#22d3ee');
     ctx.fillStyle = g;
-    ctx.shadowColor = '#8b5cf6';
-    ctx.shadowBlur = 20;
+    ctx.shadowColor = '#a78bfa';
+    ctx.shadowBlur = 30;
     ctx.fillText('UG',128,205);
   }
 
@@ -412,17 +474,15 @@ function createCard(index){
   var frontTex = createCardTexture(value,suit,true,rarity);
   var backTex = createCardTexture(value,suit,false,rarity);
 
-  // Card geometry - thin box
   var cardGeo = new THREE.BoxGeometry(0.7,1.0,0.015);
 
-  // Materials: right, left, top, bottom, front, back
-  var edgeMat = new THREE.MeshStandardMaterial({color:0x1a0a2e,roughness:0.5,metalness:0.3});
-  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.4,metalness:0.1,emissive:0x222244,emissiveIntensity:0.1});
-  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.4,metalness:0.1,emissive:0x221144,emissiveIntensity:0.1});
+  // Materials - BRIGHTER emissive for holographic glow
+  var edgeMat = new THREE.MeshStandardMaterial({color:0x2a1a4e,roughness:0.5,metalness:0.3});
+  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.3,metalness:0.2,emissive:0x3a2a5e,emissiveIntensity:0.25});
+  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.3,metalness:0.2,emissive:0x2a1a5e,emissiveIntensity:0.25});
 
   var card = new THREE.Mesh(cardGeo,[edgeMat,edgeMat,edgeMat,edgeMat,frontMat,backMat]);
 
-  // Position cards in a fan
   var totalCards = 5;
   var fanAngle = (index - (totalCards-1)/2) * 0.18;
   var fanX = (index - (totalCards-1)/2) * 0.85;
@@ -438,7 +498,6 @@ function createCard(index){
 }
 
 function generateCards(){
-  // Remove old
   for(var i=0;i<cards.length;i++){
     cardGroup.remove(cards[i]);
     cards[i].geometry.dispose();
@@ -457,7 +516,7 @@ function generateCards(){
 generateCards();
 
 // ===== PARTICLE SYSTEM =====
-var particleCount = 300;
+var particleCount = 350;
 var particleGeo = new THREE.BufferGeometry();
 var particlePositions = new Float32Array(particleCount*3);
 var particleSizes = new Float32Array(particleCount);
@@ -485,7 +544,7 @@ var particleMat = new THREE.ShaderMaterial({
   transparent:true,
   depthWrite:false,
   blending:THREE.AdditiveBlending,
-  uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(0x8b5cf6)}},
+  uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(0xa78bfa)}},
   vertexShader:`
     attribute float size;
     attribute float alpha;
@@ -504,7 +563,7 @@ var particleMat = new THREE.ShaderMaterial({
     void main(){
       float dist = length(gl_PointCoord-0.5);
       if(dist>0.5) discard;
-      float a = smoothstep(0.5,0.0,dist)*vAlpha*0.4;
+      float a = smoothstep(0.5,0.0,dist)*vAlpha*0.5;
       gl_FragColor = vec4(uColor,a);
     }
   `
@@ -564,18 +623,15 @@ canvas.addEventListener('click',function(e){
 });
 
 function selectCard(index){
-  // Deselect previous - remove glow from all cards
   for(var i=0;i<cards.length;i++){
     var c = cards[i];
     c.userData.selected = false;
-    // Reset position smoothly
     tweenCard(c,c.userData.origPos,c.userData.origRot,400);
-    // Remove glow
     if(c.material && c.material.length){
-      c.material[4].emissiveIntensity = 0.1;
-      c.material[5].emissiveIntensity = 0.1;
-      c.material[4].emissive.setHex(0x222244);
-      c.material[5].emissive.setHex(0x221144);
+      c.material[4].emissiveIntensity = 0.25;
+      c.material[5].emissiveIntensity = 0.25;
+      c.material[4].emissive.setHex(0x3a2a5e);
+      c.material[5].emissive.setHex(0x2a1a5e);
     }
   }
 
@@ -583,7 +639,6 @@ function selectCard(index){
   card.userData.selected = true;
   selectedCardIndex = index;
 
-  // Lift card up
   var newPos = card.userData.origPos.clone();
   newPos.y += 0.4;
   newPos.z += 0.2;
@@ -591,17 +646,16 @@ function selectCard(index){
   newRot.x = -0.15;
   tweenCard(card,newPos,newRot,350);
 
-  // Add strong purple glow to selected card
+  // STRONG glow on selected card
   if(card.material && card.material.length){
-    card.material[4].emissiveIntensity = 0.8;
-    card.material[5].emissiveIntensity = 0.6;
+    card.material[4].emissiveIntensity = 1.2;
+    card.material[5].emissiveIntensity = 0.9;
     card.material[4].emissive.setHex(0x7c3aed);
     card.material[5].emissive.setHex(0x7c3aed);
   }
 
   playSound('select');
 
-  // Show open button
   document.getElementById('open-btn').classList.add('visible');
   document.getElementById('select-hint').classList.add('hidden');
 }
@@ -614,7 +668,6 @@ function tweenCard(card,targetPos,targetRot,duration){
   function tick(){
     var elapsed = performance.now()-startTime;
     var t = Math.min(elapsed/duration,1);
-    // Ease out cubic
     t = 1-Math.pow(1-t,3);
 
     card.position.lerpVectors(startPos,targetPos,t);
@@ -637,7 +690,6 @@ window.startReveal = function(){
 
   playSound('reveal_start');
 
-  // Phase 1: Other cards fly away, selected card centers
   for(var i=0;i<cards.length;i++){
     if(i!==selectedCardIndex){
       var c = cards[i];
@@ -651,16 +703,13 @@ window.startReveal = function(){
     }
   }
 
-  // Selected card moves to center, in front of portal
   var centerPos = new THREE.Vector3(0,1.8,-0.3);
   var centerRot = new THREE.Vector3(0,0,0);
   tweenCard(card,centerPos,centerRot,800);
 
-  // Phase 2: Card flips
   setTimeout(function(){
     playSound('card_flip');
 
-    // Flip animation
     var flipStart = performance.now();
     var flipDuration = 1200;
     var flipStartRot = card.rotation.y;
@@ -669,16 +718,13 @@ window.startReveal = function(){
       var elapsed = performance.now()-flipStart;
       var t = Math.min(elapsed/flipDuration,1);
 
-      // Flip with overshoot
       var flipT = t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
       card.rotation.y = flipStartRot + flipT * Math.PI;
 
-      // Scale up slightly during flip
       var s = 1 + 0.15*Math.sin(t*Math.PI);
       card.scale.set(s,s,s);
 
       if(t>=0.4 && t<0.5){
-        // Flash at midpoint
         triggerFlash(rewardData.rarity);
         spawnExplosion3D(getExplosionCount(rewardData.rarity),rewardData.rarity);
 
@@ -687,18 +733,16 @@ window.startReveal = function(){
           setTimeout(function(){document.body.classList.remove('shake');},500);
         }
 
-        // Increase bloom for rarity
         if(rewardData.rarity==='legendary') bloomPass.strength = 3;
         else if(rewardData.rarity==='epic') bloomPass.strength = 2.2;
-        else bloomPass.strength = 1.6;
+        else bloomPass.strength = 1.8;
 
-        // Portal goes crazy
         portalLight.intensity = 8;
       }
 
       if(t<1) requestAnimationFrame(flipTick);
       else {
-        card.rotation.y = Math.PI; // Show front face
+        card.rotation.y = Math.PI;
         card.scale.set(1,1,1);
         showReward();
       }
@@ -725,7 +769,6 @@ function showReward(){
   var overlay = document.getElementById('reveal-overlay');
   overlay.classList.add('active');
 
-  // Update reward info
   var badge = document.getElementById('reveal-rarity');
   badge.className = 'rarity-badge '+rewardData.rarity;
   var rarityLabels = {legendary:'LEGENDARY',epic:'EPIC',rare:'RARE',common:'COMMON'};
@@ -734,15 +777,11 @@ function showReward(){
   document.getElementById('reveal-name').textContent = rewardData.name;
   document.getElementById('reveal-label').textContent = rewardData.label;
 
-  // Reward image - SVG icons for modded vehicles, NO emoji
   var imgWrap = document.getElementById('reveal-img');
   var rewardColor = '#'+(rewardColors[rewardData.type]||0x8b5cf6).toString(16).padStart(6,'0');
   if(rewardData.type==='vehicle'){
-    // Modded vehicle - always use car SVG icon (gtamag doesn't have modded cars)
-    var carSVG = rewardSVGs.vehicle || rewardSVGs.default;
-    imgWrap.innerHTML = '<div class="reward-svg-icon" style="color:'+rewardColor+'">'+carSVG+'</div>';
+    imgWrap.innerHTML = '<img src="./elegy.png" alt="Vehicle" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 30px rgba(139,92,246,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));transition:all 0.4s" onerror="this.style.display=\'none\'">';
   } else {
-    // Non-vehicle rewards - use SVG icons
     var svg = rewardSVGs[rewardData.type] || rewardSVGs.default;
     imgWrap.innerHTML = '<div class="reward-svg-icon" style="color:'+rewardColor+'">'+svg+'</div>';
   }
@@ -770,10 +809,9 @@ function resetCaseUI(){
   document.getElementById('reveal-overlay').classList.remove('active');
   document.getElementById('reveal-info').classList.remove('show');
   document.getElementById('open-btn').classList.remove('visible');
-  bloomPass.strength = 1.2;
-  portalLight.intensity = 3;
+  bloomPass.strength = 1.5;
+  portalLight.intensity = 4;
 
-  // Clean explosion particles
   for(var i=0;i<explosionParticles.length;i++){
     explosionGroup.remove(explosionParticles[i]);
     explosionParticles[i].geometry.dispose();
@@ -846,20 +884,15 @@ function animate(){
   var delta = clock.getDelta();
   var elapsed = clock.getElapsedTime();
 
-  // Rotate portal
   portalTorus.rotation.z = elapsed*0.3;
   portalTorus2.rotation.z = -elapsed*0.5;
 
-  // Portal shader time
   coreMat.uniforms.uTime.value = elapsed;
 
-  // Portal light pulse
-  portalLight.intensity = 3 + Math.sin(elapsed*2)*0.5;
+  portalLight.intensity = 4 + Math.sin(elapsed*2)*0.8;
 
-  // Floor ring pulse
-  floorRing.material.opacity = 0.1 + Math.sin(elapsed*1.5)*0.05;
+  floorRing.material.opacity = 0.15 + Math.sin(elapsed*1.5)*0.08;
 
-  // Particle system
   particleMat.uniforms.uTime.value = elapsed;
   var positions = particleGeo.attributes.position.array;
   for(var i=0;i<particleCount;i++){
@@ -870,7 +903,6 @@ function animate(){
   }
   particleGeo.attributes.position.needsUpdate = true;
 
-  // Explosion particles
   for(var i=explosionParticles.length-1;i>=0;i--){
     var p = explosionParticles[i];
     p.position.x += p.userData.vx;
@@ -888,31 +920,28 @@ function animate(){
     }
   }
 
-  // Bloom recovery
-  if(bloomPass.strength>1.2){
+  if(bloomPass.strength>1.5){
     bloomPass.strength -= delta*2;
-    if(bloomPass.strength<1.2) bloomPass.strength=1.2;
+    if(bloomPass.strength<1.5) bloomPass.strength=1.5;
   }
 
-  // Portal light recovery
-  if(portalLight.intensity>3){
+  if(portalLight.intensity>4){
     portalLight.intensity -= delta*5;
-    if(portalLight.intensity<3) portalLight.intensity=3;
+    if(portalLight.intensity<4) portalLight.intensity=4;
   }
 
-  // Hover effect on cards
+  // Hover effect on cards - BRIGHTER glow
   raycaster.setFromCamera(mouse,camera);
   var intersects = raycaster.intersectObjects(cards);
   if(hoveredCard && (!intersects.length || intersects[0].object !== hoveredCard)){
     if(!hoveredCard.userData.selected){
       tweenCard(hoveredCard,hoveredCard.userData.origPos,hoveredCard.userData.origRot,200);
     }
-    // Remove glow from previously hovered card
     if(hoveredCard.material && hoveredCard.material.length){
-      hoveredCard.material[4].emissiveIntensity = 0.1; // front
-      hoveredCard.material[5].emissiveIntensity = 0.1; // back
-      hoveredCard.material[4].emissive.setHex(0x222244);
-      hoveredCard.material[5].emissive.setHex(0x221144);
+      hoveredCard.material[4].emissiveIntensity = 0.25;
+      hoveredCard.material[5].emissiveIntensity = 0.25;
+      hoveredCard.material[4].emissive.setHex(0x3a2a5e);
+      hoveredCard.material[5].emissive.setHex(0x2a1a5e);
     }
     hoveredCard = null;
     canvas.style.cursor = 'default';
@@ -929,10 +958,10 @@ function animate(){
         hoverRot.x = -0.2;
         tweenCard(card,hoverPos,hoverRot,200);
       }
-      // Add purple glow to hovered card
+      // Bright purple glow on hover
       if(card.material && card.material.length){
-        card.material[4].emissiveIntensity = 0.6; // front
-        card.material[5].emissiveIntensity = 0.5; // back
+        card.material[4].emissiveIntensity = 0.9;
+        card.material[5].emissiveIntensity = 0.7;
         card.material[4].emissive.setHex(0x6d28d9);
         card.material[5].emissive.setHex(0x6d28d9);
       }
@@ -945,7 +974,6 @@ function animate(){
 
 animate();
 
-// ===== RESIZE =====
 window.addEventListener('resize',function(){
   camera.aspect = window.innerWidth/window.innerHeight;
   camera.updateProjectionMatrix();
@@ -953,12 +981,10 @@ window.addEventListener('resize',function(){
   composer.setSize(window.innerWidth,window.innerHeight);
 });
 
-// ===== ESC KEY =====
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'||e.keyCode===27) closeCase();
 });
 
-// ===== CEF EVENTS =====
 if(typeof cef!=='undefined'&&cef.addEventListener){
   cef.addEventListener('cardcase:init',function(name,type,rarity,label,image){
     rewardData.name = name||'Mystery Reward';

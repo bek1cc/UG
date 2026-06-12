@@ -4,7 +4,6 @@
 #define _INC_cef_dog
 
 // DOG_BROWSER_ID je definiran u dog.inc (koji se includa prije ovog fajla)
-// Ako dog.inc nije includan, javi gresku
 #if !defined DOG_BROWSER_ID
         #error "cef_dog.inc requires dog.inc to be included first! Use: #include <dog> before #include <cef_dog>"
 #endif
@@ -118,7 +117,6 @@ public OnCefDogCommand(playerid, command[])
         if(!DogActive[playerid]) return 1;
         if(DogState[playerid] == DOG_STATE_DEAD)
         {
-                // Send update to show dead state
                 CEF_DogUpdateState(playerid);
                 return 1;
         }
@@ -135,11 +133,14 @@ public OnCefDogCommand(playerid, command[])
         }
         else if(strcmp(command, "stay") == 0)
         {
-                new Float:x, Float:y, Float:z;
-                GetObjectPos(DogObject[playerid], x, y, z);
-                DogStayX[playerid] = x;
-                DogStayY[playerid] = y;
-                DogStayZ[playerid] = z;
+                if(DogObject[playerid] != INVALID_OBJECT_ID)
+                {
+                        new Float:x, Float:y, Float:z;
+                        GetPlayerObjectPos(playerid, DogObject[playerid], x, y, z);
+                        DogStayX[playerid] = x;
+                        DogStayY[playerid] = y;
+                        DogStayZ[playerid] = z;
+                }
                 DogState[playerid] = DOG_STATE_STAY;
                 CEF_DogUpdateState(playerid);
         }
@@ -184,7 +185,6 @@ public OnCefDogRelease(playerid)
         if(DogActive[playerid])
         {
                 Dog_Destroy(playerid);
-                // Update panel to show no-dog state
                 CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init", CEF_STR(""), CEF_STR(""), CEF_INT(0), CEF_STR(""), CEF_INT(0));
         }
         return 1;
@@ -197,21 +197,38 @@ public OnCefDogSpawn(playerid)
 
         if(DogActive[playerid])
         {
+                // Vec ima psa - samo update panel
+                new stateStr[16];
+                switch(DogState[playerid])
+                {
+                        case DOG_STATE_FOLLOW: stateStr = "Slijedi";
+                        case DOG_STATE_SIT:    stateStr = "Sjedi";
+                        case DOG_STATE_STAY:   stateStr = "Ceka";
+                        case DOG_STATE_RUN:    stateStr = "Trci";
+                        default: stateStr = "Slijedi";
+                }
                 CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:init",
                         CEF_STR(DogName[playerid]),
                         CEF_STR(DogTypeNames[DogType[playerid]]),
                         CEF_INT(DogHP[playerid]),
-                        CEF_STR("Slijedi"),
+                        CEF_STR(stateStr),
                         CEF_INT(1));
                 return 1;
         }
 
         // Spawn default Husky
-        Dog_Spawn(playerid, DOG_TYPE_HUSKY, "Buddy");
+        new result = Dog_Spawn(playerid, DOG_TYPE_HUSKY, "Buddy");
 
-        // Send spawn result to CEF
-        CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:spawnResult",
-                CEF_INT(1), CEF_STR("Buddy"), CEF_STR(DogTypeNames[DOG_TYPE_HUSKY]), CEF_INT(100), CEF_STR("Slijedi"));
+        if(result)
+        {
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:spawnResult",
+                        CEF_INT(1), CEF_STR("Buddy"), CEF_STR(DogTypeNames[DOG_TYPE_HUSKY]), CEF_INT(100), CEF_STR("Slijedi"));
+        }
+        else
+        {
+                CEF_EmitEvent(playerid, DOG_BROWSER_ID, "dog:spawnResult",
+                        CEF_INT(0), CEF_STR(""), CEF_STR(""), CEF_INT(0), CEF_STR("Greska: Pas se nije stvorio!"));
+        }
 
         return 1;
 }
