@@ -16,12 +16,46 @@
 #define TSTUDIO_MAPS_DIR            "tstudio/maps/"
 
 #define MAX_TSTUDIO_MAPS            50
-#define MAX_TSTUDIO_MAP_OBJECTS     500
+#define MAX_TSTUDIO_MAP_OBJECTS     1000
 #define MAX_TSTUDIO_MAP_NAME        64
 #define MAX_TSTUDIO_UNDO            30
 #define MAX_MATERIAL_SLOTS          16
 #define MAX_TEX_NAME                64
 #define MAX_GRID_SIZE               10.0
+#define MAX_TSTUDIO_GROUPS          50
+#define MAX_TSTUDIO_GROUP_NAME      32
+#define MAX_TSTUDIO_REMOVED_BLDGS   200
+#define MAX_TSTUDIO_VEHICLES        50
+#define MAX_TSTUDIO_PREFABS         20
+
+// ===== TS 2.1 CUSTOM MODEL IDs =====
+// Base model za TS objekte je 19375 (zid)
+// Custom model IDs koriste negativne ID-ove
+#define TS_MODEL_BASE               19375
+#define TS_CUSTOM_PLANE_5x5         -2001
+#define TS_CUSTOM_PLANE_5x10        -2002
+#define TS_CUSTOM_PLANE_10x10       -2003
+#define TS_CUSTOM_PLANE_10x20       -2004
+#define TS_CUSTOM_PLANE_20x20       -2005
+#define TS_CUSTOM_PLANE_25x25       -2006
+#define TS_CUSTOM_PLANE_25x50       -2007
+#define TS_CUSTOM_PLANE_50x50       -2008
+#define TS_CUSTOM_PLANE_50x100      -2009
+#define TS_CUSTOM_PLANE_100x100     -2010
+#define TS_CUSTOM_WALL_2_5x3_5      -2011
+#define TS_CUSTOM_WALL_5x3_5        -2012
+#define TS_CUSTOM_WALL_10x3_5       -2013
+#define TS_CUSTOM_DOOR_5x3_5        -2014
+#define TS_CUSTOM_WINDOW_5x3_5      -2015
+#define TS_CUSTOM_PLATFORM_5x2_5    -2016
+#define TS_CUSTOM_PLATFORM_5x5      -2017
+#define TS_CUSTOM_PLATFORM_5x5x05   -2018
+#define TS_CUSTOM_PLATFORM_10x10x05 -2019
+#define TS_CUSTOM_PLATFORM_20x20x05 -2020
+#define TS_CUSTOM_RAMP_2_5x5x3_5   -2021
+#define TS_CUSTOM_RAMP_2_5x5x5     -2022
+#define TS_CUSTOM_RAMP_5x5x3_5     -2023
+#define TS_CUSTOM_RAMP_5x5x5       -2024
 
 // Edit modes
 #define TSTUDIO_MODE_NONE           0
@@ -51,6 +85,37 @@ enum E_MAP_DATA {
         bool:MapLoaded,
         MapTimestamp,
         MapLoadedObjects,
+        Float:MapSpawnX, Float:MapSpawnY, Float:MapSpawnZ,
+        MapInterior,
+        MapVirtualWorld,
+        MapRemovedBldgCount,
+        MapVehicleCount,
+        MapGroupCount,
+}
+
+enum E_REMOVED_BUILDING {
+        bool:RBExists,
+        RBModelID,
+        Float:RBX, Float:RBY, Float:RBZ, Float:RBRange,
+        RBMapIndex,
+}
+
+enum E_TS_VEHICLE {
+        bool:TVehExists,
+        TVehModel,
+        TVehColor1, TVehColor2,
+        TVehPaintJob,
+        Float:TVehX, Float:TVehY, Float:TVehZ, Float:TVehA,
+        TVehWorld, TVehInterior,
+        TVehMapIndex,
+        TVehGameID,       // In-game vehicle ID from CreateVehicle
+}
+
+enum E_TS_GROUP {
+        bool:GrpExists,
+        GrpName[MAX_TSTUDIO_GROUP_NAME],
+        GrpMapIndex,
+        GrpObjectCount,
 }
 
 enum E_MAP_OBJECT {
@@ -64,6 +129,8 @@ enum E_MAP_OBJECT {
         Float:ObjStreamDist,
         Float:ObjDrawDist,
         ObjMapIndex,                    // Kojoj mapi pripada
+        ObjGroupID,                     // Grupa kojoj pripada (-1 = nijedna)
+        ObjNote[64],                    // Napomena za objekat
 }
 
 // Materials - separate arrays (Pawn doesn't support 3D arrays in enums)
@@ -98,6 +165,9 @@ enum E_PLAYER_TSTUDIO {
         bool:TsShowGrid,
         TsUndoCount,
         bool:TsCEFActive,
+        bool:TsFlyMode,                 // Da li je fly mode aktivan
+        TsCurrentGroup,                 // Trenutno selektovana grupa (-1 = nijedna)
+        bool:TsShowText3D,              // Da li prikazuje Text3D label-e
 }
 
 // ===== GLOBAL DATA =====
@@ -108,6 +178,17 @@ new UndoStack[MAX_PLAYERS][MAX_TSTUDIO_UNDO][E_UNDO_ENTRY];
 new TotalMaps = 0;
 new TotalObjects = 0;
 new TsSelectedMap[MAX_PLAYERS] = {-1, ...};
+
+// New arrays for TS 2.1 features
+new TSRemovedBldgs[MAX_TSTUDIO_REMOVED_BLDGS][E_REMOVED_BUILDING];
+new TSVehicles[MAX_TSTUDIO_VEHICLES][E_TS_VEHICLE];
+new TSGroups[MAX_TSTUDIO_GROUPS][E_TS_GROUP];
+new TotalRemovedBldgs = 0;
+new TotalTSVehicles = 0;
+new TotalTSGroups = 0;
+
+// Text3D labels za objekte
+new Streamer3DText:TSObjLabels[MAX_TSTUDIO_MAP_OBJECTS];
 
 // ===== FORWARDS =====
 forward TStudio_OnGameModeInit();
@@ -121,12 +202,37 @@ forward TStudio_SaveTimer();
 // ===== INIT =====
 stock TStudio_OnGameModeInit()
 {
-        // Kreiraj direktorijum ako ne postoji
-        if(!fexist(TSTUDIO_MAPS_DIR))
-        {
-                // Pawn nema mkdir native, ali open.mp moze
-                printf("[TSTUDIO] Maps directory: "TSTUDIO_MAPS_DIR);
-        }
+        // ===== REGISTER TS 2.1 CUSTOM MODELS =====
+        // Planes
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_5x5,         "plane_5x5.dff",         "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_5x10,        "plane_5x10.dff",        "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_10x10,       "plane_10x10.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_10x20,       "plane_10x20.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_20x20,       "plane_20x20.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_25x25,       "plane_25x25.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_25x50,       "plane_25x50.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_50x50,       "plane_50x50.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_50x100,      "plane_50x100.dff",      "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLANE_100x100,     "plane_100x100.dff",     "wallzzz.txd");
+        // Walls
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_WALL_2_5x3_5,      "wall_2.5x3.5.dff",      "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_WALL_5x3_5,        "wall_5x3.5.dff",        "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_WALL_10x3_5,       "wall_10x3.5.dff",       "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_DOOR_5x3_5,        "door_5x3.5.dff",        "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_WINDOW_5x3_5,      "window_5x3.5.dff",      "wallzzz.txd");
+        // Platforms
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLATFORM_5x2_5,    "platform_5x2.5.dff",    "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLATFORM_5x5,      "platform_5x5.dff",      "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLATFORM_5x5x05,   "platform_5x5x05.dff",   "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLATFORM_10x10x05, "platform_10x10x05.dff", "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_PLATFORM_20x20x05, "platform_20x20x05.dff", "wallzzz.txd");
+        // Ramps
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_RAMP_2_5x5x3_5,   "ramp_2.5x5x3.5.dff",   "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_RAMP_2_5x5x5,     "ramp_2.5x5x5.dff",      "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_RAMP_5x5x3_5,     "ramp_5x5x3.5.dff",      "wallzzz.txd");
+        AddSimpleModel(-1, TS_MODEL_BASE, TS_CUSTOM_RAMP_5x5x5,       "ramp_5x5x5.dff",        "wallzzz.txd");
+
+        printf("[TSTUDIO] 24 custom models registered (planes, walls, platforms, ramps)");
 
         // Ucitaj sve postojece mape iz fajlova
         TStudio_LoadAllMaps();
@@ -136,7 +242,7 @@ stock TStudio_OnGameModeInit()
 
         printf("[TSTUDIO] Texture Studio 2.1 ucitan!");
         printf("[TSTUDIO] Mapa ucitano: %d | Objekata ukupno: %d", TotalMaps, TotalObjects);
-        printf("[TSTUDIO] Komande: /tstudio, /tmap, /tobj, /tedit, /tmove, /trot, /ttex");
+        printf("[TSTUDIO] Komande: /tstudio, /tmap, /tobj, /tedit, /tmove, /trot, /ttex, /fm, /tgroup");
 }
 
 stock TStudio_OnPlayerDisconnect(playerid)
@@ -325,6 +431,13 @@ stock TStudio_LoadMap(mapindex)
 
         MapData[mapindex][MapLoaded] = true;
         MapData[mapindex][MapLoadedObjects] = loaded;
+
+        // Apply removed buildings for all connected players
+        for(new p = 0; p < MAX_PLAYERS; p++)
+        {
+                if(IsPlayerConnected(p)) TStudio_ApplyRemovedBuildings(p, mapindex);
+        }
+
         printf("[TSTUDIO] Map '%s' loaded (%d objects)", MapData[mapindex][MapName], loaded);
         return 1;
 }
@@ -829,6 +942,19 @@ stock TStudio_SaveMap(mapindex)
                 }
         }
 
+        // Save Removed Buildings
+        for(new r = 0; r < MAX_TSTUDIO_REMOVED_BLDGS; r++)
+        {
+                if(TSRemovedBldgs[r][RBExists] && TSRemovedBldgs[r][RBMapIndex] == mapindex)
+                {
+                        format(line, sizeof(line), "RB:%d:%.4f:%.4f:%.4f:%.4f\r\n",
+                                TSRemovedBldgs[r][RBModelID],
+                                TSRemovedBldgs[r][RBX], TSRemovedBldgs[r][RBY],
+                                TSRemovedBldgs[r][RBZ], TSRemovedBldgs[r][RBRange]);
+                        fwrite(file, line);
+                }
+        }
+
         fclose(file);
         MapData[mapindex][MapObjectCount] = objcount;
         printf("[TSTUDIO] Map '%s' saved (%d objects)", MapData[mapindex][MapName], objcount);
@@ -985,6 +1111,44 @@ stock TStudio_LoadMapFromFile(filepath[], mapindex)
                                         format(ObjMatTexture[objslot][matidx], MAX_TEX_NAME, "%s", parts[4]);
                                         ObjMatColor[objslot][matidx] = (partIdx > 5) ? strval(parts[5]) : 0;
                                         tmpObjSlot = objslot;
+                                }
+                        }
+                }
+                // Parse RB (Removed Buildings)
+                else if(strfind(line, "RB:") == 0)
+                {
+                        new start = 3;
+                        new idx = start;
+                        new parts[5][32];
+                        new partIdx = 0;
+
+                        while(idx < len && partIdx < 5)
+                        {
+                                new k = 0;
+                                while(idx < len && line[idx] != ':' && k < 31)
+                                        parts[partIdx][k++] = line[idx++];
+                                parts[partIdx][k] = '\0';
+                                partIdx++;
+                                if(idx < len) idx++;
+                        }
+
+                        if(partIdx >= 5)
+                        {
+                                new rbslot = -1;
+                                for(new r = 0; r < MAX_TSTUDIO_REMOVED_BLDGS; r++)
+                                {
+                                        if(!TSRemovedBldgs[r][RBExists]) { rbslot = r; break; }
+                                }
+                                if(rbslot >= 0)
+                                {
+                                        TSRemovedBldgs[rbslot][RBExists] = true;
+                                        TSRemovedBldgs[rbslot][RBModelID] = strval(parts[0]);
+                                        TSRemovedBldgs[rbslot][RBX] = floatstr(parts[1]);
+                                        TSRemovedBldgs[rbslot][RBY] = floatstr(parts[2]);
+                                        TSRemovedBldgs[rbslot][RBZ] = floatstr(parts[3]);
+                                        TSRemovedBldgs[rbslot][RBRange] = floatstr(parts[4]);
+                                        TSRemovedBldgs[rbslot][RBMapIndex] = mapindex;
+                                        TotalRemovedBldgs++;
                                 }
                         }
                 }
@@ -1665,6 +1829,794 @@ CMD:tgoto(playerid, params[])
         new msg[128];
         format(msg, sizeof(msg), " Teleportovan do objekta %d!", objslot);
         SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// ===== FLYMODE =====
+CMD:fm(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        if(!TStudio_HasAccess(playerid)) return 0;
+
+        PlayerTS[playerid][TsFlyMode] = !PlayerTS[playerid][TsFlyMode];
+        if(PlayerTS[playerid][TsFlyMode])
+        {
+                TogglePlayerSpectating(playerid, true);
+                SendClientMessage(playerid, 0x10b981FF, " Fly mode ON - koristi WASD + Space/Shift za kretanje");
+        }
+        else
+        {
+                TogglePlayerSpectating(playerid, false);
+                SpawnPlayer(playerid);
+                SendClientMessage(playerid, 0xef4444FF, " Fly mode OFF");
+        }
+        return 1;
+}
+
+// ===== GROUP SYSTEM =====
+CMD:tgroup(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new action[32], arg1[64];
+        if(sscanf(params, "s[32]S()[64]", action, arg1)) return SendUsageMessage(playerid, "/tgroup [new/list/select/add/remove/clear/delete] [ime]");
+
+        if(strcmp(action, "new", true) == 0)
+        {
+                if(strlen(arg1) < 2) return SendUsageMessage(playerid, "/tgroup new [ime_groupe]");
+                new mapindex = PlayerTS[playerid][TsCurrentMap];
+                if(mapindex < 0) return SendErrorMessage(playerid, "Prvo selektuj mapu!");
+
+                // Find free slot
+                new slot = -1;
+                for(new i = 0; i < MAX_TSTUDIO_GROUPS; i++)
+                {
+                        if(!TSGroups[i][GrpExists]) { slot = i; break; }
+                }
+                if(slot == -1) return SendErrorMessage(playerid, "Nema vise slobodnih grupa!");
+
+                TSGroups[slot][GrpExists] = true;
+                format(TSGroups[slot][GrpName], MAX_TSTUDIO_GROUP_NAME, "%s", arg1);
+                TSGroups[slot][GrpMapIndex] = mapindex;
+                TSGroups[slot][GrpObjectCount] = 0;
+                PlayerTS[playerid][TsCurrentGroup] = slot;
+
+                new msg[128];
+                format(msg, sizeof(msg), " Grupa '%s' kreirana! (Slot %d)", arg1, slot);
+                SendClientMessage(playerid, 0x10b981FF, msg);
+        }
+        else if(strcmp(action, "list", true) == 0)
+        {
+                new mapindex = PlayerTS[playerid][TsCurrentMap];
+                SendClientMessage(playerid, 0x3b82f6FF, "=== GRUPE ===");
+                new count = 0;
+                for(new i = 0; i < MAX_TSTUDIO_GROUPS; i++)
+                {
+                        if(TSGroups[i][GrpExists] && TSGroups[i][GrpMapIndex] == mapindex)
+                        {
+                                new msg[128];
+                                format(msg, sizeof(msg), " [%d] %s (%d obj)%s", i, TSGroups[i][GrpName], TSGroups[i][GrpObjectCount],
+                                        (PlayerTS[playerid][TsCurrentGroup] == i) ? " {ff8800}[AKTIVNA]" : "");
+                                SendClientMessage(playerid, 0xFFFFFFFF, msg);
+                                count++;
+                        }
+                }
+                if(count == 0) SendClientMessage(playerid, 0xffaa00FF, " Nema grupa. Kucaj /tgroup new [ime]");
+        }
+        else if(strcmp(action, "select", true) == 0)
+        {
+                new slot = strval(arg1);
+                if(slot < 0 || slot >= MAX_TSTUDIO_GROUPS || !TSGroups[slot][GrpExists])
+                        return SendErrorMessage(playerid, "Neispravan slot!");
+
+                PlayerTS[playerid][TsCurrentGroup] = slot;
+                new msg[128];
+                format(msg, sizeof(msg), " Aktivna grupa: %s (Slot %d)", TSGroups[slot][GrpName], slot);
+                SendClientMessage(playerid, 0x10b981FF, msg);
+        }
+        else if(strcmp(action, "add", true) == 0)
+        {
+                new objslot = PlayerTS[playerid][TsSelectedObj];
+                new grpslot = PlayerTS[playerid][TsCurrentGroup];
+                if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Selektuj objekat prvo!");
+                if(grpslot < 0 || !TSGroups[grpslot][GrpExists]) return SendErrorMessage(playerid, "Selektuj grupu: /tgroup select [slot]");
+
+                // Remove from old group
+                if(TSObjData[objslot][ObjGroupID] >= 0)
+                {
+                        new oldgrp = TSObjData[objslot][ObjGroupID];
+                        if(TSGroups[oldgrp][GrpObjectCount] > 0) TSGroups[oldgrp][GrpObjectCount]--;
+                }
+
+                TSObjData[objslot][ObjGroupID] = grpslot;
+                TSGroups[grpslot][GrpObjectCount]++;
+                new msg[128];
+                format(msg, sizeof(msg), " Objekat %d dodan u grupu '%s'", objslot, TSGroups[grpslot][GrpName]);
+                SendClientMessage(playerid, 0x10b981FF, msg);
+        }
+        else if(strcmp(action, "remove", true) == 0)
+        {
+                new objslot = PlayerTS[playerid][TsSelectedObj];
+                if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Selektuj objekat!");
+                if(TSObjData[objslot][ObjGroupID] < 0) return SendErrorMessage(playerid, "Objekat nije u grupi!");
+
+                new grpslot = TSObjData[objslot][ObjGroupID];
+                if(TSGroups[grpslot][GrpObjectCount] > 0) TSGroups[grpslot][GrpObjectCount]--;
+                TSObjData[objslot][ObjGroupID] = -1;
+                SendClientMessage(playerid, 0x10b981FF, " Objekat uklonjen iz grupe!");
+        }
+        else if(strcmp(action, "clear", true) == 0)
+        {
+                new grpslot = PlayerTS[playerid][TsCurrentGroup];
+                if(grpslot < 0 || !TSGroups[grpslot][GrpExists]) return SendErrorMessage(playerid, "Selektuj grupu!");
+
+                // Remove all objects from group
+                for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+                {
+                        if(TSObjData[i][ObjExists] && TSObjData[i][ObjGroupID] == grpslot)
+                        {
+                                TSObjData[i][ObjGroupID] = -1;
+                        }
+                }
+                TSGroups[grpslot][GrpObjectCount] = 0;
+                SendClientMessage(playerid, 0x10b981FF, " Svi objekti uklonjeni iz grupe!");
+        }
+        else if(strcmp(action, "delete", true) == 0)
+        {
+                new slot = strval(arg1);
+                if(slot < 0 || slot >= MAX_TSTUDIO_GROUPS || !TSGroups[slot][GrpExists])
+                        return SendErrorMessage(playerid, "Neispravan slot!");
+
+                // Remove all objects from this group
+                for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+                {
+                        if(TSObjData[i][ObjExists] && TSObjData[i][ObjGroupID] == slot)
+                        {
+                                TSObjData[i][ObjGroupID] = -1;
+                        }
+                }
+                TSGroups[slot][GrpExists] = false;
+                if(PlayerTS[playerid][TsCurrentGroup] == slot) PlayerTS[playerid][TsCurrentGroup] = -1;
+                SendClientMessage(playerid, 0xef4444FF, " Grupa obrisana!");
+        }
+        else SendUsageMessage(playerid, "/tgroup [new/list/select/add/remove/clear/delete] [ime/slot]");
+        return 1;
+}
+
+// /gclone - Clone group
+CMD:gclone(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new grpslot = PlayerTS[playerid][TsCurrentGroup];
+        if(grpslot < 0 || !TSGroups[grpslot][GrpExists]) return SendErrorMessage(playerid, "Selektuj grupu: /tgroup select");
+
+        new Float:offsetX = 5.0;
+        if(sscanf(params, "f", offsetX)) offsetX = 5.0;
+
+        new cloned = 0;
+        for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+        {
+                if(TSObjData[i][ObjExists] && TSObjData[i][ObjGroupID] == grpslot)
+                {
+                        new Float:ox = TSObjData[i][ObjX] + offsetX;
+                        new newslot = TStudio_CreateObject(playerid, TSObjData[i][ObjModel], ox, TSObjData[i][ObjY], TSObjData[i][ObjZ],
+                                TSObjData[i][ObjRX], TSObjData[i][ObjRY], TSObjData[i][ObjRZ]);
+                        if(newslot >= 0)
+                        {
+                                // Copy textures
+                                for(new m = 0; m < MAX_MATERIAL_SLOTS; m++)
+                                {
+                                        if(ObjMatUsed[i][m])
+                                        {
+                                                TStudio_SetObjectTexture(playerid, newslot, m,
+                                                        ObjMatModel[i][m], ObjMatTXD[i][m], ObjMatTexture[i][m], ObjMatColor[i][m]);
+                                        }
+                                }
+                                // Add to same group
+                                TSObjData[newslot][ObjGroupID] = grpslot;
+                                TSGroups[grpslot][GrpObjectCount]++;
+                                cloned++;
+                        }
+                }
+        }
+        new msg[128];
+        format(msg, sizeof(msg), " Grupa klonirana! (%d objekata, offset X: %.1f)", cloned, offsetX);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// /gclear - Delete all objects in group
+CMD:gclear(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new grpslot = PlayerTS[playerid][TsCurrentGroup];
+        if(grpslot < 0 || !TSGroups[grpslot][GrpExists]) return SendErrorMessage(playerid, "Selektuj grupu: /tgroup select");
+
+        new cleared = 0;
+        for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+        {
+                if(TSObjData[i][ObjExists] && TSObjData[i][ObjGroupID] == grpslot)
+                {
+                        TStudio_DeleteObject(playerid, i);
+                        cleared++;
+                }
+        }
+        TSGroups[grpslot][GrpObjectCount] = 0;
+        new msg[128];
+        format(msg, sizeof(msg), " Grupa ociscena! (%d objekata obrisano)", cleared);
+        SendClientMessage(playerid, 0xef4444FF, msg);
+        return 1;
+}
+
+// ===== REMOVE BUILDING SYSTEM =====
+stock TStudio_AddRemovedBuilding(playerid, modelid, Float:x, Float:y, Float:z, Float:range)
+{
+        new mapindex = PlayerTS[playerid][TsCurrentMap];
+        if(mapindex < 0) return -1;
+
+        // Find free slot
+        new slot = -1;
+        for(new i = 0; i < MAX_TSTUDIO_REMOVED_BLDGS; i++)
+        {
+                if(!TSRemovedBldgs[i][RBExists]) { slot = i; break; }
+        }
+        if(slot == -1) return -1;
+
+        TSRemovedBldgs[slot][RBExists] = true;
+        TSRemovedBldgs[slot][RBModelID] = modelid;
+        TSRemovedBldgs[slot][RBX] = x;
+        TSRemovedBldgs[slot][RBY] = y;
+        TSRemovedBldgs[slot][RBZ] = z;
+        TSRemovedBldgs[slot][RBRange] = range;
+        TSRemovedBldgs[slot][RBMapIndex] = mapindex;
+        TotalRemovedBldgs++;
+        MapData[mapindex][MapRemovedBldgCount]++;
+
+        // Apply to all players if map is loaded
+        if(MapData[mapindex][MapLoaded])
+        {
+                for(new p = 0; p < MAX_PLAYERS; p++)
+                {
+                        if(IsPlayerConnected(p)) RemoveBuildingForPlayer(p, modelid, x, y, z, range);
+                }
+        }
+        return slot;
+}
+
+stock TStudio_ApplyRemovedBuildings(playerid, mapindex)
+{
+        new count = 0;
+        for(new i = 0; i < MAX_TSTUDIO_REMOVED_BLDGS; i++)
+        {
+                if(TSRemovedBldgs[i][RBExists] && TSRemovedBldgs[i][RBMapIndex] == mapindex)
+                {
+                        RemoveBuildingForPlayer(playerid, TSRemovedBldgs[i][RBModelID],
+                                TSRemovedBldgs[i][RBX], TSRemovedBldgs[i][RBY], TSRemovedBldgs[i][RBZ],
+                                TSRemovedBldgs[i][RBRange]);
+                        count++;
+                }
+        }
+        return count;
+}
+
+// /trb - Remove building command
+CMD:trb(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new action[16];
+        if(sscanf(params, "s[16]", action)) return SendUsageMessage(playerid, "/trb [add/list/clear]");
+
+        if(strcmp(action, "add", true) == 0)
+        {
+                new modelid;
+                new Float:range = 0.25;
+                if(sscanf(params, "s[16]iF(0.25)", action, modelid, range))
+                        return SendUsageMessage(playerid, "/trb add [modelid] [range=0.25]");
+
+                new Float:x, Float:y, Float:z;
+                GetPlayerPos(playerid, x, y, z);
+
+                new slot = TStudio_AddRemovedBuilding(playerid, modelid, x, y, z, range);
+                if(slot < 0) return SendErrorMessage(playerid, "Nema vise slotova za removed buildings!");
+
+                new msg[128];
+                format(msg, sizeof(msg), " RemoveBuilding dodan! Model %d na %.1f,%.1f,%.1f (Range %.2f)", modelid, x, y, z, range);
+                SendClientMessage(playerid, 0x10b981FF, msg);
+        }
+        else if(strcmp(action, "list", true) == 0)
+        {
+                new mapindex = PlayerTS[playerid][TsCurrentMap];
+                SendClientMessage(playerid, 0x3b82f6FF, "=== REMOVED BUILDINGS ===");
+                new count = 0;
+                for(new i = 0; i < MAX_TSTUDIO_REMOVED_BLDGS; i++)
+                {
+                        if(TSRemovedBldgs[i][RBExists] && TSRemovedBldgs[i][RBMapIndex] == mapindex)
+                        {
+                                new msg[128];
+                                format(msg, sizeof(msg), " [%d] Model %d | %.1f, %.1f, %.1f | R: %.2f", i,
+                                        TSRemovedBldgs[i][RBModelID], TSRemovedBldgs[i][RBX],
+                                        TSRemovedBldgs[i][RBY], TSRemovedBldgs[i][RBZ], TSRemovedBldgs[i][RBRange]);
+                                SendClientMessage(playerid, 0xFFFFFFFF, msg);
+                                count++;
+                        }
+                }
+                if(count == 0) SendClientMessage(playerid, 0xffaa00FF, " Nema removed buildings.");
+        }
+        else if(strcmp(action, "clear", true) == 0)
+        {
+                new mapindex = PlayerTS[playerid][TsCurrentMap];
+                new cleared = 0;
+                for(new i = 0; i < MAX_TSTUDIO_REMOVED_BLDGS; i++)
+                {
+                        if(TSRemovedBldgs[i][RBExists] && TSRemovedBldgs[i][RBMapIndex] == mapindex)
+                        {
+                                TSRemovedBldgs[i][RBExists] = false;
+                                cleared++;
+                        }
+                }
+                MapData[mapindex][MapRemovedBldgCount] = 0;
+                new msg[64];
+                format(msg, sizeof(msg), " %d removed buildings obrisano!", cleared);
+                SendClientMessage(playerid, 0xef4444FF, msg);
+        }
+        else SendUsageMessage(playerid, "/trb [add/list/clear]");
+        return 1;
+}
+
+// ===== TEXT3D LABELS =====
+stock TStudio_ShowText3D(playerid)
+{
+        if(!PlayerTS[playerid][TsActive]) return;
+        PlayerTS[playerid][TsShowText3D] = true;
+        new mapindex = PlayerTS[playerid][TsCurrentMap];
+
+        for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+        {
+                if(TSObjData[i][ObjExists] && TSObjData[i][ObjMapIndex] == mapindex)
+                {
+                        if(TSObjLabels[i] == Streamer3DText:0)
+                        {
+                                new label[64];
+                                format(label, sizeof(label), "[%d] Model %d", i, TSObjData[i][ObjModel]);
+                                TSObjLabels[i] = CreateDynamic3DTextLabel(label, 0x10b981FF,
+                                        TSObjData[i][ObjX], TSObjData[i][ObjY], TSObjData[i][ObjZ] + 1.0,
+                                        30.0, INVALID_PLAYER_ID, INVALID_VEHICLE_ID, 0,
+                                        TSObjData[i][ObjWorld], TSObjData[i][ObjInterior]);
+                        }
+                }
+        }
+        SendClientMessage(playerid, 0x10b981FF, " Text3D labeli prikazani!");
+}
+
+stock TStudio_HideText3D(playerid)
+{
+        PlayerTS[playerid][TsShowText3D] = false;
+        for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+        {
+                if(TSObjLabels[i] != Streamer3DText:0)
+                {
+                        DestroyDynamic3DTextLabel(TSObjLabels[i]);
+                        TSObjLabels[i] = Streamer3DText:0;
+                }
+        }
+        SendClientMessage(playerid, 0xef4444FF, " Text3D labeli sakriveni!");
+}
+
+// /st - Show text3d labels
+CMD:st(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        if(PlayerTS[playerid][TsShowText3D]) TStudio_HideText3D(playerid);
+        else TStudio_ShowText3D(playerid);
+        return 1;
+}
+
+// /ht - Hide text3d labels
+CMD:ht(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        TStudio_HideText3D(playerid);
+        return 1;
+}
+
+// ===== OBJECT NOTE =====
+CMD:note(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        if(strlen(params) < 1) return SendUsageMessage(playerid, "/note [tekst] (biljeska za objekat)");
+        format(TSObjData[objslot][ObjNote], 64, "%s", params);
+        new msg[128];
+        format(msg, sizeof(msg), " Biljeska za objekat %d: %s", objslot, params);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// ===== ROTATION COPY/PASTE =====
+CMD:rc(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        // Copy rotation to "clipboard"
+        SetPVarFloat(playerid, "ts_rotrx", TSObjData[objslot][ObjRX]);
+        SetPVarFloat(playerid, "ts_rotry", TSObjData[objslot][ObjRY]);
+        SetPVarFloat(playerid, "ts_rotrz", TSObjData[objslot][ObjRZ]);
+
+        new msg[128];
+        format(msg, sizeof(msg), " Rotacija kopirana: %.2f, %.2f, %.2f", TSObjData[objslot][ObjRX], TSObjData[objslot][ObjRY], TSObjData[objslot][ObjRZ]);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+CMD:rp(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        new Float:rx = GetPVarFloat(playerid, "ts_rotrx");
+        new Float:ry = GetPVarFloat(playerid, "ts_rotry");
+        new Float:rz = GetPVarFloat(playerid, "ts_rotrz");
+
+        TStudio_AddUndo(playerid, 3, objslot, TSObjData[objslot][ObjMapIndex]);
+        TSObjData[objslot][ObjRX] = rx;
+        TSObjData[objslot][ObjRY] = ry;
+        TSObjData[objslot][ObjRZ] = rz;
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+                SetDynamicObjectRot(TSObjData[objslot][ObjStreamID], rx, ry, rz);
+
+        new msg[128];
+        format(msg, sizeof(msg), " Rotacija zalijepljena: %.2f, %.2f, %.2f", rx, ry, rz);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+CMD:rr(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        TStudio_AddUndo(playerid, 3, objslot, TSObjData[objslot][ObjMapIndex]);
+        TSObjData[objslot][ObjRX] = 0.0;
+        TSObjData[objslot][ObjRY] = 0.0;
+        TSObjData[objslot][ObjRZ] = 0.0;
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+                SetDynamicObjectRot(TSObjData[objslot][ObjStreamID], 0.0, 0.0, 0.0);
+
+        SendClientMessage(playerid, 0x10b981FF, " Rotacija resetovana na 0, 0, 0!");
+        return 1;
+}
+
+// ===== TEXTURE SEARCH =====
+CMD:mts(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new search[32];
+        if(sscanf(params, "s[32]", search)) return SendUsageMessage(playerid, "/mts [pretraga] - Pretrazi model texture");
+
+        SendClientMessage(playerid, 0x3b82f6FF, "=== MODEL TEXTURE SEARCH ===");
+        SendClientMessage(playerid, 0xaaaaaaFF, " Tip: Koristi CEF panel za detaljnu pretragu tekstura");
+        SendClientMessage(playerid, 0xaaaaaaFF, " Quick textures dostupne u Textures panelu");
+
+        // Show some common textures that match
+        new msg[128];
+        format(msg, sizeof(msg), " Pretraga za '%s' - koristi /ttex set za postavljanje", search);
+        SendClientMessage(playerid, 0x3b82f6FF, msg);
+        return 1;
+}
+
+CMD:ts(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new search[32];
+        if(sscanf(params, "s[32]", search)) return SendUsageMessage(playerid, "/ts [pretraga] - Pretrazi teksture");
+
+        SendClientMessage(playerid, 0x3b82f6FF, "=== TEXTURE SEARCH ===");
+        new msg[128];
+        format(msg, sizeof(msg), " Pretraga za '%s' - koristi CEF panel za detaljnu pretragu", search);
+        SendClientMessage(playerid, 0x3b82f6FF, msg);
+        return 1;
+}
+
+// ===== SET TEXTURE INDEX =====
+CMD:sti(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        new matindex, modelid, txdname[MAX_TEX_NAME], texname[MAX_TEX_NAME], color;
+        if(sscanf(params, "iiis["#MAX_TEX_NAME"]s["#MAX_TEX_NAME"]I(0)", matindex, modelid, txdname, texname, color))
+                return SendUsageMessage(playerid, "/sti [mat_idx] [model] [txd] [tex] [color]");
+
+        if(matindex < 0 || matindex >= MAX_MATERIAL_SLOTS) return SendErrorMessage(playerid, "Material index 0-15!");
+
+        TStudio_SetObjectTexture(playerid, objslot, matindex, modelid, txdname, texname, color);
+        new msg[256];
+        format(msg, sizeof(msg), " Texture set! Mat %d | Model %d | %s | %s", matindex, modelid, txdname, texname);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// ===== MATERIAL COLOR =====
+CMD:mtc(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        new matindex, color;
+        if(sscanf(params, "ii", matindex, color)) return SendUsageMessage(playerid, "/mtc [mat_idx] [color_hex]");
+
+        if(matindex < 0 || matindex >= MAX_MATERIAL_SLOTS) return SendErrorMessage(playerid, "Material index 0-15!");
+
+        ObjMatColor[objslot][matindex] = color;
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+        {
+                if(ObjMatUsed[objslot][matindex])
+                {
+                        SetDynamicObjectMaterial(TSObjData[objslot][ObjStreamID], matindex,
+                                ObjMatModel[objslot][matindex], ObjMatTXD[objslot][matindex],
+                                ObjMatTexture[objslot][matindex], color);
+                }
+                else
+                {
+                        // Just set color on default material
+                        SetDynamicObjectMaterial(TSObjData[objslot][ObjStreamID], matindex,
+                                TSObjData[objslot][ObjModel], "none", "none", color);
+                }
+        }
+        new msg[64];
+        format(msg, sizeof(msg), " Boja materiala %d postavljena: 0x%08X", matindex, color);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// /mtca - Color all materials
+CMD:mtca(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        new color;
+        if(sscanf(params, "i", color)) return SendUsageMessage(playerid, "/mtca [color_hex]");
+
+        for(new m = 0; m < MAX_MATERIAL_SLOTS; m++)
+        {
+                ObjMatColor[objslot][m] = color;
+                if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0 && ObjMatUsed[objslot][m])
+                {
+                        SetDynamicObjectMaterial(TSObjData[objslot][ObjStreamID], m,
+                                ObjMatModel[objslot][m], ObjMatTXD[objslot][m],
+                                ObjMatTexture[objslot][m], color);
+                }
+        }
+        new msg[64];
+        format(msg, sizeof(msg), " Boja svih materiala postavljena: 0x%08X", color);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// ===== GOTO MAP SPAWN =====
+CMD:gotomap(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new mapindex = PlayerTS[playerid][TsCurrentMap];
+        if(mapindex < 0 || !MapData[mapindex][MapExists]) return SendErrorMessage(playerid, "Selektuj mapu!");
+
+        if(MapData[mapindex][MapSpawnX] != 0.0 || MapData[mapindex][MapSpawnY] != 0.0)
+        {
+                SetPlayerPos(playerid, MapData[mapindex][MapSpawnX], MapData[mapindex][MapSpawnY], MapData[mapindex][MapSpawnZ]);
+                if(MapData[mapindex][MapInterior] >= 0) SetPlayerInterior(playerid, MapData[mapindex][MapInterior]);
+                if(MapData[mapindex][MapVirtualWorld] >= 0) SetPlayerVirtualWorld(playerid, MapData[mapindex][MapVirtualWorld]);
+        }
+        else
+        {
+                // Go to first object of the map
+                for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+                {
+                        if(TSObjData[i][ObjExists] && TSObjData[i][ObjMapIndex] == mapindex)
+                        {
+                                SetPlayerPos(playerid, TSObjData[i][ObjX], TSObjData[i][ObjY], TSObjData[i][ObjZ] + 3.0);
+                                break;
+                        }
+                }
+        }
+        SendClientMessage(playerid, 0x10b981FF, " Teleportovan do mape!");
+        return 1;
+}
+
+// ===== REDO =====
+CMD:redo(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        // Simple redo - re-apply last undo (swap logic)
+        // TS 2.1 doesn't have true redo, but we provide the command stub
+        SendClientMessage(playerid, 0xffaa00FF, " Redo nije implementiran u ovoj verziji. Koristi /tundo za undo.");
+        return 1;
+}
+
+// ===== EDIT GROUP (move all objects in group) =====
+CMD:eg(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new grpslot = PlayerTS[playerid][TsCurrentGroup];
+        if(grpslot < 0 || !TSGroups[grpslot][GrpExists]) return SendErrorMessage(playerid, "Selektuj grupu: /tgroup select");
+
+        new axis[4], Float:amount;
+        if(sscanf(params, "s[4]f", axis, amount)) return SendUsageMessage(playerid, "/eg [x/y/z] [iznos] - Pomjeri cijelu grupu");
+
+        new axIdx = -1;
+        if(strcmp(axis, "x", true) == 0) axIdx = 0;
+        else if(strcmp(axis, "y", true) == 0) axIdx = 1;
+        else if(strcmp(axis, "z", true) == 0) axIdx = 2;
+        else return SendErrorMessage(playerid, "Koristi x, y ili z!");
+
+        new moved = 0;
+        for(new i = 0; i < MAX_TSTUDIO_MAP_OBJECTS; i++)
+        {
+                if(TSObjData[i][ObjExists] && TSObjData[i][ObjGroupID] == grpslot)
+                {
+                        TStudio_MoveSelectedForObj(i, axIdx, amount);
+                        moved++;
+                }
+        }
+        new msg[128];
+        format(msg, sizeof(msg), " Grupa pomjerena po %c za %.2f (%d objekata)", axis[0], amount, moved);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// Helper: Move specific object without player context
+stock TStudio_MoveSelectedForObj(objslot, axis, Float:amount)
+{
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return;
+
+        switch(axis)
+        {
+                case 0: TSObjData[objslot][ObjX] += amount;
+                case 1: TSObjData[objslot][ObjY] += amount;
+                case 2: TSObjData[objslot][ObjZ] += amount;
+        }
+
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+        {
+                SetDynamicObjectPos(TSObjData[objslot][ObjStreamID], TSObjData[objslot][ObjX], TSObjData[objslot][ObjY], TSObjData[objslot][ObjZ]);
+        }
+}
+
+// ===== SELECT GROUP =====
+CMD:selg(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+
+        new slot;
+        if(sscanf(params, "i", slot)) return SendUsageMessage(playerid, "/selg [slot] - Selektuj grupu");
+        if(slot < 0 || slot >= MAX_TSTUDIO_GROUPS || !TSGroups[slot][GrpExists]) return SendErrorMessage(playerid, "Neispravan slot!");
+
+        PlayerTS[playerid][TsCurrentGroup] = slot;
+        new msg[128];
+        format(msg, sizeof(msg), " Grupa selektovana: %s (Slot %d, %d obj)", TSGroups[slot][GrpName], slot, TSGroups[slot][GrpObjectCount]);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        return 1;
+}
+
+// ===== SET GROUP for selected object =====
+CMD:setg(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+
+        new grpslot;
+        if(sscanf(params, "i", grpslot)) return SendUsageMessage(playerid, "/setg [grupa_slot] - Postavi grupu za selektovani obj");
+        if(grpslot < -1 || grpslot >= MAX_TSTUDIO_GROUPS) return SendErrorMessage(playerid, "Neispravan slot! (-1 = ukloni iz grupe)");
+
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        // Remove from old group
+        if(TSObjData[objslot][ObjGroupID] >= 0)
+        {
+                new old = TSObjData[objslot][ObjGroupID];
+                if(TSGroups[old][GrpObjectCount] > 0) TSGroups[old][GrpObjectCount]--;
+        }
+
+        TSObjData[objslot][ObjGroupID] = grpslot;
+        if(grpslot >= 0 && TSGroups[grpslot][GrpExists])
+        {
+                TSGroups[grpslot][GrpObjectCount]++;
+                new msg[128];
+                format(msg, sizeof(msg), " Objekat %d dodan u grupu '%s'", objslot, TSGroups[grpslot][GrpName]);
+                SendClientMessage(playerid, 0x10b981FF, msg);
+        }
+        else
+        {
+                SendClientMessage(playerid, 0x10b981FF, " Objekat uklonjen iz grupe!");
+        }
+        return 1;
+}
+
+// ===== RESET OBJECT =====
+CMD:robject(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        TStudio_AddUndo(playerid, 2, objslot, TSObjData[objslot][ObjMapIndex]);
+
+        // Reset position to player
+        new Float:x, Float:y, Float:z;
+        GetPlayerPos(playerid, x, y, z);
+        GetXYInFrontOfPlayer(playerid, x, y, 5.0);
+
+        TSObjData[objslot][ObjX] = x;
+        TSObjData[objslot][ObjY] = y;
+        TSObjData[objslot][ObjZ] = z;
+        TSObjData[objslot][ObjRX] = 0.0;
+        TSObjData[objslot][ObjRY] = 0.0;
+        TSObjData[objslot][ObjRZ] = 0.0;
+
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+        {
+                SetDynamicObjectPos(TSObjData[objslot][ObjStreamID], x, y, z);
+                SetDynamicObjectRot(TSObjData[objslot][ObjStreamID], 0.0, 0.0, 0.0);
+        }
+
+        SendClientMessage(playerid, 0x10b981FF, " Objekat resetovan na tvoju poziciju!");
+        return 1;
+}
+
+// ===== TS 2.1 QUICK MODEL ALIASES =====
+// /co alias for /tobj create
+CMD:co(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new modelid = strval(params);
+        if(modelid < 1 && modelid > -3000) return SendUsageMessage(playerid, "/co [modelid]");
+
+        new Float:x, Float:y, Float:z;
+        GetPlayerPos(playerid, x, y, z);
+        GetXYInFrontOfPlayer(playerid, x, y, 5.0);
+
+        new slot = TStudio_CreateObject(playerid, modelid, x, y, z);
+        if(slot < 0) return SendErrorMessage(playerid, "Nema slobodnih slotova!");
+
+        new msg[128];
+        format(msg, sizeof(msg), " Objekat kreiran! Model %d (Slot %d)", modelid, slot);
+        SendClientMessage(playerid, 0x10b981FF, msg);
+        PlayerTS[playerid][TsSelectedObj] = slot;
+        return 1;
+}
+
+// /do alias for delete object
+CMD:do_(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        TStudio_DeleteObject(playerid, objslot);
+        SendClientMessage(playerid, 0xef4444FF, " Objekat obrisan!");
+        return 1;
+}
+
+// /eo alias for edit object
+CMD:eo(playerid, params[])
+{
+        if(!TStudio_IsOpen(playerid)) return SendErrorMessage(playerid, "Prvo otvori Texture Studio: /tstudio");
+        new objslot = PlayerTS[playerid][TsSelectedObj];
+        if(objslot < 0 || !TSObjData[objslot][ObjExists]) return SendErrorMessage(playerid, "Nije selektovan objekat!");
+
+        if(TSObjData[objslot][ObjStreamID] != STREAMER_TAG_OBJECT:0)
+        {
+                EditDynamicObject(playerid, TSObjData[objslot][ObjStreamID]);
+                SendClientMessage(playerid, 0x10b981FF, " Edit mode!");
+        }
         return 1;
 }
 

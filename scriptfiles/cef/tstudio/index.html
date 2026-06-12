@@ -342,27 +342,53 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hid
           </div>
         </div>
         <div class="settings-group">
-          <h4>Commands Reference</h4>
-          <div style="font-size:11px;color:var(--text2);line-height:1.8;font-family:var(--mono)">
-            /tstudio - Toggle panel<br>
-            /tmap new/list/load/unload/delete/save/export [ime/slot]<br>
-            /tobj create/delete/select/deselect/dup/info/list/near<br>
-            /tedit - Edit mode (mis)<br>
-            /tmove [x/y/z] [iznos] - Pomjeri objekat<br>
-            /trot [x/y/z] [stepeni] - Rotiraj objekat<br>
-            /ttex set/reset/info [mat] [model] [txd] [tex]<br>
-            /tspeed [move/rot] [0-3] - Brzina<br>
-            /tgrid [iznos] - Grid snap<br>
-            /tundo - Undo<br>
-            /tsave - Quick save<br>
-            /tgoto [slot] - TP do objekta
+          <h4>TS 2.1 Custom Models</h4>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2001">Plane 5x5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2002">Plane 5x10</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2003">Plane 10x10</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2005">Plane 20x20</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2008">Plane 50x50</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2012">Wall 5x3.5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2013">Wall 10x3.5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2014">Door 5x3.5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2015">Window 5x3.5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2017">Platform 5x5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2019">Platform 10x10</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2023">Ramp 5x5x3.5</button>
+            <button class="btn btn-secondary btn-xs" data-tsmodel="-2024">Ramp 5x5x5</button>
           </div>
         </div>
         <div class="settings-group">
           <h4>Quick Actions</h4>
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="btn btn-primary btn-sm" id="btnSaveAll">Sacuvaj sve mape</button>
+            <button class="btn btn-info btn-sm" id="btnFlyMode">Fly Mode</button>
+            <button class="btn btn-secondary btn-sm" id="btnShowLabels">Text3D</button>
+            <button class="btn btn-warning btn-sm" id="btnGotoMap">Goto Map</button>
             <button class="btn btn-danger btn-sm" id="btnCloseTS">Zatvori Studio</button>
+          </div>
+        </div>
+        <div class="settings-group">
+          <h4>Commands Reference</h4>
+          <div style="font-size:10px;color:var(--text2);line-height:1.7;font-family:var(--mono)">
+            /tstudio - Toggle panel | /fm - Fly mode<br>
+            /tmap new/list/load/unload/delete/save/export/select [ime/slot]<br>
+            /tobj create/delete/select/deselect/dup/info/list/near<br>
+            /co [modelid] - Quick create | /do - Quick delete | /eo - Quick edit<br>
+            /tedit - Edit mode (mis) | /tmove [x/y/z] [iznos]<br>
+            /trot [x/y/z] [stepeni] | /ttex set/reset/info<br>
+            /rc /rp /rr - Copy/Paste/Reset rotation<br>
+            /tgroup new/list/select/add/remove/clear/delete [ime]<br>
+            /gclone [offset] /gclear /eg [x/y/z] [iznos]<br>
+            /selg [slot] /setg [slot] /note [tekst]<br>
+            /trb add/list/clear - Remove buildings<br>
+            /mtc [mat] [color] /mtca [color] - Material color<br>
+            /sti [mat] [model] [txd] [tex] - Quick texture<br>
+            /tspeed [move/rot] [0-3] /tgrid [iznos]<br>
+            /st /ht - Show/Hide Text3D labels<br>
+            /tundo /tsave /tgoto /gotomap /robject /redo<br>
+            /mts [search] /ts [search] - Texture search
           </div>
         </div>
       </div>
@@ -768,6 +794,29 @@ function initSettings() {
   // Save all
   document.getElementById('btnSaveAll').addEventListener('click', function() {
     if(typeof samp !== 'undefined') samp.sendChat('/tmap saveall');
+  });
+
+  // Fly Mode
+  document.getElementById('btnFlyMode').addEventListener('click', function() {
+    if(typeof samp !== 'undefined') samp.sendChat('/fm');
+  });
+
+  // Show Text3D Labels
+  document.getElementById('btnShowLabels').addEventListener('click', function() {
+    if(typeof samp !== 'undefined') samp.sendChat('/st');
+  });
+
+  // Goto Map
+  document.getElementById('btnGotoMap').addEventListener('click', function() {
+    if(typeof samp !== 'undefined') samp.sendChat('/gotomap');
+  });
+
+  // TS 2.1 Custom Model buttons
+  document.querySelectorAll('[data-tsmodel]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var modelId = this.dataset.tsmodel;
+      cefEmit('tstudio:createobj', parseInt(modelId));
+    });
   });
 
   // Close
