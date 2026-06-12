@@ -385,7 +385,10 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow:hid
 
 <script>
 // ===== CONFIG =====
-var BACKEND = 'http://127.0.0.1:3777';
+// Auto-detect backend URL: same host if opened from browser, or localhost for CEF
+var BACKEND = (typeof cef === 'undefined' && window.location.protocol === 'http:')
+  ? window.location.origin
+  : 'http://127.0.0.1:3777';
 var ADMIN_KEY = 'ug-admin-2024';
 var PLAYER_ID = 0;
 var WS = null;
@@ -394,6 +397,7 @@ var pendingChanges = null;
 var sessionStatus = 'idle';
 var isGenerating = false;
 var messageHistory = [];
+var isBrowser = (typeof cef === 'undefined'); // true if opened in regular browser
 
 // ===== CEF EVENTS =====
 if(typeof cef !== 'undefined') {
@@ -407,6 +411,10 @@ if(typeof cef !== 'undefined') {
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
+  // If in browser (not CEF), show we're in remote mode
+  if(isBrowser) {
+    PLAYER_ID = 1; // Default player ID for browser
+  }
   initSidebar();
   initChat();
   initFiles();

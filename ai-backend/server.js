@@ -497,6 +497,16 @@ wss.on('connection', (ws, req) => {
 
 // ===== API ROUTES =====
 
+// Serve AI Dev Panel in browser (for remote/home use)
+app.get('/', (req, res) => {
+  const panelPath = path.join(CONFIG.projectRoot, 'scriptfiles', 'cef', 'ai-dev-panel', 'index.html');
+  if (fs.existsSync(panelPath)) {
+    res.sendFile(panelPath);
+  } else {
+    res.json({ status: 'ok', model: CONFIG.model, info: 'AI Dev Panel HTML not found. Access via /api/ endpoints.' });
+  }
+});
+
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', model: CONFIG.model, projectRoot: CONFIG.projectRoot, apiKeyConfigured: !!CONFIG.apiKey && CONFIG.apiKey !== 'your-z-ai-api-key-here', sdkAvailable: !!zaiSdk });
 });
@@ -798,7 +808,7 @@ app.post('/api/session/clear', authCheck, (req, res) => {
 });
 
 // ===== START =====
-server.listen(CONFIG.port, '127.0.0.1', () => {
+server.listen(CONFIG.port, '0.0.0.0', () => {
   console.log(`[UG-AI v3] Backend running on http://127.0.0.1:${CONFIG.port}`);
   console.log(`[UG-AI v3] Model: ${CONFIG.model} | SDK: ${zaiSdk ? 'auto-auth OK' : 'waiting...'} | API Key: ${CONFIG.apiKey && CONFIG.apiKey !== 'your-z-ai-api-key-here' ? 'configured' : 'not set (using SDK)'}`);
   console.log(`[UG-AI v3] Project: ${CONFIG.projectRoot}`);
