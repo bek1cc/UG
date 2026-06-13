@@ -15693,9 +15693,9 @@
 			<referrer name="WC_PlayerTextDrawLetterSize"/>
 			<referrer name="WC_PlayerTextDrawTextSize"/>
 			<referrer name="WC_PlayerTextDrawAlignment"/>
-			<referrer name="WC_PlayerTextDrawColor"/>
+			<referrer name="WC_PlayerTextDrawColour"/>
 			<referrer name="WC_PlayerTextDrawUseBox"/>
-			<referrer name="WC_PlayerTextDrawBoxColor"/>
+			<referrer name="WC_PlayerTextDrawBoxColour"/>
 			<referrer name="WC_PlayerTextDrawSetShadow"/>
 			<referrer name="WC_PlayerTextDrawSetOutline"/>
 			<referrer name="WC_PlayerTextDrawBackgroundColo"/>
@@ -19062,7 +19062,7 @@
 			<dependency name="Fading"/>
 			<dependency name="KillTimer"/>
 			<dependency name="Timer_Fading"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
 			<dependency name="true"/>
@@ -19258,8 +19258,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -19650,8 +19650,8 @@
 			<dependency name="Bounty_CalcBattery"/>
 			<dependency name="Bounty_HasPIN"/>
 			<dependency name="Bounty_HideScreenTDs"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
 			<dependency name="WC_PlayerTextDrawSetString"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
@@ -20091,8 +20091,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -21465,8 +21465,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -23474,8 +23474,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -23930,8 +23930,8 @@
 			<dependency name="IsDamageFeedActive"/>
 			<dependency name="KillTimer"/>
 			<dependency name="PlayerTextDrawAlignment"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawDestroy"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
@@ -25415,7 +25415,7 @@
 			<dependency name="Fading"/>
 			<dependency name="SetTimerEx"/>
 			<dependency name="Timer_Fading"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
 			<dependency name="false"/>
 			<dependency name="true"/>
@@ -33207,8 +33207,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -33257,8 +33257,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -33462,8 +33462,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -33494,7 +33494,7 @@
 			<dependency name="KlizPlayerData"/>
 			<dependency name="KlizPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -33637,8 +33637,8 @@
 			<dependency name="KlizPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -33670,8 +33670,8 @@
 			<dependency name="KlizPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -35491,7 +35491,7 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetProportiona"/>
@@ -36265,7 +36265,7 @@
 		<member name="M:Menu_SetPage" syntax="Menu_SetPage(playerid, page)">
 			<stacksize value="27"/>
 			<referrer name="MP_OPCPTD"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
 			<dependency name="PlayerTextDrawHide"/>
 			<dependency name="PlayerTextDrawSetPreviewModel"/>
 			<dependency name="PlayerTextDrawSetPreviewRot"/>
@@ -36896,8 +36896,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -40391,8 +40391,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -40775,8 +40775,8 @@
 			<dependency name="PizzaMenu"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -40926,8 +40926,8 @@
 			<dependency name="PlastikaPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -40955,8 +40955,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -40992,8 +40992,8 @@
 			<dependency name="PlastikaPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -41063,7 +41063,7 @@
 			<dependency name="PlastikaPlayerData"/>
 			<dependency name="PlastikaPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -41485,8 +41485,8 @@
 			<dependency name="PlastikaPlayerData"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -42446,7 +42446,7 @@
 			<param name="alignment">
 			</param>
 		</member>
-		<member name="M:PlayerTextDrawBackgroundColor" syntax="PlayerTextDrawBackgroundColor(playerid, text, color)">
+		<member name="M:PlayerTextDrawBackgroundColour" syntax="PlayerTextDrawBackgroundColour(playerid, text, color)">
 			<attribute name="native"/>
 			<referrer name="mS_CreatePlayerDialogButton"/>
 			<referrer name="mS_CreatePlayerBGTextDraw"/>
@@ -42463,14 +42463,14 @@
 			<param name="color">
 			</param>
 		</member>
-		<member name="M:PlayerTextDrawBoxColor" syntax="PlayerTextDrawBoxColor(playerid, text, color)">
+		<member name="M:PlayerTextDrawBoxColour" syntax="PlayerTextDrawBoxColour(playerid, text, color)">
 			<attribute name="native"/>
 			<referrer name="_RenderBar"/>
 			<referrer name="SetPlayerProgressBarColour"/>
 			<referrer name="mS_CreatePlayerDialogButton"/>
 			<referrer name="mS_CreatePlayerBGTextDraw"/>
 			<referrer name="ShowInventoryMenu"/>
-			<referrer name="WC_PlayerTextDrawBoxColor"/>
+			<referrer name="WC_PlayerTextDrawBoxColour"/>
 			<referrer name="UpdateHealthBar"/>
 			<param name="playerid">
 			</param>
@@ -42480,7 +42480,7 @@
 			<param name="color">
 			</param>
 		</member>
-		<member name="M:PlayerTextDrawColor" syntax="PlayerTextDrawColor(playerid, text, color)">
+		<member name="M:PlayerTextDrawColour" syntax="PlayerTextDrawColour(playerid, text, color)">
 			<attribute name="native"/>
 			<referrer name="mS_CreateCurrentPageTextDraw"/>
 			<referrer name="mS_CreatePlayerDialogButton"/>
@@ -42488,7 +42488,7 @@
 			<referrer name="mS_CreatePlayerBGTextDraw"/>
 			<referrer name="mS_CreateMPTextDraw"/>
 			<referrer name="ShowInventoryMenu"/>
-			<referrer name="WC_PlayerTextDrawColor"/>
+			<referrer name="WC_PlayerTextDrawColour"/>
 			<referrer name="DamageFeedUpdate"/>
 			<param name="playerid">
 			</param>
@@ -42915,7 +42915,7 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -43878,7 +43878,7 @@
 			<dependency name="Radar_Count"/>
 			<dependency name="SetTimerEx"/>
 			<dependency name="Timer_Radar"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
 			<dependency name="false"/>
 			<dependency name="true"/>
@@ -43891,7 +43891,7 @@
 			<dependency name="RadarCol"/>
 			<dependency name="Radar_Count"/>
 			<dependency name="Timer_Radar"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
 			<dependency name="ac_KillTimer"/>
@@ -44072,8 +44072,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -45431,8 +45431,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -53307,7 +53307,7 @@
 		<member name="M:SetPlayerProgressBarColour" syntax="SetPlayerProgressBarColour(playerid, barid, colour)">
 			<stacksize value="5"/>
 			<dependency name="IsValidPlayerProgressBar"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
 			<dependency name="pbar_Data"/>
 			<dependency name="pbar_Data"/>
 			<dependency name="pbar_TextDraw"/>
@@ -54327,8 +54327,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -54404,9 +54404,9 @@
 			<dependency name="HideModelESelectionMenu"/>
 			<dependency name="IsPlayerConnected"/>
 			<dependency name="PlayerTextDrawAlignment"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetOutline"/>
@@ -55174,8 +55174,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -56331,8 +56331,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -57033,7 +57033,7 @@
 			<dependency name="operator*(Float:,Float:)"/>
 			<dependency name="Float:operator=(_:)"/>
 			<dependency name="CreatePlayerTextDraw"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
 			<dependency name="PlayerTextDrawDestroy"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetPosition"/>
@@ -57652,7 +57652,7 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -58643,8 +58643,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetProportiona"/>
@@ -60443,7 +60443,7 @@
 			<referrer name="WC_OnPlayerConnect"/>
 			<referrer name="cmd_poker"/>
 			<referrer name="SexTDControl"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
 			<dependency name="s_InternalPlayerTextDraw"/>
 			<param name="playerid">
 			</param>
@@ -60453,7 +60453,7 @@
 			<param name="color">
 			</param>
 		</member>
-		<member name="M:WC_PlayerTextDrawBoxColor" syntax="WC_PlayerTextDrawBoxColor(playerid, text, color)">
+		<member name="M:WC_PlayerTextDrawBoxColour" syntax="WC_PlayerTextDrawBoxColour(playerid, text, color)">
 			<stacksize value="5"/>
 			<referrer name="Zelj_CreatePlayerTDs"/>
 			<referrer name="Zelj_ShowProgress"/>
@@ -60489,7 +60489,7 @@
 			<referrer name="WC_OnPlayerConnect"/>
 			<referrer name="cmd_poker"/>
 			<referrer name="SexTDControl"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
 			<dependency name="s_InternalPlayerTextDraw"/>
 			<param name="playerid">
 			</param>
@@ -60499,7 +60499,7 @@
 			<param name="color">
 			</param>
 		</member>
-		<member name="M:WC_PlayerTextDrawColor" syntax="WC_PlayerTextDrawColor(playerid, text, color)">
+		<member name="M:WC_PlayerTextDrawColour" syntax="WC_PlayerTextDrawColour(playerid, text, color)">
 			<stacksize value="5"/>
 			<referrer name="Zelj_CreatePlayerTDs"/>
 			<referrer name="Plas_CreateProgressTDs"/>
@@ -60537,7 +60537,7 @@
 			<referrer name="WC_OnPlayerConnect"/>
 			<referrer name="cmd_poker"/>
 			<referrer name="SexTDControl"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="s_InternalPlayerTextDraw"/>
 			<param name="playerid">
 			</param>
@@ -62003,8 +62003,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -62600,8 +62600,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -62937,7 +62937,7 @@
 			<dependency name="operator+(Float:,Float:)"/>
 			<dependency name="operator/(Float:,Float:)"/>
 			<dependency name="operator*(Float:,Float:)"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
 			<dependency name="WC_PlayerTextDrawSetString"/>
 			<dependency name="WC_PlayerTextDrawShow"/>
 			<dependency name="WC_PlayerTextDrawTextSize"/>
@@ -63371,7 +63371,7 @@
 			<dependency name="CreatePlayerTextDraw"/>
 			<dependency name="IsPlayerConnected"/>
 			<dependency name="IsValidPlayerProgressBar"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
 			<dependency name="PlayerTextDrawDestroy"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawTextSize"/>
@@ -64238,7 +64238,7 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -64267,8 +64267,8 @@
 			<dependency name="ShowedAtmTD"/>
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -64335,8 +64335,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawDestroy"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
@@ -74326,8 +74326,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -81719,7 +81719,7 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
 			<dependency name="WC_PlayerTextDrawSetOutline"/>
@@ -84155,8 +84155,8 @@
 			<dependency name="WC_CreatePlayerTextDraw"/>
 			<dependency name="WC_PlayerTextDrawAlignment"/>
 			<dependency name="WC_PlayerTextDrawBackgroundColo"/>
-			<dependency name="WC_PlayerTextDrawBoxColor"/>
-			<dependency name="WC_PlayerTextDrawColor"/>
+			<dependency name="WC_PlayerTextDrawBoxColour"/>
+			<dependency name="WC_PlayerTextDrawColour"/>
 			<dependency name="WC_PlayerTextDrawFont"/>
 			<dependency name="WC_PlayerTextDrawHide"/>
 			<dependency name="WC_PlayerTextDrawLetterSize"/>
@@ -84799,7 +84799,7 @@
 			<referrer name="ShowModelSelectionMenu"/>
 			<referrer name="ShowModelSelectionMenuEx"/>
 			<dependency name="CreatePlayerTextDraw"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetOutline"/>
@@ -84820,8 +84820,8 @@
 			<stacksize value="9"/>
 			<referrer name="mS_ShowPlayerMPs"/>
 			<dependency name="CreatePlayerTextDraw"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawSetPreviewModel"/>
 			<dependency name="PlayerTextDrawSetPreviewRot"/>
@@ -84865,9 +84865,9 @@
 			<referrer name="ShowModelSelectionMenu"/>
 			<referrer name="ShowModelSelectionMenuEx"/>
 			<dependency name="CreatePlayerTextDraw"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetOutline"/>
@@ -84899,9 +84899,9 @@
 			<referrer name="ShowModelSelectionMenuEx"/>
 			<dependency name="CreatePlayerTextDraw"/>
 			<dependency name="PlayerTextDrawAlignment"/>
-			<dependency name="PlayerTextDrawBackgroundColor"/>
-			<dependency name="PlayerTextDrawBoxColor"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawBackgroundColour"/>
+			<dependency name="PlayerTextDrawBoxColour"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetOutline"/>
@@ -84934,7 +84934,7 @@
 			<referrer name="ShowModelSelectionMenu"/>
 			<referrer name="ShowModelSelectionMenuEx"/>
 			<dependency name="CreatePlayerTextDraw"/>
-			<dependency name="PlayerTextDrawColor"/>
+			<dependency name="PlayerTextDrawColour"/>
 			<dependency name="PlayerTextDrawFont"/>
 			<dependency name="PlayerTextDrawLetterSize"/>
 			<dependency name="PlayerTextDrawSetOutline"/>
