@@ -147,24 +147,51 @@ stock EndObjectEditing(playerid) {
     // CEF Browser constants
     #define INVALID_BROWSER_ID (-1)
 
-    // Dummy CEF argument type macros
-    #define CEF_INT(%0) %0
-    #define CEF_FLOAT(%0) %0
-    #define CEF_STR(%0) %0
+    // CEF argument type macros - moraju odgovarati cef.inc
+    #define CEF_STR(%0)     Argument_String, %0
+    #define CEF_INT(%0)     Argument_Integer, %0
+    #define CEF_FLOAT(%0)   Argument_Float, %0
+    #define CEF_BOOL(%0)    Argument_Bool, %0
 
-    // CEF Enums (dummy)
+    // CEF Enums - moraju odgovarati cef.inc
     enum E_CEF_INIT_REASON {
         CEF_INIT_OK = 0,
         CEF_INIT_TIMEOUT,
         CEF_INIT_VERSION_MISMATCH,
         CEF_INIT_IP_MISMATCH,
-        CEF_INIT_FAILED
+        CEF_INIT_HANDSHAKE_FAILED,
+        CEF_INIT_UNKNOWN
+    }
+
+    enum E_CEF_CREATE_STATUS {
+        CEF_CREATE_SUCCESS,
+        CEF_CREATE_ERROR_GENERIC,
+        CEF_CREATE_ERROR_ID_ALREADY_IN_USE
     }
 
     enum E_CEF_ARGUMENT_TYPE {
-        CEF_ARG_INT = 0,
-        CEF_ARG_FLOAT,
-        CEF_ARG_STRING
+        Argument_String,
+        Argument_Integer,
+        Argument_Float,
+        Argument_Bool
+    }
+
+    enum E_CEF_AUDIO_MODE {
+        AUDIO_MODE_WORLD,
+        AUDIO_MODE_UI
+    }
+
+    enum E_HUD_COMPONENT {
+        HUD_COMPONENT_ALL,
+        HUD_COMPONENT_AMMO,
+        HUD_COMPONENT_ARMOUR,
+        HUD_COMPONENT_BREATH,
+        HUD_COMPONENT_CROSSHAIR,
+        HUD_COMPONENT_HEALTH,
+        HUD_COMPONENT_MONEY,
+        HUD_COMPONENT_RADAR,
+        HUD_COMPONENT_WANTED_STARS,
+        HUD_COMPONENT_WEAPON
     }
 
     // Dummy native declarations - no-op na SA-MP 0.3.DL bez server-side CEF plugina
@@ -199,5 +226,9 @@ stock EndObjectEditing(playerid) {
     forward OnCefInitialize(playerid, bool:success, E_CEF_INIT_REASON:reason, const message[]);
     forward OnCefDownloadStart(playerid);
     forward OnCefDownloadFinish(playerid);
+    forward OnCefReady(playerid);
+    forward OnCefBrowserCreated(playerid, browserid, bool:success, E_CEF_CREATE_STATUS:code, const reason[]);
+    forward OnCefPressKey(playerid, key, scancode, modifiers, bool:down, bool:repeat);
+    forward OnCefChatInputState(playerid, bool:open);
 
 #endif
