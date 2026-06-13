@@ -30,6 +30,7 @@
     "network": {
         "acks_limit": 3000,
         "aiming_sync_rate": 30,
+        "allow_037_clients": false,
         "bullet_sync_rate": 30,
         "carry_on_flag": false,
         "cookie_reseed_time": 30000,

@@ -3,7 +3,7 @@
     "artwork": {
         "cdn": "",
         "enable": true,
-        "models_path": "models",
+        "models_path": "artwork",
         "port": 7777,
         "web_server_bind": ""
     },
@@ -66,11 +66,11 @@
     },
     "max_bots": 0,
     "max_players": 50,
-    "name": "open.mp server",
+    "name": "Unicate Gaming RPG",
     "network": {
         "acks_limit": 3000,
         "aiming_sync_rate": 30,
-        "allow_037_clients": true,
+        "allow_037_clients": false,
         "bind": "",
         "cookie_reseed_time": 300000,
         "grace_period": 5000,
