@@ -20,4 +20,5 @@
 #pragma warning disable 239
 #pragma warning disable 240
 #pragma warning disable 247
+#pragma warning disable 215
 #pragma warning disable 252

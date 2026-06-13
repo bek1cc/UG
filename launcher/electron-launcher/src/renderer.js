@@ -223,7 +223,8 @@ function setupEventListeners() {
     btn.querySelector('span').textContent = 'POKRECEM SA-MP...';
     btn.style.pointerEvents = 'none';
     
-    const result = await API.launchGame(nick);
+    const timeout = new Promise(resolve => setTimeout(() => resolve({ error: 'Launcher ne odgovara! Pokreni ponovo launcher.' }), 30000));
+    const result = await Promise.race([API.launchGame(nick), timeout]);
     
     btn.classList.remove('launching');
     btn.querySelector('span').textContent = origHTML;

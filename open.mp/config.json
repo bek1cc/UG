@@ -1,7 +1,7 @@
 {
     "artwork": {
         "enable": true,
-        "model_store": "artwork"
+        "models_path": "artwork"
     },
     "game": {
         "chat_input_filter": true,
@@ -56,11 +56,11 @@
     },
     "pawn": {
         "scripts": ["fg-ogc"],
-        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas", "mysql", "SKY"]
+        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas", "mysql"]
     },
     "rcon": {
         "allow_teleport": false,
         "enable": true,
-        "password": "bugarinbog"
+        "password": "russss"
     }
 }

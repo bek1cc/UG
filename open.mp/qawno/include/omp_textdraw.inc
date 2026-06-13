@@ -940,7 +940,8 @@ native bool:PlayerTextDrawAlignment(playerid, PlayerText:textid, TEXT_DRAW_ALIGN
 #if !defined MIXED_SPELLINGS
 	#pragma deprecated Use `PlayerTextDrawColour`. To silence this warning and use different spellings define `MIXED_SPELLINGS` or define `SAMP_COMPAT` for general SA-MP API compatibility.
 #endif
-native bool:PlayerTextDrawColour(playerid, PlayerText:textid, textColor);
+native bool:PlayerTextDrawColor(playerid, PlayerText:textid, textColor);
+native bool:PlayerTextDrawColour(playerid, PlayerText:textid, textColor) = PlayerTextDrawColor;
 
 /**
  * <library>omp_textdraw</library>
@@ -966,7 +967,9 @@ native bool:PlayerTextDrawColour(playerid, PlayerText:textid, textColor);
  * <remarks>You can also use Gametext colours in textdraws.</remarks>
  * <remarks>The textdraw must be re-shown to the player in order to update the colour.</remarks>
  */
+#if !defined PlayerTextDrawColour
 native bool:PlayerTextDrawColour(playerid, PlayerText:textid, textColour) = PlayerTextDrawColour;
+#endif
 
 /**
  * <library>omp_textdraw</library>
@@ -1017,7 +1020,8 @@ native bool:PlayerTextDrawUseBox(playerid, PlayerText:textid, bool:boxEnabled);
 #if !defined MIXED_SPELLINGS
 	#pragma deprecated Use `PlayerTextDrawBoxColour`. To silence this warning and use different spellings define `MIXED_SPELLINGS` or define `SAMP_COMPAT` for general SA-MP API compatibility.
 #endif
-native bool:PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColor);
+native bool:PlayerTextDrawBoxColor(playerid, PlayerText:textid, boxColor);
+native bool:PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColor) = PlayerTextDrawBoxColor;
 
 /**
  * <library>omp_textdraw</library>
@@ -1041,7 +1045,9 @@ native bool:PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColor);
  * <seealso name="PlayerTextDrawShow" />
  * <seealso name="PlayerTextDrawHide" />
  */
+#if !defined PlayerTextDrawBoxColour
 native bool:PlayerTextDrawBoxColour(playerid, PlayerText:textid, boxColour) = PlayerTextDrawBoxColour;
+#endif
 
 /**
  * <library>omp_textdraw</library>
@@ -1121,7 +1127,8 @@ native bool:PlayerTextDrawSetOutline(playerid, PlayerText:textid, outlineSize);
 #if !defined MIXED_SPELLINGS
 	#pragma deprecated Use `PlayerTextDrawBackgroundColour`. To silence this warning and use different spellings define `MIXED_SPELLINGS` or define `SAMP_COMPAT` for general SA-MP API compatibility.
 #endif
-native bool:PlayerTextDrawBackgroundColour(playerid, PlayerText:textid, backgroundColor);
+native bool:PlayerTextDrawBackgroundColor(playerid, PlayerText:textid, backgroundColor);
+native bool:PlayerTextDrawBackgroundColour(playerid, PlayerText:textid, backgroundColor) = PlayerTextDrawBackgroundColor;
 
 /**
  * <library>omp_textdraw</library>
@@ -1148,7 +1155,9 @@ native bool:PlayerTextDrawBackgroundColour(playerid, PlayerText:textid, backgrou
  * 0, the outline colour will match the colour used in <a href="#PlayerTextDrawBackgroundColour">PlayerTextDrawBackgroundColour</a>.
  *  Changing the value of colour seems to alter the colour used in <a href="#PlayerTextDrawColour">PlayerTextDrawColour</a></remarks>
  */
+#if !defined PlayerTextDrawBackgroundColour
 native bool:PlayerTextDrawBackgroundColour(playerid, PlayerText:textid, backgroundColour) = PlayerTextDrawBackgroundColour;
+#endif
 
 /**
  * <library>omp_textdraw</library>

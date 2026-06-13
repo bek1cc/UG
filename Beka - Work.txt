@@ -2,3 +2,16 @@ Kreiranje stabla - drva craft sys - InProgress not full finish
 Fix kera  - Not finish
 Kablovi sys za kraft - InProgress
 Launcher napravljen u .exe one click - FINISH
+
+----------------------------------------------------------------------------------------------------------------------------------------
+Popravljeno 13/06 13:35
+
+dog.inc — uklonjen dupli native AddSimpleModel (već postoji u open.mp)
+weapon-config.inc — dodani WEAPON:, KEY:, PLAYER_STATE: tagovi da odgovaraju open.mp forwardima; dodan WC_IsPlayerPaused stock
+omp_core.inc — fixan print macro da ne pravi konflikt
+omp_textdraw.inc — dodani #if !defined guardovi za PlayerTextDrawColour/BoxColour/BackgroundColour
+GetVehicleColor.inc — dodan guard za stock GetVehicleColor
+SKY.inc — dodan guard za TextDrawSetStringForPlayer
+fg-ogc.pwn — dodan #include <YSI_Extra\y_files> za frename; fixan return print(...) → { print(...); return 0; }
+weapon-config.inc — uklonjen #include <a_samp> (nepotreban uz open.mp)
+----------------------------------------------------------------------------------------------------------------------------------------

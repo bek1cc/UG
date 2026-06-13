@@ -38,7 +38,7 @@ del /f /q "%OMP%\qawno\upgrader\foreach.inc" 2>nul
 REM === COMPILE (using qawno compiler from open.mp) ===
 echo Compiling fg-ogc.pwn with qawno...
 echo.
-"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -i"%OMP%\qawno\upgrader" -;+
+"%OMP%\qawno\pawncc.exe" gamemodes\fg-ogc.pwn -igamemodes -igamemodes\maps -igamemodes\systems -i"%OMP%\qawno\include" -i"%OMP%\qawno\upgrader" -;+ OPENMP_BUILD=1
 
 echo.
 

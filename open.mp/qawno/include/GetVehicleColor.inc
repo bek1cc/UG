@@ -101,6 +101,7 @@
             return 1;
     }
      
+    #if !defined GetVehicleColor
     stock GetVehicleColor(vehicleID, &color1, &color2)
     {
             vehicleID = PROPERTY_OFFSET(vehicleID);
@@ -123,6 +124,7 @@
             }
             return 0;
     }
+    #endif
      
     #pragma warning push
     #pragma warning disable 201

@@ -3,7 +3,7 @@
 #endif
 #define _INC_WEAPON_CONFIG
 
-#include <a_samp>
+//#include <a_samp> // Not needed with open.mp - all natives provided by <open.mp>
 
 // Print debug messages in the chat and server log
 #if !defined WC_DEBUG
@@ -268,7 +268,9 @@ forward OnRejectedHit(playerid, hit[E_REJECTED_HIT]);
 #define WEAPON_HELIBLADES 50
 #define WEAPON_EXPLOSION 51
 #define WEAPON_CARPARK 52
+#if !defined WEAPON_UNKNOWN
 #define WEAPON_UNKNOWN 55
+#endif
 
 #if WC_DEBUG_SILENT
         static s_DebugMsgBuf[512];
@@ -933,6 +935,7 @@ stock IsMeleeWeapon(weaponid)
         return (WEAPON_UNARMED <= weaponid <= WEAPON_KATANA) || (WEAPON_DILDO <= weaponid <= WEAPON_CANE) || weaponid == WEAPON_PISTOLWHIP;
 }
 
+#if !defined IsPlayerSpawned
 stock IsPlayerSpawned(playerid)
 {
         if(s_IsDying[playerid] || s_BeingResynced[playerid]) {
@@ -948,6 +951,7 @@ stock IsPlayerSpawned(playerid)
 
         return false;
 }
+#endif
 
 stock AverageShootRate(playerid, shots, &multiple_weapons = 0)
 {
@@ -2453,7 +2457,7 @@ public OnPlayerRequestClass(playerid, classid)
         }
 }
 
-public OnPlayerDeath(playerid, killerid, reason)
+public OnPlayerDeath(playerid, killerid, WEAPON:reason)
 {
         s_TrueDeath[playerid] = true;
         s_InClassSelection[playerid] = false;
@@ -2549,7 +2553,7 @@ public OnPlayerDeath(playerid, killerid, reason)
                         s_PlayerHealth[playerid] = 0.0;
                 }
 
-                OnPlayerDamageDone(playerid, amount, killerid, reason, bodypart);
+                OnPlayerDamageDone(playerid, amount, killerid, _:reason, bodypart);
         }
 
         if(s_PlayerHealth[playerid] <= 0.0005) {
@@ -2607,7 +2611,7 @@ public WC_CbugPunishment(playerid, weapon) {
         GivePlayerWeapon(playerid, weapon, 0);
 }
 
-public OnPlayerKeyStateChange(playerid, newkeys, oldkeys)
+public OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
 {
         if(!s_CbugAllowed && !IsPlayerDying(playerid) && GetPlayerState(playerid) == PLAYER_STATE_ONFOOT) {
                 if(newkeys & KEY_CROUCH) {
@@ -2793,7 +2797,7 @@ public OnPlayerExitVehicle(playerid, vehicleid)
         #endif
 }
 
-public OnPlayerStateChange(playerid, newstate, oldstate)
+public OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstate)
 {
         if(s_Spectating[playerid] != INVALID_PLAYER_ID && newstate != PLAYER_STATE_SPECTATING) {
                 s_Spectating[playerid] = INVALID_PLAYER_ID;
@@ -2979,7 +2983,7 @@ public OnPlayerUpdate(playerid)
         #endif
 }
 
-public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
+public OnPlayerGiveDamage(playerid, damagedid, Float:amount, WEAPON:weaponid, bodypart)
 {
         if(!IsHighRateWeapon(weaponid)) {
                 DebugMessage(playerid, "OnPlayerGiveDamage(%d gave %f to %d using %d on bodypart %d)", playerid, amount, damagedid, weaponid, bodypart);
@@ -3059,7 +3063,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
                                 return 0;
                         }
 
-                        if(!OnPlayerDamage(damagedid, amount, playerid, weaponid, bodypart)) {
+                        if(!OnPlayerDamage(damagedid, amount, playerid, _:weaponid, bodypart)) {
                                 if(s_KnifeTimeout[damagedid] != -1) {
                                         KillTimer(s_KnifeTimeout[damagedid]);
                                 }
@@ -3074,7 +3078,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
                         s_DamageDoneHealth[playerid] = s_PlayerHealth[playerid];
                         s_DamageDoneArmour[playerid] = s_PlayerArmour[playerid];
 
-                        OnPlayerDamageDone(damagedid, s_PlayerHealth[damagedid] + s_PlayerArmour[damagedid], playerid, weaponid, bodypart);
+                        OnPlayerDamageDone(damagedid, s_PlayerHealth[damagedid] + s_PlayerArmour[damagedid], playerid, _:weaponid, bodypart);
 
                         ClearAnimations(damagedid, 1);
 
@@ -3226,7 +3230,7 @@ public OnPlayerGiveDamage(playerid, damagedid, Float:amount, weaponid, bodypart)
         return 0;
 }
 
-public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
+public OnPlayerTakeDamage(playerid, issuerid, Float:amount, WEAPON:weaponid, bodypart)
 {
         if(playerid == INVALID_PLAYER_ID || IsPlayerNPC(playerid)) {
                 return 0;
@@ -3295,7 +3299,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
                                 return 0;
                         }
 
-                        if(!OnPlayerDamage(playerid, amount, issuerid, weaponid, bodypart)) {
+                        if(!OnPlayerDamage(playerid, amount, issuerid, _:weaponid, bodypart)) {
                                 ResyncPlayer(playerid);
 
                                 return 0;
@@ -3308,7 +3312,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
                         s_DamageDoneHealth[playerid] = s_PlayerHealth[playerid];
                         s_DamageDoneArmour[playerid] = s_PlayerArmour[playerid];
 
-                        OnPlayerDamageDone(playerid, s_PlayerHealth[playerid] + s_PlayerArmour[playerid], issuerid, weaponid, bodypart);
+                        OnPlayerDamageDone(playerid, s_PlayerHealth[playerid] + s_PlayerArmour[playerid], issuerid, _:weaponid, bodypart);
 
                         PlayerDeath(playerid, "KNIFE", "KILL_Knife_Ped_Die", _, 4000 - GetPlayerPing(playerid));
 
@@ -3402,7 +3406,7 @@ public OnPlayerTakeDamage(playerid, issuerid, Float:amount, weaponid, bodypart)
         return 0;
 }
 
-public OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ)
+public OnPlayerWeaponShot(playerid, WEAPON:weaponid, BULLET_HIT_TYPE:hittype, hitid, Float:fX, Float:fY, Float:fZ)
 {
         #if WC_CUSTOM_VENDING_MACHINES
                 if(s_VendingUseTimer[playerid] != -1) {
@@ -3986,6 +3990,11 @@ static HasSameTeam(playerid, otherid)
 }
 
 static IsPlayerPaused(playerid)
+{
+        return (GetTickCount() - s_LastUpdate[playerid] > 2000);
+}
+
+stock WC_IsPlayerPaused(playerid)
 {
         return (GetTickCount() - s_LastUpdate[playerid] > 2000);
 }
@@ -4615,7 +4624,7 @@ static InflictDamage(playerid, Float:amount, issuerid = INVALID_PLAYER_ID, weapo
                 return;
         }
 
-        if(!OnPlayerDamage(playerid, amount, issuerid, weaponid, bodypart)) {
+        if(!OnPlayerDamage(playerid, amount, issuerid, _:weaponid, bodypart)) {
                 UpdateHealthBar(playerid);
 
                 if(weaponid < 0 || weaponid > WEAPON_UNKNOWN) {
@@ -4687,7 +4696,7 @@ static InflictDamage(playerid, Float:amount, issuerid = INVALID_PLAYER_ID, weapo
                 s_PlayerHealth[playerid] = 0.0;
         }
 
-        OnPlayerDamageDone(playerid, amount, issuerid, weaponid, bodypart);
+        OnPlayerDamageDone(playerid, amount, issuerid, _:weaponid, bodypart);
 
         if(s_PlayerHealth[playerid] <= 0.0005) {
                 new vehicleid = GetPlayerVehicleID(playerid);
@@ -5590,7 +5599,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #endif
 #define OnPlayerStateChange WC_OnPlayerStateChange
 #if defined WC_OnPlayerStateChange
-        forward WC_OnPlayerStateChange(playerid, newstate, oldstate);
+        forward WC_OnPlayerStateChange(playerid, PLAYER_STATE:newstate, PLAYER_STATE:oldstate);
 #endif
 
 
@@ -5645,7 +5654,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #endif
 #define OnPlayerDeath WC_OnPlayerDeath
 #if defined WC_OnPlayerDeath
-        forward WC_OnPlayerDeath(playerid, killerid, reason);
+        forward WC_OnPlayerDeath(playerid, killerid, WEAPON:reason);
 #endif
 
 
@@ -5656,7 +5665,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #endif
 #define OnPlayerKeyStateChange WC_OnPlayerKeyStateChange
 #if defined WC_OnPlayerKeyStateChange
-        forward WC_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+        forward WC_OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys);
 #endif
 
 
@@ -5667,7 +5676,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #endif
 #define OnPlayerWeaponShot WC_OnPlayerWeaponShot
 #if defined WC_OnPlayerWeaponShot
-        forward WC_OnPlayerWeaponShot(playerid, weaponid, hittype, hitid, Float:fX, Float:fY, Float:fZ);
+        forward WC_OnPlayerWeaponShot(playerid, WEAPON:weaponid, BULLET_HIT_TYPE:hittype, hitid, Float:fX, Float:fY, Float:fZ);
 #endif
 
 
@@ -5711,7 +5720,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #endif
 #define OnPlayerDamageDone WC_OnPlayerDamageDone
 #if defined WC_OnPlayerDamageDone
-        forward WC_OnPlayerDamageDone(playerid, Float:amount, issuerid, weapon, bodypart);
+        forward WC_OnPlayerDamageDone(playerid, Float:amount, issuerid, WEAPON:weapon, bodypart);
 #endif
 
 
@@ -5721,9 +5730,7 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
         #define _ALS_OnPlayerDamage
 #endif
 #define OnPlayerDamage WC_OnPlayerDamage
-#if defined WC_OnPlayerDamage
-        forward WC_OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart);
-#endif
+// WC_OnPlayerDamage already forwarded at line 247
 
 
 #if defined _ALS_OnPlayerPrepareDeath

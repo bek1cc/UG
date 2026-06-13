@@ -13,11 +13,7 @@
 // Kad DFF/TXD fajlovi nisu dostupni, koristi se base model 3526 (CJ_BEAR_DOG)
 // kao placeholder - igraci ce vidjeti mali plisani pas/medo objekt.
 
-// ===== open.mp NATIVE za CustomModels =====
-#if !defined _AddSimpleModel_included
-    native AddSimpleModel(virtualworld, baseid, newid, const dff[], const txd[]);
-    #define _AddSimpleModel_included
-#endif
+// AddSimpleModel je vec deklariran u omp_object.inc (open.mp built-in)
 
 // Custom object model ID (-1000) za pas model
 // Base model 3526 = CJ_BEAR_DOG (mali plisani pas/medo u GTA SA)

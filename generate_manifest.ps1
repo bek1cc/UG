@@ -113,10 +113,6 @@ $manifest = @{
 $manifest | Out-File -FilePath $ManifestPath -Encoding UTF8
 Write-Host "[+] Sacuvan: $ManifestPath" -ForegroundColor Green
 
-# Sacuvaj Launcher manifest (ista stvar)
-$manifest | Out-File -FilePath $LauncherManifest -Encoding UTF8
-Write-Host "[+] Sacuvan: $LauncherManifest" -ForegroundColor Green
-
 Write-Host ""
 Write-Host "Gotovo! Manifest ima $($manifestFiles.Count) fajlova." -ForegroundColor Green
 Write-Host ""

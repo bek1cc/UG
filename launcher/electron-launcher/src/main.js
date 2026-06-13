@@ -695,150 +695,63 @@ ipcMain.handle('launch-game', async (event, nickname) => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena! Idi u Podesavanja i izaberi GTA:SA folder.' };
 
-  // Restore any files corrupted by old launcher versions (Resource Hacker)
-  restoreFromBackup(gtaPath);
-
-  // ============================================================
-  // FORCE VERIFY: Always check critical CEF files before launching
-  // Even if status says OK, verify the actual runtime files exist
-  // ============================================================
-  const forceMissing = [];
-  
-  // Check ASI Loader (dsound.dll or dinput8.dll)
-  const hasAsiLoader = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
-  if (!hasAsiLoader) forceMissing.push('asi_loader');
-  
-  // Check cef.asi
-  if (!fs.existsSync(path.join(gtaPath, 'cef.asi'))) forceMissing.push('cef_asi');
-  
-  // Check CEF runtime (libcef.dll + client.dll) - THIS IS THE CRITICAL CHECK
-  // Without these, cef.asi cannot render anything!
-  const hasCefRuntime = fs.existsSync(path.join(gtaPath, 'cef', 'libcef.dll')) && fs.existsSync(path.join(gtaPath, 'cef', 'client.dll'));
-  if (!hasCefRuntime) forceMissing.push('cef_runtime');
-  
-  // Check SA-MP client
-  if (!fs.existsSync(path.join(gtaPath, 'samp.exe'))) forceMissing.push('client');
-
-  if (forceMissing.length > 0) {
-    log('FORCE VERIFY: Missing critical files: ' + forceMissing.join(', '));
-    if (mainWindow) mainWindow.webContents.send('install-progress', {
-      component: 'Provjera i instalacija fajlova...', pct: 0, downloaded: 0, total: 0, speed: 0
-    });
-    try {
-      await autoInstall(gtaPath, forceMissing);
-      log('FORCE VERIFY: All critical files installed!');
-    } catch (e) {
-      log('FORCE VERIFY: Failed: ' + e.message);
-      return { error: 'Instalacija neuspjesna: ' + e.message };
-    }
-  } else {
-    log('FORCE VERIFY: All critical CEF files present - OK');
-  }
-
-  // Also check for any other missing components from standard status check
-  const status = getStatus(gtaPath);
-  if (status.missing.length > 0) {
-    log('Auto-install: Additional missing components: ' + status.missing.join(', '));
-    try {
-      await autoInstall(gtaPath, status.missing);
-    } catch (e) {
-      log('Auto-install: Failed: ' + e.message);
-    }
-  }
-
-  const sampExe = path.join(gtaPath, 'samp.exe');
-  if (!fs.existsSync(sampExe)) return { error: 'samp.exe nije pronadjen! Auto-instalacija nije uspjela.' };
-
   if (!nickname || nickname.length < 3) nickname = 'Player';
   nickname = nickname.replace(/[^a-zA-Z0-9_\[\]]/g, '_');
   if (nickname.length > 20) nickname = nickname.substring(0, 20);
 
-  // PRE-LAUNCH FIXES
-  log('Running pre-launch crash fixes...');
-  const killedZombie = killZombieProcesses();
-  const deletedSet = deleteGtaSetIfNeeded();
-  const removedCompat = removeCompatibilityMode(gtaPath);
-  log('Pre-launch: zombie=' + killedZombie + ' set=' + deletedSet + ' compat=' + removedCompat);
-
-  const settings = loadSettings();
   const srv = getActiveServer();
-  const cefEnabled = settings.cef_enabled !== false;
 
-  if (srv.mode === 'production') {
-    const prodStatus = getStatus(gtaPath);
-    if (!prodStatus.ready) return { error: 'Nisu sve komponente instalirane! Pokreni auto-instalaciju.' };
-    if (!cefEnabled) {
-      toggleCefFiles(gtaPath, false);
-      log('Production mode: re-enabling CEF files');
-    }
-  } else {
-    if (!cefEnabled) {
-      toggleCefFiles(gtaPath, true);
-      log('Local mode: CEF disabled by user');
-    } else {
-      const cefState = getCefState(gtaPath);
-      if (!cefState.enabled && cefState.has_files) {
-        toggleCefFiles(gtaPath, false);
-        log('Local mode: re-enabling CEF files');
-      }
-    }
+  // Kill zombie processes before launching
+  killZombieProcesses();
+  deleteGtaSetIfNeeded();
+
+  // Check if samp.exe exists
+  const sampExePath = path.join(gtaPath, 'samp.exe');
+  if (!fs.existsSync(sampExePath)) {
+    return { error: 'samp.exe nije pronadjen u GTA folderu! Klikni "Auto-Instalacija" da ga skines.' };
   }
 
-  // === SHOW FULLSCREEN UG SPLASH (covers SA-MP dialog) ===
-  const splashWin = showUgSplash();
-
-  // === CEF LOADING SCREEN + PORTAL: Copy to GTA/cef folder ===
+  // Download missing artwork models before launch
   try {
-    const cefLoadingSrc = path.join(CEF_CONTENT_DIR, 'loading');
-    const cefPortalSrc = path.join(CEF_CONTENT_DIR, 'portal');
-    const cefDest = path.join(gtaPath, 'cef');
-
-    if (fs.existsSync(cefLoadingSrc) || fs.existsSync(cefPortalSrc)) {
-      if (!fs.existsSync(cefDest)) fs.mkdirSync(cefDest, { recursive: true });
-      if (fs.existsSync(cefLoadingSrc)) {
-        const loadingDest = path.join(cefDest, 'loading');
-        if (fs.existsSync(loadingDest)) fs.rmSync(loadingDest, { recursive: true, force: true });
-        fs.cpSync(cefLoadingSrc, loadingDest, { recursive: true });
-        log('CEF: Loading screen installed to GTA/cef/loading/');
-      }
-      if (fs.existsSync(cefPortalSrc)) {
-        const portalDest = path.join(cefDest, 'portal');
-        if (fs.existsSync(portalDest)) fs.rmSync(portalDest, { recursive: true, force: true });
-        fs.cpSync(cefPortalSrc, portalDest, { recursive: true });
-        log('CEF: Portal installed to GTA/cef/portal/');
+    const missingModels = ARTWORK_MODELS.filter(m => !fs.existsSync(path.join(gtaPath, m.localPath)));
+    if (missingModels.length > 0) {
+      log('Downloading ' + missingModels.length + ' missing artwork models...');
+      if (mainWindow) mainWindow.webContents.send('install-progress', {
+        component: 'Skidam modele...', pct: 0, downloaded: 0, total: 0, speed: 0
+      });
+      for (const model of missingModels) {
+        const url = MODEL_BASE_URL + model.file;
+        const dest = path.join(gtaPath, model.localPath);
+        const dir = path.dirname(dest);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        await downloadFile(url, dest, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+          });
+        });
+        log('Downloaded model: ' + model.file);
       }
     }
   } catch (e) {
-    log('CEF Content: Could not copy loading/portal: ' + e.message);
+    log('Model download failed (non-critical): ' + e.message);
   }
 
-  log('Launching: ' + srv.ip + ':' + srv.port + ' nick=' + nickname + ' cef=' + cefEnabled);
-
-  // Verify samp.exe is valid before launching
-  if (fs.existsSync(sampExe) && !isValidPE(sampExe)) {
-    log('WARNING: samp.exe is not a valid PE, restoring from backup...');
-    const restored = restoreFromBackup(gtaPath);
-    if (restored.length === 0 || !isValidPE(sampExe)) {
-      log('Auto-reinstalling SA-MP client...');
-      try { fs.unlinkSync(sampExe); } catch(e) {}
-      try { if (fs.existsSync(sampExe + '.ug_backup')) fs.unlinkSync(sampExe + '.ug_backup'); } catch(e) {}
-      await autoInstall(gtaPath, ['client']);
-      if (!fs.existsSync(sampExe) || !isValidPE(sampExe)) {
-        return { error: 'samp.exe je pokvaren! Reinstaliraj SA-MP rucno.' };
-      }
-    }
-  }
-
+  // Setup registry and launch
   try {
     setupSampRegistry(gtaPath, srv.ip, srv.port, nickname);
-    await new Promise(resolve => setTimeout(resolve, 500));
 
-    const sampUrl = 'samp://' + srv.ip + ':' + srv.port;
-    log('Launching via samp://: ' + sampUrl);
-    shell.openExternal(sampUrl);
+    const serverArg = srv.ip + ':' + srv.port;
+    log('Launching: ' + sampExePath + ' ' + serverArg);
 
-    log('Launch OK via samp://');
-    return { success: true, message: 'SA-MP pokrenut! Spajanje na ' + srv.ip + ':' + srv.port + '...' };
+    const child = spawn(sampExePath, [serverArg], {
+      cwd: gtaPath,
+      detached: true,
+      stdio: 'ignore'
+    });
+    child.unref();
+
+    log('Launch OK (PID: ' + child.pid + ')');
+    return { success: true, message: 'SA-MP pokrenut! Spajanje na ' + serverArg + '...', pid: child.pid };
   } catch (err) {
     log('Launch FAILED: ' + err.message);
     return { error: 'Greska pri pokretanju: ' + err.message };

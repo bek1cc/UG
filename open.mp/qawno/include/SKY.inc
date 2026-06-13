@@ -48,6 +48,8 @@ native TextDrawSetPosition(Text:text, Float:x, Float:y);
 // Same as YSF (renamed to avoid problems)
 native PlayerTextDrawSetPosition(playerid, PlayerText:text, Float:x, Float:y);
 // Set the string of a TextDraw per-player
+#if !defined TextDrawSetStringForPlayer
 native TextDrawSetStringForPlayer(Text:text, playerid, const string[]);
+#endif
 
 #endif
