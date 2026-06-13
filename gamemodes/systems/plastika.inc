@@ -426,30 +426,30 @@ stock Plas_CreateProgressTDs(playerid) {
     PlastikaPlayerData[playerid][plasPBarBg] = CreatePlayerTextDraw(playerid, 250.0, 400.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasPBarBg], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasPBarBg], 0.5, 1.5);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasPBarBg], -1);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasPBarBg], -1);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasPBarBg], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasPBarBg], 1);
     PlayerTextDrawSetShadow(playerid, PlastikaPlayerData[playerid][plasPBarBg], 1);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasPBarBg], 1);
-    PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasPBarBg], 80);
+    PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasPBarBg], 80);
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasPBarBg], 420.0, 0.0);
 
     PlastikaPlayerData[playerid][plasPBarFill] = CreatePlayerTextDraw(playerid, 251.0, 401.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasPBarFill], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasPBarFill], 0.48, 1.2);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasPBarFill], -1);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasPBarFill], -1);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasPBarFill], 0);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasPBarFill], 1);
     PlayerTextDrawSetShadow(playerid, PlastikaPlayerData[playerid][plasPBarFill], 0);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasPBarFill], 1);
-    PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasPBarFill], 0x1D75C466);
+    PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasPBarFill], 0x1D75C466);
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasPBarFill], 251.0, 0.0);
 
     PlastikaPlayerData[playerid][plasPBarLabel] = CreatePlayerTextDraw(playerid, 335.0, 385.0, "_");
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 0.3, 1.1);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 0x1D75C4EE);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 0x1D75C4EE);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasPBarLabel], 1);
 
@@ -457,7 +457,7 @@ stock Plas_CreateProgressTDs(playerid) {
     PlastikaPlayerData[playerid][plasStatusTD] = CreatePlayerTextDraw(playerid, 20.0, 130.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasStatusTD], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasStatusTD], 0.18, 0.9);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasStatusTD], 0x1D75C4DD);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasStatusTD], 0x1D75C4DD);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasStatusTD], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasStatusTD], 1);
 }
@@ -496,7 +496,7 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniPanel], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniPanel], 0.0, 13.5);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasMiniPanel], 1);
-    PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasMiniPanel], 0x1A1A2EDD);
+    PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasMiniPanel], 0x1A1A2EDD);
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasMiniPanel], PLAS_PNL_L+300.0, 0.0);
 
     // Title
@@ -504,7 +504,7 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 0.35, 1.5);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 0x1D75C4FF);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 0x1D75C4FF);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniTitle], 1);
 
@@ -513,7 +513,7 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 0.22, 1.0);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniIcons], -1);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniIcons], -1);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniIcons], 1);
 
@@ -522,7 +522,7 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 0.25, 1.1);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 0xFFD700FF);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 0xFFD700FF);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniPhaseTD], 1);
 
@@ -531,41 +531,41 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 0.22, 1.0);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 0x3498DBFF);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 0x3498DBFF);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniTemp], 1);
 
     // Bar BG (dark track)
     PlastikaPlayerData[playerid][plasMiniBarBg] = CreatePlayerTextDraw(playerid, PLAS_BAR_VISUAL_X, PLAS_BAR_Y, "_");
-    PlayerTextDrawBackgroundColor(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0);
+    PlayerTextDrawBackgroundColour(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0.500000, 2.200000);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], -1);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], -1);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 1);
     PlayerTextDrawSetShadow(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 1);
-    PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0x2a2a42CC);
+    PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], 0x2a2a42CC);
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasMiniBarBg], PLAS_BAR_VISUAL_END, 0.0);
 
     // Green zone - placeholder (created dynamically in PlasMini_CreateZoneTD)
     PlastikaPlayerData[playerid][plasMiniBarGreen] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
 
     // Marker - placeholder (created dynamically in PlasMini_CreateMarkerTD)
     PlastikaPlayerData[playerid][plasMiniMarker] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
 
     // Status
     PlastikaPlayerData[playerid][plasMiniStatus] = CreatePlayerTextDraw(playerid, 320.0, 285.0, "Pritisni SPACE za zaustavljanje!");
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 0.2, 0.9);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 0xFFFFFFFF);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 0xFFFFFFFF);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniStatus], 1);
 
@@ -574,7 +574,7 @@ stock PlasMini_CreateTDs(playerid) {
     PlayerTextDrawAlignment(playerid, PlastikaPlayerData[playerid][plasMiniStars], 2);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniStars], 2);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniStars], 0.25, 1.1);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniStars], -1);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniStars], -1);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniStars], 1);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniStars], 1);
 
@@ -607,13 +607,13 @@ stock PlasMini_Hide(playerid) {
     PlastikaPlayerData[playerid][plasMiniBarGreen] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
     // Destroy dynamic marker, recreate placeholder
     PlayerTextDrawDestroy(playerid, PlastikaPlayerData[playerid][plasMiniMarker]);
     PlastikaPlayerData[playerid][plasMiniMarker] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniStatus]);
     PlayerTextDrawHide(playerid, PlastikaPlayerData[playerid][plasMiniStars]);
     PlastikaPlayerData[playerid][plasMiniShown] = false;
@@ -634,15 +634,15 @@ stock PlasMini_CreateZoneTD(playerid) {
     PlayerTextDrawDestroy(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen]);
 
     PlastikaPlayerData[playerid][plasMiniBarGreen] = CreatePlayerTextDraw(playerid, zoneStartX, PLAS_BAR_Y + 1.0, "_");
-    PlayerTextDrawBackgroundColor(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0);
+    PlayerTextDrawBackgroundColour(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0.500000, 1.900000);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x00000000);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 1);
     PlayerTextDrawSetShadow(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 1);
-    PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x2ECC7188);
+    PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], 0x2ECC7188);
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen], zoneEndX, 0.0);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniBarGreen]);
 }
@@ -661,18 +661,18 @@ stock PlasMini_CreateMarkerTD(playerid) {
     new Float:mRight = markerX + (PLAS_MARKER_WIDTH / 2.0);
 
     PlastikaPlayerData[playerid][plasMiniMarker] = CreatePlayerTextDraw(playerid, mLeft, PLAS_BAR_Y, "_");
-    PlayerTextDrawBackgroundColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0);
+    PlayerTextDrawBackgroundColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0);
     PlayerTextDrawFont(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 1);
     PlayerTextDrawLetterSize(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0.100000, 2.200000);
-    PlayerTextDrawColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
+    PlayerTextDrawColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0x00000000);
     PlayerTextDrawSetOutline(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0);
     PlayerTextDrawSetProportional(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 1);
     PlayerTextDrawSetShadow(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0);
     PlayerTextDrawUseBox(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 1);
     if(inZone) {
-        PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0xFFFF00FF); // Yellow - in zone
+        PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0xFFFF00FF); // Yellow - in zone
     } else {
-        PlayerTextDrawBoxColor(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0xFF4444FF); // Red - outside zone
+        PlayerTextDrawBoxColour(playerid, PlastikaPlayerData[playerid][plasMiniMarker], 0xFF4444FF); // Red - outside zone
     }
     PlayerTextDrawTextSize(playerid, PlastikaPlayerData[playerid][plasMiniMarker], mRight, 0.0);
     PlayerTextDrawShow(playerid, PlastikaPlayerData[playerid][plasMiniMarker]);

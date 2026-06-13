@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UG Card Case - Three.js</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap');
+body{background:#000;color:#fff;font-family:'Rajdhani',sans-serif;overflow:hidden;width:100vw;height:100vh;user-select:none}
+canvas#three-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0}
+
+/* ===== UI OVERLAY ===== */
+#ui-overlay{position:fixed;inset:0;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:40px}
+
+/* Header */
+.header{position:absolute;top:0;left:0;right:0;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.header-logo{display:flex;align-items:center;gap:10px}
+.header-logo img{width:36px;height:36px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(96,165,250,0.4))}
+.header-title{font-family:'Orbitron',monospace;font-size:13px;letter-spacing:4px;text-transform:uppercase;
+  background:linear-gradient(135deg,#c4e0ff,#93c5fd,#67e8f9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.header-price{font-family:'Orbitron',monospace;font-size:12px;color:rgba(147,197,253,0.5);letter-spacing:2px}
+
+/* Card select hint */
+.select-hint{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;color:rgba(147,197,253,0.5);
+  text-transform:uppercase;margin-bottom:14px;transition:opacity 0.5s;pointer-events:none}
+.select-hint.hidden{opacity:0}
+
+/* Open button */
+.open-btn{padding:12px 44px;border:2px solid rgba(96,165,250,0.45);border-radius:12px;
+  font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:#c4e0ff;cursor:pointer;pointer-events:all;
+  background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(59,130,246,0.08));
+  transition:all 0.3s;backdrop-filter:blur(6px);opacity:0;
+  box-shadow:0 0 20px rgba(96,165,250,0.1)}
+.open-btn.visible{opacity:1}
+.open-btn:hover{background:linear-gradient(135deg,rgba(96,165,250,0.3),rgba(59,130,246,0.15));
+  border-color:rgba(96,165,250,0.7);color:#fff;
+  box-shadow:0 0 40px rgba(96,165,250,0.2),0 0 80px rgba(96,165,250,0.08);transform:scale(1.04)}
+.open-btn.hidden{display:none}
+
+/* ESC hint */
+.esc-hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-size:10px;
+  color:rgba(255,255,255,0.15);letter-spacing:1px;pointer-events:none}
+
+/* ===== REVEAL OVERLAY ===== */
+#reveal-overlay{position:fixed;inset:0;z-index:15;display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(5,4,18,0.65);backdrop-filter:blur(6px);pointer-events:all}
+#reveal-overlay.active{display:flex}
+
+.reveal-info{text-align:center;opacity:0;transform:translateY(20px);transition:all 0.6s cubic-bezier(0.16,1,0.3,1)}
+.reveal-info.show{opacity:1;transform:translateY(0)}
+.reveal-info .rarity-badge{display:inline-block;padding:6px 20px;border-radius:20px;font-family:'Orbitron',monospace;
+  font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;
+  transition:all 0.3s}
+.rarity-badge.common{background:rgba(100,200,100,0.12);border:1px solid rgba(100,200,100,0.35);color:#64c864;
+  box-shadow:0 0 15px rgba(100,200,100,0.12)}
+.rarity-badge.rare{background:rgba(0,191,255,0.12);border:1px solid rgba(0,191,255,0.35);color:#00bfff;
+  box-shadow:0 0 15px rgba(0,191,255,0.12)}
+.rarity-badge.epic{background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#a855f7;
+  box-shadow:0 0 20px rgba(168,85,247,0.15)}
+.rarity-badge.legendary{background:rgba(255,170,0,0.15);border:1px solid rgba(255,170,0,0.4);color:#ffaa00;
+  box-shadow:0 0 20px rgba(255,170,0,0.15)}
+
+.reveal-info .reward-name{font-family:'Orbitron',monospace;font-size:24px;font-weight:900;letter-spacing:2px;
+  background:linear-gradient(135deg,#c4e0ff,#93c5fd,#67e8f9,#93c5fd);
+  background-size:200% 200%;animation:nameShimmer 3s ease-in-out infinite;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-top:6px}
+@keyframes nameShimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+.reveal-info .reward-label{font-size:12px;color:rgba(147,197,253,0.45);letter-spacing:1px;margin-top:3px}
+
+/* Vehicle image in reveal */
+.reward-img-wrap{width:300px;height:170px;display:flex;align-items:center;justify-content:center;margin:14px auto;position:relative}
+.reward-img-wrap img{max-width:100%;max-height:100%;object-fit:contain;
+  filter:drop-shadow(0 0 30px rgba(96,165,250,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));
+  transition:all 0.4s cubic-bezier(0.16,1,0.3,1)}
+.reward-img-wrap:hover img{transform:scale(1.06) translateY(-3px);
+  filter:drop-shadow(0 0 45px rgba(96,165,250,0.8)) drop-shadow(0 0 70px rgba(59,130,246,0.25)) drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
+
+/* Car glow behind image */
+.reward-img-wrap::before{content:'';position:absolute;inset:-30px;border-radius:50%;
+  background:radial-gradient(circle,rgba(96,165,250,0.15) 0%,rgba(59,130,246,0.06) 40%,transparent 70%);
+  pointer-events:none;animation:carGlowPulse 2s ease-in-out infinite}
+@keyframes carGlowPulse{0%,100%{opacity:0.6;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
+
+.reward-img-wrap::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:220px;height:25px;
+  background:radial-gradient(ellipse,rgba(96,165,250,0.18) 0%,transparent 70%);pointer-events:none}
+
+.reward-svg-icon{width:80px;height:80px;filter:drop-shadow(0 0 12px currentColor)}
+
+.collect-btn{margin-top:18px;padding:12px 40px;border:2px solid rgba(96,165,250,0.45);border-radius:10px;
+  font-family:'Orbitron',monospace;font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  color:#c4e0ff;cursor:pointer;
+  background:linear-gradient(135deg,rgba(96,165,250,0.15),rgba(59,130,246,0.08));
+  transition:all 0.3s;backdrop-filter:blur(6px);
+  box-shadow:0 0 15px rgba(96,165,250,0.08)}
+.collect-btn:hover{background:linear-gradient(135deg,rgba(96,165,250,0.3),rgba(59,130,246,0.15));
+  border-color:rgba(96,165,250,0.7);
+  box-shadow:0 0 40px rgba(96,165,250,0.2),0 0 70px rgba(96,165,250,0.08);color:#fff;transform:scale(1.04)}
+
+/* Screen flash */
+.screen-flash{position:fixed;inset:0;z-index:14;pointer-events:none;opacity:0;
+  background:radial-gradient(circle,rgba(96,165,250,0.5) 0%,transparent 60%)}
+.screen-flash.flash{animation:flashAnim 0.6s ease-out forwards}
+.screen-flash.legendary{background:radial-gradient(circle,rgba(255,170,0,0.7) 0%,rgba(239,68,68,0.3) 30%,transparent 60%)}
+.screen-flash.epic{background:radial-gradient(circle,rgba(168,85,247,0.6) 0%,rgba(236,72,153,0.2) 40%,transparent 60%)}
+
+@keyframes flashAnim{0%{opacity:0}10%{opacity:1}100%{opacity:0}}
+@keyframes shakeX{0%,100%{transform:translateX(0)}15%{transform:translateX(-6px)}30%{transform:translateX(6px)}45%{transform:translateX(-4px)}60%{transform:translateX(4px)}75%{transform:translateX(-2px)}}
+.shake{animation:shakeX 0.5s ease-out}
+</style>
+</head>
+<body>
+
+<canvas id="three-canvas"></canvas>
+<div class="screen-flash" id="screen-flash"></div>
+
+<!-- UI Overlay -->
+<div id="ui-overlay">
+  <div class="header">
+    <div class="header-logo">
+      <img src="logo.png" alt="UG" onerror="this.style.display='none'">
+      <div class="header-title">Card Case</div>
+    </div>
+    <div class="header-price">$5,000</div>
+  </div>
+  <div class="select-hint" id="select-hint">Izaberi kartu</div>
+  <button class="open-btn" id="open-btn" onclick="startReveal()">OTVORI KARTU</button>
+  <div class="esc-hint">ESC za izlaz</div>
+</div>
+
+<!-- Reveal Overlay -->
+<div id="reveal-overlay">
+  <div class="reveal-info" id="reveal-info">
+    <div class="rarity-badge" id="reveal-rarity">LEGENDARY</div>
+    <div class="reward-img-wrap" id="reveal-img"></div>
+    <div class="reward-name" id="reveal-name">Elegy</div>
+    <div class="reward-label" id="reveal-label">Sportsko vozilo</div>
+  </div>
+  <button class="collect-btn" id="collect-btn" onclick="collectReward()">POKUPI</button>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+// ===== STATE =====
+var rewardData = {name:'Elegy',type:'vehicle',rarity:'legendary',label:'Sportsko vozilo',image:''};
+var selectedCardIndex = -1;
+var isAnimating = false;
+var audioCtx = null;
+
+var suits = ['spade','heart','diamond','club'];
+var suitSymbols = {spade:'\u2660',heart:'\u2665',diamond:'\u2666',club:'\u2663'};
+var suitColors = {spade:0x8b5cf6,heart:0xef4444,diamond:0xef4444,club:0x8b5cf6};
+var cardValues = ['A','K','Q','J','10','9'];
+
+var rewardColors = {vehicle:0x8b5cf6,money:0x22c55e,level:0xeab308,respect:0xef4444,weapon:0xf97316,vip:0x06b6d4,default:0x8b5cf6};
+
+// SVG icons for non-vehicle reward types
+var rewardSVGs = {
+  money: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><circle cx="40" cy="40" r="36" fill="none" stroke="#22c55e" stroke-width="3" opacity="0.3"/><text x="40" y="50" text-anchor="middle" font-family="Orbitron,monospace" font-size="32" font-weight="900" fill="#22c55e">$</text></svg>',
+  level: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><polygon points="40,4 49,30 78,30 54,48 63,76 40,58 17,76 26,48 2,30 31,30" fill="#eab308" opacity="0.9"/></svg>',
+  respect: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><path d="M40 8 L52 32 L78 36 L58 54 L64 80 L40 66 L16 80 L22 54 L2 36 L28 32 Z" fill="none" stroke="#ef4444" stroke-width="2.5"/><circle cx="40" cy="42" r="10" fill="#ef4444" opacity="0.8"/></svg>',
+  weapon: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="35" width="45" height="6" rx="2" fill="#f97316" opacity="0.9"/><rect x="18" y="33" width="8" height="10" rx="1" fill="#f97316"/><rect x="62" y="30" width="4" height="16" rx="1" fill="#f97316" opacity="0.7"/><circle cx="12" cy="38" r="4" fill="none" stroke="#f97316" stroke-width="1.5" opacity="0.5"/></svg>',
+  vip: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><polygon points="40,6 50,28 74,28 54,44 62,68 40,52 18,68 26,44 6,28 30,28" fill="#06b6d4" opacity="0.15" stroke="#06b6d4" stroke-width="2"/><text x="40" y="48" text-anchor="middle" font-family="Orbitron,monospace" font-size="18" font-weight="900" fill="#06b6d4">VIP</text></svg>',
+  default: '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="16" width="48" height="48" rx="8" fill="none" stroke="#8b5cf6" stroke-width="2.5"/><text x="40" y="48" text-anchor="middle" font-family="Orbitron,monospace" font-size="22" font-weight="900" fill="#8b5cf6">?</text></svg>'
+};
+
+// ===== THREE.JS SETUP =====
+var canvas = document.getElementById('three-canvas');
+var renderer = new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});
+renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.8;
+
+var scene = new THREE.Scene();
+scene.background = new THREE.Color(0x080c18);
+scene.fog = new THREE.FogExp2(0x080c18,0.04);
+
+var camera = new THREE.PerspectiveCamera(50,window.innerWidth/window.innerHeight,0.1,100);
+camera.position.set(0,2.5,6);
+camera.lookAt(0,0.5,0);
+
+// Post-processing - BRIGHTER bloom
+var composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene,camera));
+var bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth,window.innerHeight),1.5,0.4,0.25);
+composer.addPass(bloomPass);
+
+// Lights - BRIGHT, LESS PURPLE, CLEAN
+var ambientLight = new THREE.AmbientLight(0x334466,1.2);
+scene.add(ambientLight);
+
+var portalLight = new THREE.PointLight(0x60a5fa,5,15);
+portalLight.position.set(0,2,-1);
+scene.add(portalLight);
+
+var rimLight = new THREE.PointLight(0x22d3ee,3,10);
+rimLight.position.set(2,1,3);
+scene.add(rimLight);
+
+var warmLight = new THREE.PointLight(0xffeedd,1.5,12);
+warmLight.position.set(-2,2,4);
+scene.add(warmLight);
+
+var spotLight = new THREE.SpotLight(0x93c5fd,4,20,Math.PI/6,0.5);
+spotLight.position.set(0,6,0);
+spotLight.target.position.set(0,0,0);
+scene.add(spotLight);
+scene.add(spotLight.target);
+
+// ===== FLOOR =====
+var floorGeo = new THREE.PlaneGeometry(30,30);
+var floorMat = new THREE.MeshStandardMaterial({color:0x050a14,roughness:0.8,metalness:0.2});
+var floor = new THREE.Mesh(floorGeo,floorMat);
+floor.rotation.x = -Math.PI/2;
+floor.position.y = -0.5;
+scene.add(floor);
+
+// Floor glow ring
+var ringGeo = new THREE.RingGeometry(1.8,2.2,64);
+var ringMat = new THREE.MeshBasicMaterial({color:0x60a5fa,transparent:true,opacity:0.25,side:THREE.DoubleSide});
+var floorRing = new THREE.Mesh(ringGeo,ringMat);
+floorRing.rotation.x = -Math.PI/2;
+floorRing.position.y = -0.48;
+scene.add(floorRing);
+
+// ===== PORTAL =====
+var portalGroup = new THREE.Group();
+portalGroup.position.set(0,1.8,-0.5);
+scene.add(portalGroup);
+
+// Portal torus
+var torusGeo = new THREE.TorusGeometry(1.3,0.06,16,100);
+var torusMat = new THREE.MeshStandardMaterial({color:0x60a5fa,emissive:0x60a5fa,emissiveIntensity:3,roughness:0.2,metalness:0.8});
+var portalTorus = new THREE.Mesh(torusGeo,torusMat);
+portalGroup.add(portalTorus);
+
+// Inner torus
+var torusGeo2 = new THREE.TorusGeometry(1.1,0.03,16,80);
+var torusMat2 = new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x22d3ee,emissiveIntensity:2,roughness:0.3,metalness:0.7});
+var portalTorus2 = new THREE.Mesh(torusGeo2,torusMat2);
+portalGroup.add(portalTorus2);
+
+// Portal core
+var coreGeo = new THREE.CircleGeometry(1.05,64);
+var coreMat = new THREE.ShaderMaterial({
+  transparent:true,
+  side:THREE.DoubleSide,
+  uniforms:{
+    uTime:{value:0},
+    uColor1:{value:new THREE.Color(0x60a5fa)},
+    uColor2:{value:new THREE.Color(0x22d3ee)}
+  },
+  vertexShader:`
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader:`
+    uniform float uTime;
+    uniform vec3 uColor1;
+    uniform vec3 uColor2;
+    varying vec2 vUv;
+    void main(){
+      vec2 center = vUv - 0.5;
+      float dist = length(center);
+      float angle = atan(center.y,center.x);
+      float swirl = sin(angle*3.0 + uTime*2.0)*0.1;
+      float alpha = smoothstep(0.5,0.1,dist+swirl)*0.3;
+      vec3 col = mix(uColor1,uColor2,sin(angle+uTime)*0.5+0.5);
+      alpha *= (0.7 + 0.3*sin(uTime*1.5 + dist*5.0));
+      gl_FragColor = vec4(col,alpha);
+    }
+  `
+});
+var portalCore = new THREE.Mesh(coreGeo,coreMat);
+portalGroup.add(portalCore);
+
+// Portal back glow
+var glowGeo = new THREE.PlaneGeometry(5,5);
+var glowMat = new THREE.ShaderMaterial({
+  transparent:true,
+  side:THREE.DoubleSide,
+  uniforms:{uColor:{value:new THREE.Color(0x60a5fa)}},
+  vertexShader:`
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+    }
+  `,
+  fragmentShader:`
+    uniform vec3 uColor;
+    varying vec2 vUv;
+    void main(){
+      float dist = length(vUv-0.5);
+      float alpha = smoothstep(0.5,0.0,dist)*0.15;
+      gl_FragColor = vec4(uColor,alpha);
+    }
+  `
+});
+var portalGlow = new THREE.Mesh(glowGeo,glowMat);
+portalGlow.position.z = -0.1;
+portalGroup.add(portalGlow);
+
+// ===== 3D CARDS =====
+var cards = [];
+var cardGroup = new THREE.Group();
+cardGroup.position.y = 0.3;
+scene.add(cardGroup);
+
+function createCardTexture(value,suit,isFront,rarity){
+  var cvs = document.createElement('canvas');
+  cvs.width = 256; cvs.height = 384;
+  var ctx = cvs.getContext('2d');
+
+  if(isFront){
+    // Card front - LIGHT, CLEAN, VIVID
+    var gradient = ctx.createLinearGradient(0,0,256,384);
+    gradient.addColorStop(0,'#1e2140');
+    gradient.addColorStop(0.3,'#222650');
+    gradient.addColorStop(0.6,'#1e2448');
+    gradient.addColorStop(1,'#222855');
+    ctx.fillStyle = gradient;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // HOLOGRAPHIC SHIMMER - vivid rainbow
+    var holoGrad = ctx.createLinearGradient(0,0,256,384);
+    holoGrad.addColorStop(0,'rgba(100,200,255,0.1)');
+    holoGrad.addColorStop(0.2,'rgba(255,100,200,0.08)');
+    holoGrad.addColorStop(0.4,'rgba(100,255,200,0.1)');
+    holoGrad.addColorStop(0.6,'rgba(255,200,100,0.08)');
+    holoGrad.addColorStop(0.8,'rgba(100,200,255,0.1)');
+    holoGrad.addColorStop(1,'rgba(255,100,200,0.08)');
+    ctx.fillStyle = holoGrad;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border - VIVID with strong glow
+    var borderColors = {common:'#64c864',rare:'#00bfff',epic:'#c084fc',legendary:'#ffaa00'};
+    ctx.strokeStyle = borderColors[rarity]||'#60a5fa';
+    ctx.lineWidth = 5;
+    ctx.shadowColor = borderColors[rarity]||'#60a5fa';
+    ctx.shadowBlur = 25;
+    ctx.roundRect(4,4,248,376,14);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Inner border - visible
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    ctx.roundRect(16,16,224,352,8);
+    ctx.stroke();
+
+    // Suit symbol - VIVID glow
+    ctx.font = '80px serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = suit===0||suit===3 ? '#93c5fd' : '#fca5a5';
+    ctx.shadowColor = suit===0||suit===3 ? '#60a5fa' : '#f87171';
+    ctx.shadowBlur = 35;
+    ctx.fillText(suitSymbols[suits[suit]],128,210);
+
+    // Value - BRIGHT white
+    ctx.font = 'bold 48px Orbitron, monospace';
+    ctx.shadowBlur = 25;
+    ctx.shadowColor = '#ffffff';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(value,128,140);
+
+    // Corner values
+    ctx.font = 'bold 22px Orbitron, monospace';
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = suit===0||suit===3 ? '#60a5fa' : '#f87171';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = suit===0||suit===3 ? '#93c5fd' : '#fca5a5';
+    ctx.fillText(value,24,40);
+    ctx.font = '18px serif';
+    ctx.fillText(suitSymbols[suits[suit]],28,62);
+
+    ctx.save();
+    ctx.translate(256,384);
+    ctx.rotate(Math.PI);
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 22px Orbitron, monospace';
+    ctx.fillText(value,24,40);
+    ctx.font = '18px serif';
+    ctx.fillText(suitSymbols[suits[suit]],28,62);
+    ctx.restore();
+
+  } else {
+    // Card back - LIGHTER, clean holographic feel
+    var gradient2 = ctx.createLinearGradient(0,0,256,384);
+    gradient2.addColorStop(0,'#1a1e3a');
+    gradient2.addColorStop(0.5,'#1e2245');
+    gradient2.addColorStop(1,'#1a2040');
+    ctx.fillStyle = gradient2;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Holographic overlay - vivid
+    var holo2 = ctx.createLinearGradient(0,0,256,384);
+    holo2.addColorStop(0,'rgba(96,165,250,0.08)');
+    holo2.addColorStop(0.3,'rgba(34,211,238,0.1)');
+    holo2.addColorStop(0.7,'rgba(96,165,250,0.08)');
+    holo2.addColorStop(1,'rgba(34,211,238,0.1)');
+    ctx.fillStyle = holo2;
+    ctx.roundRect(0,0,256,384,16);
+    ctx.fill();
+
+    // Border - VIVID blue
+    ctx.strokeStyle = 'rgba(96,165,250,0.55)';
+    ctx.lineWidth = 3;
+    ctx.shadowColor = '#60a5fa';
+    ctx.shadowBlur = 18;
+    ctx.roundRect(4,4,248,376,14);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // Inner border
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.roundRect(14,14,228,356,8);
+    ctx.stroke();
+
+    // Pattern - holographic grid - visible
+    ctx.fillStyle = 'rgba(96,165,250,0.08)';
+    for(var py=20;py<370;py+=16){
+      for(var px=20;px<240;px+=16){
+        if((Math.floor(px/16)+Math.floor(py/16))%2===0){
+          ctx.fillRect(px,py,12,12);
+        }
+      }
+    }
+
+    // UG emblem - VIVID glow
+    ctx.font = 'bold 40px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    var g = ctx.createLinearGradient(80,170,176,210);
+    g.addColorStop(0,'#60a5fa');
+    g.addColorStop(1,'#22d3ee');
+    ctx.fillStyle = g;
+    ctx.shadowColor = '#60a5fa';
+    ctx.shadowBlur = 35;
+    ctx.fillText('UG',128,205);
+  }
+
+  var tex = new THREE.CanvasTexture(cvs);
+  tex.minFilter = THREE.LinearFilter;
+  return tex;
+}
+
+function createCard(index){
+  var valIdx = Math.floor(Math.random()*cardValues.length);
+  var suitIdx = Math.floor(Math.random()*4);
+  var value = cardValues[valIdx];
+  var suit = suitIdx;
+
+  var rarity = rewardData.rarity || 'rare';
+
+  var frontTex = createCardTexture(value,suit,true,rarity);
+  var backTex = createCardTexture(value,suit,false,rarity);
+
+  var cardGeo = new THREE.BoxGeometry(0.7,1.0,0.015);
+
+  // Materials - LIGHTER, less purple, cleaner
+  var edgeMat = new THREE.MeshStandardMaterial({color:0x2a2e55,roughness:0.5,metalness:0.3});
+  var frontMat = new THREE.MeshStandardMaterial({map:frontTex,roughness:0.3,metalness:0.2,emissive:0x2a3a6e,emissiveIntensity:0.35});
+  var backMat = new THREE.MeshStandardMaterial({map:backTex,roughness:0.3,metalness:0.2,emissive:0x2a3a6e,emissiveIntensity:0.35});
+
+  var card = new THREE.Mesh(cardGeo,[edgeMat,edgeMat,edgeMat,edgeMat,frontMat,backMat]);
+
+  var totalCards = 5;
+  var fanAngle = (index - (totalCards-1)/2) * 0.18;
+  var fanX = (index - (totalCards-1)/2) * 0.85;
+
+  card.position.set(fanX,-0.2,0.5);
+  card.rotation.z = fanAngle;
+  card.rotation.x = -0.3;
+  card.userData = {index:index,value:value,suit:suit,origPos:card.position.clone(),origRot:card.rotation.clone(),selected:false};
+
+  cardGroup.add(card);
+  cards.push(card);
+  return card;
+}
+
+function generateCards(){
+  for(var i=0;i<cards.length;i++){
+    cardGroup.remove(cards[i]);
+    cards[i].geometry.dispose();
+  }
+  cards = [];
+  selectedCardIndex = -1;
+
+  for(var i=0;i<5;i++){
+    createCard(i);
+  }
+
+  document.getElementById('open-btn').classList.remove('visible');
+  document.getElementById('select-hint').classList.remove('hidden');
+}
+
+generateCards();
+
+// ===== PARTICLE SYSTEM =====
+var particleCount = 350;
+var particleGeo = new THREE.BufferGeometry();
+var particlePositions = new Float32Array(particleCount*3);
+var particleSizes = new Float32Array(particleCount);
+var particleAlphas = new Float32Array(particleCount);
+var particleVelocities = [];
+
+for(var i=0;i<particleCount;i++){
+  particlePositions[i*3] = (Math.random()-0.5)*12;
+  particlePositions[i*3+1] = Math.random()*6-0.5;
+  particlePositions[i*3+2] = (Math.random()-0.5)*8-1;
+  particleSizes[i] = Math.random()*3+1;
+  particleAlphas[i] = Math.random();
+  particleVelocities.push({
+    vx:(Math.random()-0.5)*0.005,
+    vy:Math.random()*0.008+0.002,
+    vz:(Math.random()-0.5)*0.003
+  });
+}
+
+particleGeo.setAttribute('position',new THREE.BufferAttribute(particlePositions,3));
+particleGeo.setAttribute('size',new THREE.BufferAttribute(particleSizes,1));
+particleGeo.setAttribute('alpha',new THREE.BufferAttribute(particleAlphas,1));
+
+var particleMat = new THREE.ShaderMaterial({
+  transparent:true,
+  depthWrite:false,
+  blending:THREE.AdditiveBlending,
+  uniforms:{uTime:{value:0},uColor:{value:new THREE.Color(0xa78bfa)}},
+  vertexShader:`
+    attribute float size;
+    attribute float alpha;
+    varying float vAlpha;
+    uniform float uTime;
+    void main(){
+      vAlpha = alpha*(0.5+0.5*sin(uTime*2.0+position.x*3.0));
+      vec4 mvPos = modelViewMatrix*vec4(position,1.0);
+      gl_PointSize = size*(200.0/(-mvPos.z));
+      gl_Position = projectionMatrix*mvPos;
+    }
+  `,
+  fragmentShader:`
+    uniform vec3 uColor;
+    varying float vAlpha;
+    void main(){
+      float dist = length(gl_PointCoord-0.5);
+      if(dist>0.5) discard;
+      float a = smoothstep(0.5,0.0,dist)*vAlpha*0.5;
+      gl_FragColor = vec4(uColor,a);
+    }
+  `
+});
+
+var particles = new THREE.Points(particleGeo,particleMat);
+scene.add(particles);
+
+// ===== EXPLOSION PARTICLES =====
+var explosionParticles = [];
+var explosionGroup = new THREE.Group();
+scene.add(explosionGroup);
+
+function spawnExplosion3D(count,rarity){
+  var colors = {common:[0x64c864,0x88dd88],rare:[0x00bfff,0x66d9ff],epic:[0xa855f7,0xec4899],legendary:[0xffaa00,0xef4444,0xffd700]};
+  var cols = colors[rarity]||colors.rare;
+
+  for(var i=0;i<count;i++){
+    var geo = new THREE.SphereGeometry(Math.max(0.01,Math.random()*0.04+0.01),6,6);
+    var mat = new THREE.MeshBasicMaterial({color:cols[Math.floor(Math.random()*cols.length)],transparent:true,opacity:1});
+    var mesh = new THREE.Mesh(geo,mat);
+
+    var angle = Math.random()*Math.PI*2;
+    var elev = (Math.random()-0.5)*Math.PI;
+    var speed = Math.random()*0.08+0.03;
+    mesh.position.set(0,1.5,0);
+    mesh.userData = {
+      vx:Math.cos(angle)*Math.cos(elev)*speed,
+      vy:Math.sin(elev)*speed+0.03,
+      vz:Math.sin(angle)*Math.cos(elev)*speed,
+      decay:Math.random()*0.015+0.008,
+      gravity:0.001
+    };
+    explosionGroup.add(mesh);
+    explosionParticles.push(mesh);
+  }
+}
+
+// ===== RAYCASTER =====
+var raycaster = new THREE.Raycaster();
+var mouse = new THREE.Vector2();
+var hoveredCard = null;
+
+canvas.addEventListener('mousemove',function(e){
+  mouse.x = (e.clientX/window.innerWidth)*2-1;
+  mouse.y = -(e.clientY/window.innerHeight)*2+1;
+});
+
+canvas.addEventListener('click',function(e){
+  if(isAnimating) return;
+  raycaster.setFromCamera(mouse,camera);
+  var intersects = raycaster.intersectObjects(cards);
+  if(intersects.length>0){
+    var card = intersects[0].object;
+    selectCard(card.userData.index);
+  }
+});
+
+function selectCard(index){
+  for(var i=0;i<cards.length;i++){
+    var c = cards[i];
+    c.userData.selected = false;
+    tweenCard(c,c.userData.origPos,c.userData.origRot,400);
+    if(c.material && c.material.length){
+      c.material[4].emissiveIntensity = 0.25;
+      c.material[5].emissiveIntensity = 0.25;
+      c.material[4].emissive.setHex(0x3a2a5e);
+      c.material[5].emissive.setHex(0x2a1a5e);
+    }
+  }
+
+  var card = cards[index];
+  card.userData.selected = true;
+  selectedCardIndex = index;
+
+  var newPos = card.userData.origPos.clone();
+  newPos.y += 0.4;
+  newPos.z += 0.2;
+  var newRot = card.userData.origRot.clone();
+  newRot.x = -0.15;
+  tweenCard(card,newPos,newRot,350);
+
+  // STRONG glow on selected card
+  if(card.material && card.material.length){
+    card.material[4].emissiveIntensity = 1.2;
+    card.material[5].emissiveIntensity = 0.9;
+    card.material[4].emissive.setHex(0x7c3aed);
+    card.material[5].emissive.setHex(0x7c3aed);
+  }
+
+  playSound('select');
+
+  document.getElementById('open-btn').classList.add('visible');
+  document.getElementById('select-hint').classList.add('hidden');
+}
+
+function tweenCard(card,targetPos,targetRot,duration){
+  var startPos = card.position.clone();
+  var startRot = new THREE.Vector3(card.rotation.x,card.rotation.y,card.rotation.z);
+  var startTime = performance.now();
+
+  function tick(){
+    var elapsed = performance.now()-startTime;
+    var t = Math.min(elapsed/duration,1);
+    t = 1-Math.pow(1-t,3);
+
+    card.position.lerpVectors(startPos,targetPos,t);
+    card.rotation.x = startRot.x+(targetRot.x-startRot.x)*t;
+    card.rotation.y = startRot.y+(targetRot.y-startRot.y)*t;
+    card.rotation.z = startRot.z+(targetRot.z-startRot.z)*t;
+
+    if(t<1) requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+// ===== REVEAL ANIMATION =====
+window.startReveal = function(){
+  if(isAnimating || selectedCardIndex===-1) return;
+  isAnimating = true;
+
+  var card = cards[selectedCardIndex];
+  document.getElementById('open-btn').classList.add('hidden');
+
+  playSound('reveal_start');
+
+  for(var i=0;i<cards.length;i++){
+    if(i!==selectedCardIndex){
+      var c = cards[i];
+      var flyPos = c.userData.origPos.clone();
+      flyPos.y -= 2;
+      flyPos.z -= 2;
+      tweenCard(c,flyPos,c.userData.origRot,600);
+      (function(mesh){
+        setTimeout(function(){ mesh.visible = false; },700);
+      })(c);
+    }
+  }
+
+  var centerPos = new THREE.Vector3(0,1.8,-0.3);
+  var centerRot = new THREE.Vector3(0,0,0);
+  tweenCard(card,centerPos,centerRot,800);
+
+  setTimeout(function(){
+    playSound('card_flip');
+
+    var flipStart = performance.now();
+    var flipDuration = 1200;
+    var flipStartRot = card.rotation.y;
+
+    function flipTick(){
+      var elapsed = performance.now()-flipStart;
+      var t = Math.min(elapsed/flipDuration,1);
+
+      var flipT = t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+      card.rotation.y = flipStartRot + flipT * Math.PI;
+
+      var s = 1 + 0.15*Math.sin(t*Math.PI);
+      card.scale.set(s,s,s);
+
+      if(t>=0.4 && t<0.5){
+        triggerFlash(rewardData.rarity);
+        spawnExplosion3D(getExplosionCount(rewardData.rarity),rewardData.rarity);
+
+        if(rewardData.rarity==='epic'||rewardData.rarity==='legendary'){
+          document.body.classList.add('shake');
+          setTimeout(function(){document.body.classList.remove('shake');},500);
+        }
+
+        if(rewardData.rarity==='legendary') bloomPass.strength = 3;
+        else if(rewardData.rarity==='epic') bloomPass.strength = 2.2;
+        else bloomPass.strength = 1.8;
+
+        portalLight.intensity = 8;
+      }
+
+      if(t<1) requestAnimationFrame(flipTick);
+      else {
+        card.rotation.y = Math.PI;
+        card.scale.set(1,1,1);
+        showReward();
+      }
+    }
+    flipTick();
+  },900);
+};
+
+function getExplosionCount(rarity){
+  return {common:20,rare:40,epic:70,legendary:120}[rarity]||40;
+}
+
+function triggerFlash(rarity){
+  var flash = document.getElementById('screen-flash');
+  flash.className = 'screen-flash';
+  if(rarity==='legendary') flash.classList.add('legendary');
+  if(rarity==='epic') flash.classList.add('epic');
+  flash.classList.add('flash');
+  playSound('flash');
+  setTimeout(function(){flash.className='screen-flash';},600);
+}
+
+function showReward(){
+  var overlay = document.getElementById('reveal-overlay');
+  overlay.classList.add('active');
+
+  var badge = document.getElementById('reveal-rarity');
+  badge.className = 'rarity-badge '+rewardData.rarity;
+  var rarityLabels = {legendary:'LEGENDARY',epic:'EPIC',rare:'RARE',common:'COMMON'};
+  badge.textContent = rarityLabels[rewardData.rarity]||'RARE';
+
+  document.getElementById('reveal-name').textContent = rewardData.name;
+  document.getElementById('reveal-label').textContent = rewardData.label;
+
+  var imgWrap = document.getElementById('reveal-img');
+  var rewardColor = '#'+(rewardColors[rewardData.type]||0x8b5cf6).toString(16).padStart(6,'0');
+  if(rewardData.type==='vehicle'){
+    imgWrap.innerHTML = '<img src="./elegy.png" alt="Vehicle" style="max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 0 30px rgba(139,92,246,0.6)) drop-shadow(0 6px 20px rgba(0,0,0,0.6));transition:all 0.4s" onerror="this.style.display=\'none\'">';
+  } else {
+    var svg = rewardSVGs[rewardData.type] || rewardSVGs.default;
+    imgWrap.innerHTML = '<div class="reward-svg-icon" style="color:'+rewardColor+'">'+svg+'</div>';
+  }
+
+  setTimeout(function(){
+    document.getElementById('reveal-info').classList.add('show');
+    playSound('reward_'+rewardData.rarity);
+    isAnimating = false;
+  },300);
+}
+
+// ===== COLLECT / CLOSE =====
+window.collectReward = function(){
+  if(typeof cef!=='undefined'&&cef.emit) cef.emit('cardcase:collect');
+  closeCase();
+};
+
+function closeCase(){
+  if(typeof cef!=='undefined'&&cef.emit) cef.emit('cardcase:close');
+  resetCaseUI();
+}
+window.closeCase = closeCase;
+
+function resetCaseUI(){
+  document.getElementById('reveal-overlay').classList.remove('active');
+  document.getElementById('reveal-info').classList.remove('show');
+  document.getElementById('open-btn').classList.remove('visible');
+  bloomPass.strength = 1.5;
+  portalLight.intensity = 4;
+
+  for(var i=0;i<explosionParticles.length;i++){
+    explosionGroup.remove(explosionParticles[i]);
+    explosionParticles[i].geometry.dispose();
+    explosionParticles[i].material.dispose();
+  }
+  explosionParticles = [];
+
+  generateCards();
+  isAnimating = false;
+}
+
+// ===== SOUND =====
+function playSound(type){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    var osc = audioCtx.createOscillator();
+    var gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    var now = audioCtx.currentTime;
+
+    switch(type){
+      case 'select':
+        osc.type='sine';osc.frequency.setValueAtTime(800,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.1);
+        gain.gain.setValueAtTime(0.08,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.15);
+        osc.start(now);osc.stop(now+0.15);break;
+      case 'reveal_start':
+        osc.type='sine';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(600,now+0.3);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+        osc.start(now);osc.stop(now+0.4);break;
+      case 'card_flip':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(200,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.15);
+        gain.gain.setValueAtTime(0.04,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.2);
+        osc.start(now);osc.stop(now+0.2);break;
+      case 'flash':
+        osc.type='sine';osc.frequency.setValueAtTime(1500,now);osc.frequency.exponentialRampToValueAtTime(200,now+0.3);
+        gain.gain.setValueAtTime(0.1,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.4);
+        osc.start(now);osc.stop(now+0.4);break;
+      case 'reward_common':
+        osc.type='sine';osc.frequency.setValueAtTime(600,now);osc.frequency.exponentialRampToValueAtTime(800,now+0.2);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.3);
+        osc.start(now);osc.stop(now+0.3);break;
+      case 'reward_rare':
+        osc.type='sine';osc.frequency.setValueAtTime(600,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.4);
+        gain.gain.setValueAtTime(0.07,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.5);
+        osc.start(now);osc.stop(now+0.5);break;
+      case 'reward_epic':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(400,now);osc.frequency.exponentialRampToValueAtTime(1200,now+0.3);
+        osc.frequency.exponentialRampToValueAtTime(800,now+0.5);
+        gain.gain.setValueAtTime(0.06,now);gain.gain.exponentialRampToValueAtTime(0.001,now+0.6);
+        osc.start(now);osc.stop(now+0.6);break;
+      case 'reward_legendary':
+        osc.type='sawtooth';osc.frequency.setValueAtTime(300,now);osc.frequency.exponentialRampToValueAtTime(1500,now+0.4);
+        osc.frequency.exponentialRampToValueAtTime(1800,now+0.8);
+        gain.gain.setValueAtTime(0.08,now);gain.gain.exponentialRampToValueAtTime(0.001,now+1.0);
+        osc.start(now);osc.stop(now+1.0);
+        var o2=audioCtx.createOscillator(),g2=audioCtx.createGain();
+        o2.connect(g2);g2.connect(audioCtx.destination);o2.type='sine';
+        o2.frequency.setValueAtTime(600,now+0.15);o2.frequency.exponentialRampToValueAtTime(2000,now+0.5);
+        g2.gain.setValueAtTime(0.04,now+0.15);g2.gain.exponentialRampToValueAtTime(0.001,now+0.7);
+        o2.start(now+0.15);o2.stop(now+0.7);break;
+    }
+  }catch(e){}
+}
+
+// ===== ANIMATION LOOP =====
+var clock = new THREE.Clock();
+
+function animate(){
+  requestAnimationFrame(animate);
+  var delta = clock.getDelta();
+  var elapsed = clock.getElapsedTime();
+
+  portalTorus.rotation.z = elapsed*0.3;
+  portalTorus2.rotation.z = -elapsed*0.5;
+
+  coreMat.uniforms.uTime.value = elapsed;
+
+  portalLight.intensity = 4 + Math.sin(elapsed*2)*0.8;
+
+  floorRing.material.opacity = 0.15 + Math.sin(elapsed*1.5)*0.08;
+
+  particleMat.uniforms.uTime.value = elapsed;
+  var positions = particleGeo.attributes.position.array;
+  for(var i=0;i<particleCount;i++){
+    positions[i*3] += particleVelocities[i].vx;
+    positions[i*3+1] += particleVelocities[i].vy;
+    positions[i*3+2] += particleVelocities[i].vz;
+    if(positions[i*3+1]>6){positions[i*3+1]=-0.5;positions[i*3]=(Math.random()-0.5)*12;}
+  }
+  particleGeo.attributes.position.needsUpdate = true;
+
+  for(var i=explosionParticles.length-1;i>=0;i--){
+    var p = explosionParticles[i];
+    p.position.x += p.userData.vx;
+    p.position.y += p.userData.vy;
+    p.position.z += p.userData.vz;
+    p.userData.vy -= p.userData.gravity;
+    p.userData.vx *= 0.99;
+    p.userData.vz *= 0.99;
+    p.material.opacity -= p.userData.decay;
+    if(p.material.opacity<=0){
+      explosionGroup.remove(p);
+      p.geometry.dispose();
+      p.material.dispose();
+      explosionParticles.splice(i,1);
+    }
+  }
+
+  if(bloomPass.strength>1.5){
+    bloomPass.strength -= delta*2;
+    if(bloomPass.strength<1.5) bloomPass.strength=1.5;
+  }
+
+  if(portalLight.intensity>4){
+    portalLight.intensity -= delta*5;
+    if(portalLight.intensity<4) portalLight.intensity=4;
+  }
+
+  // Hover effect on cards - BRIGHTER glow
+  raycaster.setFromCamera(mouse,camera);
+  var intersects = raycaster.intersectObjects(cards);
+  if(hoveredCard && (!intersects.length || intersects[0].object !== hoveredCard)){
+    if(!hoveredCard.userData.selected){
+      tweenCard(hoveredCard,hoveredCard.userData.origPos,hoveredCard.userData.origRot,200);
+    }
+    if(hoveredCard.material && hoveredCard.material.length){
+      hoveredCard.material[4].emissiveIntensity = 0.25;
+      hoveredCard.material[5].emissiveIntensity = 0.25;
+      hoveredCard.material[4].emissive.setHex(0x3a2a5e);
+      hoveredCard.material[5].emissive.setHex(0x2a1a5e);
+    }
+    hoveredCard = null;
+    canvas.style.cursor = 'default';
+  }
+  if(intersects.length>0 && !isAnimating){
+    var card = intersects[0].object;
+    if(card !== hoveredCard){
+      hoveredCard = card;
+      if(!card.userData.selected){
+        var hoverPos = card.userData.origPos.clone();
+        hoverPos.y += 0.2;
+        hoverPos.z += 0.1;
+        var hoverRot = card.userData.origRot.clone();
+        hoverRot.x = -0.2;
+        tweenCard(card,hoverPos,hoverRot,200);
+      }
+      // Bright purple glow on hover
+      if(card.material && card.material.length){
+        card.material[4].emissiveIntensity = 0.9;
+        card.material[5].emissiveIntensity = 0.7;
+        card.material[4].emissive.setHex(0x6d28d9);
+        card.material[5].emissive.setHex(0x6d28d9);
+      }
+      canvas.style.cursor = 'pointer';
+    }
+  }
+
+  composer.render();
+}
+
+animate();
+
+window.addEventListener('resize',function(){
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth,window.innerHeight);
+  composer.setSize(window.innerWidth,window.innerHeight);
+});
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'||e.keyCode===27) closeCase();
+});
+
+if(typeof cef!=='undefined'&&cef.addEventListener){
+  cef.addEventListener('cardcase:init',function(name,type,rarity,label,image){
+    rewardData.name = name||'Mystery Reward';
+    rewardData.type = type||'money';
+    rewardData.rarity = rarity||'rare';
+    rewardData.label = label||'Nagrada';
+    rewardData.image = image||'';
+    console.log('[CARDCASE] init: '+name+' rarity='+rarity+' type='+type);
+    generateCards();
+  });
+}
+
+</script>
+</body>
+</html>

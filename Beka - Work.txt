@@ -1,0 +1,4 @@
+Kreiranje stabla - drva craft sys - InProgress not full finish
+Fix kera  - Not finish
+Kablovi sys za kraft - InProgress
+Launcher napravljen u .exe one click - FINISH

@@ -1929,11 +1929,11 @@ stock WC_PlayerTextDrawAlignment(playerid, PlayerText:text, alignment)
         return PlayerTextDrawAlignment(playerid, text, alignment);
 }
 
-stock WC_PlayerTextDrawColor(playerid, PlayerText:text, color)
+stock WC_PlayerTextDrawColour(playerid, PlayerText:text, color)
 {
         if(playerid < 0 || playerid >= MAX_PLAYERS) return 0;
         if(_:text < 0 || _:text >= MAX_PLAYER_TEXT_DRAWS || s_InternalPlayerTextDraw[playerid][text]) return 0;
-        return PlayerTextDrawColor(playerid, text, color);
+        return PlayerTextDrawColour(playerid, text, color);
 }
 
 stock WC_PlayerTextDrawUseBox(playerid, PlayerText:text, use)
@@ -1943,11 +1943,11 @@ stock WC_PlayerTextDrawUseBox(playerid, PlayerText:text, use)
         return PlayerTextDrawUseBox(playerid, text, use);
 }
 
-stock WC_PlayerTextDrawBoxColor(playerid, PlayerText:text, color)
+stock WC_PlayerTextDrawBoxColour(playerid, PlayerText:text, color)
 {
         if(playerid < 0 || playerid >= MAX_PLAYERS) return 0;
         if(_:text < 0 || _:text >= MAX_PLAYER_TEXT_DRAWS || s_InternalPlayerTextDraw[playerid][text]) return 0;
-        return PlayerTextDrawBoxColor(playerid, text, color);
+        return PlayerTextDrawBoxColour(playerid, text, color);
 }
 
 stock WC_PlayerTextDrawSetShadow(playerid, PlayerText:text, size)
@@ -1968,7 +1968,7 @@ stock WC_PlayerTextDrawBackgroundColo(playerid, PlayerText:text, color)
 {
         if(playerid < 0 || playerid >= MAX_PLAYERS) return 0;
         if(_:text < 0 || _:text >= MAX_PLAYER_TEXT_DRAWS || s_InternalPlayerTextDraw[playerid][text]) return 0;
-        return PlayerTextDrawBackgroundColor(playerid, text, color);
+        return PlayerTextDrawBackgroundColour(playerid, text, color);
 }
 
 stock WC_PlayerTextDrawFont(playerid, PlayerText:text, font)
@@ -4051,7 +4051,7 @@ static UpdateHealthBar(playerid, bool:force = false)
                                         PlayerTextDrawUseBox    (playerid, s_HealthBarForeground[playerid], 1);
                                         PlayerTextDrawLetterSize(playerid, s_HealthBarForeground[playerid], 0.0, 0.2);
                                         PlayerTextDrawTextSize  (playerid, s_HealthBarForeground[playerid], 545.75, 0.0);
-                                        PlayerTextDrawBoxColor  (playerid, s_HealthBarForeground[playerid], 0xB51821FF);
+                                        PlayerTextDrawBoxColour  (playerid, s_HealthBarForeground[playerid], 0xB51821FF);
 
                                         PlayerTextDrawShow(playerid, s_HealthBarForeground[playerid]);
                                 }
@@ -4968,12 +4968,12 @@ static DamageFeedUpdate(playerid, bool:modified = false)
                         s_InternalPlayerTextDraw[playerid][td] = true;
 
                         PlayerTextDrawLetterSize(playerid, td, 0.2, 0.9);
-                        PlayerTextDrawColor(playerid, td, 0x30FF50FF);
+                        PlayerTextDrawColour(playerid, td, 0x30FF50FF);
                         PlayerTextDrawFont(playerid, td, 1);
                         PlayerTextDrawSetShadow(playerid, td, 0);
                         PlayerTextDrawAlignment(playerid, td, 2);
                         PlayerTextDrawSetOutline(playerid, td, 1);
-                        PlayerTextDrawBackgroundColor(playerid, td, 0x0000001A);
+                        PlayerTextDrawBackgroundColour(playerid, td, 0x0000001A);
 
                         s_DamageFeedGiven[playerid] = td;
                 }
@@ -4988,12 +4988,12 @@ static DamageFeedUpdate(playerid, bool:modified = false)
                         s_InternalPlayerTextDraw[playerid][td] = true;
 
                         PlayerTextDrawLetterSize(playerid, td, 0.2, 0.9);
-                        PlayerTextDrawColor(playerid, td, 0x33CCFFFF);
+                        PlayerTextDrawColour(playerid, td, 0x33CCFFFF);
                         PlayerTextDrawFont(playerid, td, 1);
                         PlayerTextDrawSetShadow(playerid, td, 0);
                         PlayerTextDrawAlignment(playerid, td, 2);
                         PlayerTextDrawSetOutline(playerid, td, 1);
-                        PlayerTextDrawBackgroundColor(playerid, td, 0x0000001A);
+                        PlayerTextDrawBackgroundColour(playerid, td, 0x0000001A);
 
                         s_DamageFeedTaken[playerid] = td;
                 }
@@ -6215,12 +6215,12 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #define PlayerTextDrawAlignment WC_PlayerTextDrawAlignment
 
 
-#if defined _ALS_PlayerTextDrawColor
-        #undef PlayerTextDrawColor
+#if defined _ALS_PlayerTextDrawColour
+        #undef PlayerTextDrawColour
 #else
-        #define _ALS_PlayerTextDrawColor
+        #define _ALS_PlayerTextDrawColour
 #endif
-#define PlayerTextDrawColor WC_PlayerTextDrawColor
+#define PlayerTextDrawColour WC_PlayerTextDrawColour
 
 
 #if defined _ALS_PlayerTextDrawUseBox
@@ -6231,12 +6231,12 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 #define PlayerTextDrawUseBox WC_PlayerTextDrawUseBox
 
 
-#if defined _ALS_PlayerTextDrawBoxColor
-        #undef PlayerTextDrawBoxColor
+#if defined _ALS_PlayerTextDrawBoxColour
+        #undef PlayerTextDrawBoxColour
 #else
-        #define _ALS_PlayerTextDrawBoxColor
+        #define _ALS_PlayerTextDrawBoxColour
 #endif
-#define PlayerTextDrawBoxColor WC_PlayerTextDrawBoxColor
+#define PlayerTextDrawBoxColour WC_PlayerTextDrawBoxColour
 
 
 #if defined _ALS_PlayerTextDrawSetShadow
@@ -6256,11 +6256,11 @@ public OnPlayerDamage(&playerid, &Float:amount, &issuerid, &weaponid, &bodypart)
 
 
 #if defined _ALS_PlayerTextDrawBackgroundCo
-        #undef PlayerTextDrawBackgroundColor
+        #undef PlayerTextDrawBackgroundColour
 #else
         #define _ALS_PlayerTextDrawBackgroundCo
 #endif
-#define PlayerTextDrawBackgroundColor WC_PlayerTextDrawBackgroundColo
+#define PlayerTextDrawBackgroundColour WC_PlayerTextDrawBackgroundColo
 
 
 #if defined _ALS_PlayerTextDrawFont

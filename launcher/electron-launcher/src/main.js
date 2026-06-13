@@ -74,6 +74,13 @@ const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
 const SAMP_CLIENT_URL = 'https://files.sa-mp.com/sa-mp-0.3.7-R4-install.exe';
+const MODEL_BASE_URL = 'https://raw.githubusercontent.com/bek1cc/UG/main/Models/';
+const ARTWORK_MODELS = [
+  { file: 'fireaxe.dff', localPath: 'artwork/fireaxe.dff' },
+  { file: 'fireaxe.txd', localPath: 'artwork/fireaxe.txd' },
+  { file: 'wmyva2.dff', localPath: 'artwork/wmyva2.dff' },
+  { file: 'wmyva2.txd', localPath: 'artwork/wmyva2.txd' }
+];
 
 const LAUNCHER_DIR = app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..');
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
@@ -161,6 +168,8 @@ function getStatus(gtaPath) {
     // CEF runtime check: libcef.dll and client.dll are the critical CEF engine files
     const hasCefRuntime = fs.existsSync(path.join(gtaPath, 'cef', 'libcef.dll')) && fs.existsSync(path.join(gtaPath, 'cef', 'client.dll'));
     s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
+    // Check artwork models
+    s.models_ok = ARTWORK_MODELS.every(m => fs.existsSync(path.join(gtaPath, m.localPath)));
     if (hasAsi && hasCefRuntime) { s.cef_ok = true; s.cef_msg = 'CEF OK'; }
     else if (hasAsi && hasCefFolder) { s.cef_msg = 'CEF runtime fali (libcef.dll)'; }
     else if (hasAsi) { s.cef_msg = 'Fali cef/ folder'; }
@@ -171,7 +180,8 @@ function getStatus(gtaPath) {
       if (!hasAsi) s.missing.push('cef_asi');
       if (!hasCefRuntime) s.missing.push('cef_runtime');
       if (!s.has_asi) s.missing.push('asi_loader');
-      s.ready = s.has_samp && s.cef_ok && s.has_asi;
+      if (!s.models_ok) s.missing.push('artwork_models');
+      s.ready = s.has_samp && s.cef_ok && s.has_asi && s.models_ok;
     } else {
       s.ready = s.has_samp;
     }
@@ -347,6 +357,20 @@ async function autoInstall(gtaPath, missing) {
       const zip = new AdmZip(tmpZip);
       zip.extractAllTo(gtaPath, true);
       try { fs.unlinkSync(tmpZip); } catch (e) {}
+    }
+    else if (comp === 'artwork_models') {
+      for (const model of ARTWORK_MODELS) {
+        const url = MODEL_BASE_URL + model.file;
+        const dest = path.join(gtaPath, model.localPath);
+        const dir = path.dirname(dest);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        await downloadFile(url, dest, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+          });
+        });
+        log('Downloaded model: ' + model.file);
+      }
     }
   }
   if (mainWindow) mainWindow.webContents.send('install-complete', {});

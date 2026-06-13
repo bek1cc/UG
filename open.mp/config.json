@@ -56,7 +56,7 @@
     },
     "pawn": {
         "scripts": ["fg-ogc"],
-        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas"]
+        "legacy_plugins": ["crashdetect", "streamer", "sscanf", "iTD", "MapAndreas", "mysql", "SKY"]
     },
     "rcon": {
         "allow_teleport": false,

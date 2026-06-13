@@ -240,80 +240,80 @@ stock Kliz_CreatePlayerTDs(playerid) {
 
     // 1. GLAVNI PANEL - tamna pozadina
     KlizPlayerData[playerid][klizMGBgPanel] = CreatePlayerTextDraw(playerid, 170.000000, 155.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGBgPanel], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0.600000, 13.000000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGBgPanel], -1);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGBgPanel], -1);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGBgPanel], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGBgPanel], 1);
-    PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0x141428DD);
+    PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGBgPanel], 0x141428DD);
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGBgPanel], 470.000000, 0.000000);
 
     // 2. HEADER LINIJA - narandzasti accent na vrhu
     KlizPlayerData[playerid][klizMGHeaderLine] = CreatePlayerTextDraw(playerid, 170.000000, 155.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0.600000, 0.350000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGHeaderLine], -1);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGHeaderLine], -1);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 1);
-    PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0xFF4500FF);
+    PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 0xFF4500FF);
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGHeaderLine], 470.000000, 0.000000);
 
     // 3. FOOTER LINIJA - border na dnu
     KlizPlayerData[playerid][klizMGFooterLine] = CreatePlayerTextDraw(playerid, 170.000000, 261.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGFooterLine], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0.600000, 0.200000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGFooterLine], -1);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGFooterLine], -1);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGFooterLine], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGFooterLine], 1);
-    PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0xFF450088);
+    PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGFooterLine], 0xFF450088);
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGFooterLine], 470.000000, 0.000000);
 
     // 4. NASLOV
     KlizPlayerData[playerid][klizMGTitle] = CreatePlayerTextDraw(playerid, 320.000000, 164.000000, "~y~~h~KLIZISTE ~w~MINIGAME");
     PlayerTextDrawAlignment(playerid, KlizPlayerData[playerid][klizMGTitle], 2);
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGTitle], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGTitle], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGTitle], 2);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGTitle], 0.280000, 1.300000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGTitle], 0xFFFFFFFF);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGTitle], 0xFFFFFFFF);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGTitle], 1);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGTitle], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGTitle], 0);
 
     // 5. BAR TRACK - tamna pozadina trake (box)
     KlizPlayerData[playerid][klizMGBarTrack] = CreatePlayerTextDraw(playerid, KLIZISTE_BAR_VISUAL_X, 193.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGBarTrack], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0.500000, 2.200000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGBarTrack], -1);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGBarTrack], -1);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGBarTrack], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGBarTrack], 1);
-    PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0x2a2a42CC);
+    PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGBarTrack], 0x2a2a42CC);
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGBarTrack], KLIZISTE_BAR_VISUAL_END, 0.000000);
 
     // 6. ZONA BOX - placeholder (pravi TD se kreira dinamicki u Kliziste_CreateZoneTD)
     KlizPlayerData[playerid][klizMGBarText] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGBarText], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGBarText], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
 
     // 7. STATUS - "U ZONI!" / "VANI ZONE"
     KlizPlayerData[playerid][klizMGStatus] = CreatePlayerTextDraw(playerid, 320.000000, 226.000000, "_");
     PlayerTextDrawAlignment(playerid, KlizPlayerData[playerid][klizMGStatus], 2);
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGStatus], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGStatus], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGStatus], 2);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGStatus], 0.260000, 1.300000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGStatus], 0xFFFFFFFF);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGStatus], 0xFFFFFFFF);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGStatus], 1);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGStatus], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGStatus], 0);
@@ -321,10 +321,10 @@ stock Kliz_CreatePlayerTDs(playerid) {
     // 8. KEY HINT
     KlizPlayerData[playerid][klizMGKeyHint] = CreatePlayerTextDraw(playerid, 320.000000, 243.000000, "~w~Pritisni ~y~~h~[SPACE]~w~ u ~g~~h~zelenoj zoni");
     PlayerTextDrawAlignment(playerid, KlizPlayerData[playerid][klizMGKeyHint], 2);
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGKeyHint], 2);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0.200000, 1.000000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0xCCCCCCFF);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0xCCCCCCFF);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGKeyHint], 1);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGKeyHint], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGKeyHint], 0);
@@ -333,27 +333,27 @@ stock Kliz_CreatePlayerTDs(playerid) {
     KlizPlayerData[playerid][klizMGReward] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGReward], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGReward], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
 
     // === GLOBALNI STATUS TDs ===
 
     // Progress (desno gore)
     KlizPlayerData[playerid][klizProgressTD] = CreatePlayerTextDraw(playerid, 620.000000, 160.000000, "_");
     PlayerTextDrawAlignment(playerid, KlizPlayerData[playerid][klizProgressTD], 3);
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizProgressTD], 255);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizProgressTD], 255);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizProgressTD], 2);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizProgressTD], 0.200000, 0.900000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizProgressTD], 0xFF4500CC);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizProgressTD], 0xFF4500CC);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizProgressTD], 1);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizProgressTD], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizProgressTD], 0);
 
     // Status TD (lijevo gore)
     KlizPlayerData[playerid][klizStatusTD] = CreatePlayerTextDraw(playerid, 20.000000, 130.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizStatusTD], 150);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizStatusTD], 150);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizStatusTD], 2);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizStatusTD], 0.180000, 0.900000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizStatusTD], 0xFF4500DD);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizStatusTD], 0xFF4500DD);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizStatusTD], 1);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizStatusTD], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizStatusTD], 0);
@@ -382,13 +382,13 @@ stock Kliz_HideMinigame(playerid) {
     KlizPlayerData[playerid][klizMGBarText] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGBarText], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGBarText], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
 
     PlayerTextDrawDestroy(playerid, KlizPlayerData[playerid][klizMGReward]);
     KlizPlayerData[playerid][klizMGReward] = CreatePlayerTextDraw(playerid, 0.0, 0.0, "_");
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGReward], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGReward], 0.01, 0.01);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
 
     PlayerTextDrawHide(playerid, KlizPlayerData[playerid][klizMGStatus]);
     PlayerTextDrawHide(playerid, KlizPlayerData[playerid][klizMGKeyHint]);
@@ -436,15 +436,15 @@ stock Kliziste_CreateZoneTD(playerid) {
 
     // Kreiraj zeleni box na poziciji zone
     KlizPlayerData[playerid][klizMGBarText] = CreatePlayerTextDraw(playerid, zoneStartX, 194.0, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGBarText], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGBarText], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGBarText], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGBarText], 0.500000, 1.900000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00000000);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGBarText], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGBarText], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGBarText], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGBarText], 1);
-    PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00FF0088); // Poluprovidna zelena
+    PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGBarText], 0x00FF0088); // Poluprovidna zelena
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGBarText], zoneEndX, 0.0);
     PlayerTextDrawShow(playerid, KlizPlayerData[playerid][klizMGBarText]);
 }
@@ -466,19 +466,19 @@ stock Kliziste_CreateMarkerTD(playerid) {
     new Float:mRight = markerX + (KLIZISTE_MARKER_WIDTH / 2.0);
 
     KlizPlayerData[playerid][klizMGReward] = CreatePlayerTextDraw(playerid, mLeft, 193.0, "_");
-    PlayerTextDrawBackgroundColor(playerid, KlizPlayerData[playerid][klizMGReward], 0);
+    PlayerTextDrawBackgroundColour(playerid, KlizPlayerData[playerid][klizMGReward], 0);
     PlayerTextDrawFont(playerid, KlizPlayerData[playerid][klizMGReward], 1);
     PlayerTextDrawLetterSize(playerid, KlizPlayerData[playerid][klizMGReward], 0.100000, 2.200000);
-    PlayerTextDrawColor(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
+    PlayerTextDrawColour(playerid, KlizPlayerData[playerid][klizMGReward], 0x00000000);
     PlayerTextDrawSetOutline(playerid, KlizPlayerData[playerid][klizMGReward], 0);
     PlayerTextDrawSetProportional(playerid, KlizPlayerData[playerid][klizMGReward], 1);
     PlayerTextDrawSetShadow(playerid, KlizPlayerData[playerid][klizMGReward], 0);
     PlayerTextDrawUseBox(playerid, KlizPlayerData[playerid][klizMGReward], 1);
     // Boja markera zavisi da li je u zoni
     if(inZone) {
-        PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGReward], 0xFFFF00FF); // Zuta - u zoni
+        PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGReward], 0xFFFF00FF); // Zuta - u zoni
     } else {
-        PlayerTextDrawBoxColor(playerid, KlizPlayerData[playerid][klizMGReward], 0xFF4444FF); // Crvena - van zone
+        PlayerTextDrawBoxColour(playerid, KlizPlayerData[playerid][klizMGReward], 0xFF4444FF); // Crvena - van zone
     }
     PlayerTextDrawTextSize(playerid, KlizPlayerData[playerid][klizMGReward], mRight, 0.0);
     PlayerTextDrawShow(playerid, KlizPlayerData[playerid][klizMGReward]);

@@ -377,37 +377,37 @@ stock ZeljInv_RemoveRaw(playerid, kolicina) {
 stock Zelj_CreatePlayerTDs(playerid) {
     // Progress bar background
     ZeljPlayerData[playerid][zeljProgressBgr] = CreatePlayerTextDraw(playerid, 250.000000, 400.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 255);
+    PlayerTextDrawBackgroundColour(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 255);
     PlayerTextDrawFont(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 1);
     PlayerTextDrawLetterSize(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 0.500000, 1.500000);
-    PlayerTextDrawColor(playerid, ZeljPlayerData[playerid][zeljProgressBgr], -1);
+    PlayerTextDrawColour(playerid, ZeljPlayerData[playerid][zeljProgressBgr], -1);
     PlayerTextDrawSetOutline(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 1);
     PlayerTextDrawSetProportional(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 1);
     PlayerTextDrawSetShadow(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 1);
     PlayerTextDrawUseBox(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 1);
-    PlayerTextDrawBoxColor(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 80);
+    PlayerTextDrawBoxColour(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 80);
     PlayerTextDrawTextSize(playerid, ZeljPlayerData[playerid][zeljProgressBgr], 420.000000, 0.000000);
 
     // Progress bar (popunjavanje)
     ZeljPlayerData[playerid][zeljProgressBar] = CreatePlayerTextDraw(playerid, 251.000000, 401.000000, "_");
-    PlayerTextDrawBackgroundColor(playerid, ZeljPlayerData[playerid][zeljProgressBar], 255);
+    PlayerTextDrawBackgroundColour(playerid, ZeljPlayerData[playerid][zeljProgressBar], 255);
     PlayerTextDrawFont(playerid, ZeljPlayerData[playerid][zeljProgressBar], 1);
     PlayerTextDrawLetterSize(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0.479166, 1.200000);
-    PlayerTextDrawColor(playerid, ZeljPlayerData[playerid][zeljProgressBar], -1);
+    PlayerTextDrawColour(playerid, ZeljPlayerData[playerid][zeljProgressBar], -1);
     PlayerTextDrawSetOutline(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0);
     PlayerTextDrawSetProportional(playerid, ZeljPlayerData[playerid][zeljProgressBar], 1);
     PlayerTextDrawSetShadow(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0);
     PlayerTextDrawUseBox(playerid, ZeljPlayerData[playerid][zeljProgressBar], 1);
-    PlayerTextDrawBoxColor(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0x00BFFF66);
+    PlayerTextDrawBoxColour(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0x00BFFF66);
     PlayerTextDrawTextSize(playerid, ZeljPlayerData[playerid][zeljProgressBar], 251.000000, 0.000000);
 
     // Info textdraw (gore desno)
     ZeljPlayerData[playerid][zeljInfoTD] = CreatePlayerTextDraw(playerid, 620.000000, 130.000000, "_");
     PlayerTextDrawAlignment(playerid, ZeljPlayerData[playerid][zeljInfoTD], 3);
-    PlayerTextDrawBackgroundColor(playerid, ZeljPlayerData[playerid][zeljInfoTD], 255);
+    PlayerTextDrawBackgroundColour(playerid, ZeljPlayerData[playerid][zeljInfoTD], 255);
     PlayerTextDrawFont(playerid, ZeljPlayerData[playerid][zeljInfoTD], 2);
     PlayerTextDrawLetterSize(playerid, ZeljPlayerData[playerid][zeljInfoTD], 0.220000, 1.000000);
-    PlayerTextDrawColor(playerid, ZeljPlayerData[playerid][zeljInfoTD], 0x00BFFFCC);
+    PlayerTextDrawColour(playerid, ZeljPlayerData[playerid][zeljInfoTD], 0x00BFFFCC);
     PlayerTextDrawSetOutline(playerid, ZeljPlayerData[playerid][zeljInfoTD], 1);
     PlayerTextDrawSetProportional(playerid, ZeljPlayerData[playerid][zeljInfoTD], 1);
     PlayerTextDrawSetShadow(playerid, ZeljPlayerData[playerid][zeljInfoTD], 0);
@@ -415,10 +415,10 @@ stock Zelj_CreatePlayerTDs(playerid) {
     // Raw metal counter
     ZeljPlayerData[playerid][zeljRawMetalTD] = CreatePlayerTextDraw(playerid, 620.000000, 145.000000, "_");
     PlayerTextDrawAlignment(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 3);
-    PlayerTextDrawBackgroundColor(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 255);
+    PlayerTextDrawBackgroundColour(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 255);
     PlayerTextDrawFont(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 2);
     PlayerTextDrawLetterSize(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 0.200000, 0.900000);
-    PlayerTextDrawColor(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 0xFFD700CC);
+    PlayerTextDrawColour(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 0xFFD700CC);
     PlayerTextDrawSetOutline(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 1);
     PlayerTextDrawSetProportional(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 1);
     PlayerTextDrawSetShadow(playerid, ZeljPlayerData[playerid][zeljRawMetalTD], 0);
@@ -426,10 +426,10 @@ stock Zelj_CreatePlayerTDs(playerid) {
     // Progress bar label (KOPANJE... / PRERADA... iznad bara)
     ZeljPlayerData[playerid][zeljProgressLabel] = CreatePlayerTextDraw(playerid, 335.000000, 385.000000, "_");
     PlayerTextDrawAlignment(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 2);
-    PlayerTextDrawBackgroundColor(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 150);
+    PlayerTextDrawBackgroundColour(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 150);
     PlayerTextDrawFont(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 2);
     PlayerTextDrawLetterSize(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 0.300000, 1.100000);
-    PlayerTextDrawColor(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 0x00BFFFEE);
+    PlayerTextDrawColour(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 0x00BFFFEE);
     PlayerTextDrawSetOutline(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 1);
     PlayerTextDrawSetProportional(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 1);
     PlayerTextDrawSetShadow(playerid, ZeljPlayerData[playerid][zeljProgressLabel], 0);
@@ -438,7 +438,7 @@ stock Zelj_CreatePlayerTDs(playerid) {
 stock Zelj_ShowProgress(playerid, Float:percent, info[]) {
     new Float:barWidth = 251.0 + (168.0 * (percent / 100.0));
     PlayerTextDrawTextSize(playerid, ZeljPlayerData[playerid][zeljProgressBar], barWidth, 0.000000);
-    PlayerTextDrawBoxColor(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0x00BFFF66);
+    PlayerTextDrawBoxColour(playerid, ZeljPlayerData[playerid][zeljProgressBar], 0x00BFFF66);
     PlayerTextDrawShow(playerid, ZeljPlayerData[playerid][zeljProgressBgr]);
     PlayerTextDrawShow(playerid, ZeljPlayerData[playerid][zeljProgressBar]);
 

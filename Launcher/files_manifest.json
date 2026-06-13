@@ -1,5 +1,10 @@
 {
   "baseUrl": "https://raw.githubusercontent.com/bek1cc/UG/main/Models/",
   "serverIp": "217.156.22.164:7774",
-  "files": []
+  "files": [
+    { "localPath": "artwork/fireaxe.dff", "url": "", "hash": "" },
+    { "localPath": "artwork/fireaxe.txd", "url": "", "hash": "" },
+    { "localPath": "artwork/wmyva2.dff", "url": "", "hash": "" },
+    { "localPath": "artwork/wmyva2.txd", "url": "", "hash": "" }
+  ]
 }

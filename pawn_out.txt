@@ -1,0 +1,2 @@
+Pawn compiler 3.10.11	 	 	Copyright (c) 1997-2006, ITB CompuPhase
+

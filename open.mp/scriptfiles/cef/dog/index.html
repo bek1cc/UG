@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="bs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UG Dog Panel</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+body{
+  background:transparent;
+  color:#fff;
+  font-family:'Rajdhani',sans-serif;
+  overflow:hidden;
+  width:100vw;height:100vh;
+  user-select:none;
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* Background blur overlay */
+.bg-overlay{
+  position:fixed;inset:0;z-index:0;
+  background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+}
+
+/* Main panel */
+.panel{
+  position:relative;z-index:10;
+  width:520px;
+  background:linear-gradient(165deg,rgba(15,15,25,0.97),rgba(10,10,18,0.99));
+  border:1px solid rgba(139,92,246,0.15);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 0 60px rgba(139,92,246,0.08),0 25px 50px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+/* Top gradient line */
+.panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#8b5cf6,#06b6d4,#8b5cf6,transparent);
+}
+
+/* Panel header */
+.panel-header{
+  padding:20px 24px 16px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid rgba(139,92,246,0.08);
+}
+.panel-header .title-group{display:flex;align-items:center;gap:12px}
+.panel-header .dog-icon{
+  width:42px;height:42px;
+  background:linear-gradient(135deg,rgba(139,92,246,0.15),rgba(6,182,212,0.08));
+  border-radius:12px;border:1px solid rgba(139,92,246,0.2);
+  display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 0 8px rgba(139,92,246,0.2));
+}
+.panel-header .dog-icon svg{width:24px;height:24px}
+.panel-header h1{
+  font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:3px;text-transform:uppercase;
+  background:linear-gradient(135deg,#c4b5fd,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.panel-header .subtitle{font-size:11px;color:rgba(255,255,255,0.3);letter-spacing:1px;margin-top:2px}
+.close-btn{
+  width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.03);cursor:pointer;color:rgba(255,255,255,0.4);
+  display:flex;align-items:center;justify-content:center;font-size:14px;
+  transition:all 0.2s;
+}
+.close-btn:hover{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#ef4444}
+
+/* Dog profile section */
+.dog-profile{
+  padding:20px 24px;
+  display:flex;gap:20px;
+  border-bottom:1px solid rgba(139,92,246,0.06);
+}
+.dog-avatar{
+  width:110px;height:110px;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(139,92,246,0.08),rgba(6,182,212,0.04));
+  border-radius:16px;border:1px solid rgba(139,92,246,0.12);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.dog-avatar::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 80%,rgba(139,92,246,0.1) 0%,transparent 60%);
+}
+.dog-avatar svg{width:70px;height:70px;position:relative;z-index:1;filter:drop-shadow(0 0 15px rgba(139,92,246,0.25))}
+.dog-avatar .breed-tag{
+  position:absolute;bottom:6px;left:50%;transform:translateX(-50%);z-index:2;
+  padding:2px 10px;border-radius:8px;
+  background:rgba(139,92,246,0.2);border:1px solid rgba(139,92,246,0.25);
+  font-family:'Orbitron',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;
+  color:#c4b5fd;white-space:nowrap;
+}
+
+.dog-info{flex:1;display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.dog-name-row{display:flex;align-items:center;gap:8px}
+.dog-name{
+  font-family:'Orbitron',monospace;font-size:20px;font-weight:900;letter-spacing:1px;
+  color:#fff;
+}
+.rename-btn{
+  width:24px;height:24px;border-radius:6px;border:1px solid rgba(139,92,246,0.2);
+  background:rgba(139,92,246,0.06);cursor:pointer;color:#8b5cf6;
+  display:flex;align-items:center;justify-content:center;font-size:11px;
+  transition:all 0.2s;
+}
+.rename-btn:hover{background:rgba(139,92,246,0.2);border-color:rgba(139,92,246,0.4)}
+
+.dog-breed{font-size:13px;color:rgba(255,255,255,0.45);letter-spacing:0.5px}
+
+/* Stats row */
+.stats-row{display:flex;gap:10px;margin-top:6px}
+.stat-box{
+  flex:1;padding:8px 10px;border-radius:10px;
+  background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);
+  text-align:center;
+}
+.stat-box .stat-label{font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);font-family:'Orbitron',monospace}
+.stat-box .stat-value{font-size:16px;font-weight:700;margin-top:2px;font-family:'Orbitron',monospace}
+.stat-hp .stat-value{color:#22c55e}
+.stat-state .stat-value{color:#06b6d4;font-size:11px;letter-spacing:1px}
+
+/* HP Bar */
+.hp-bar-wrap{margin-top:auto}
+.hp-bar-label{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.hp-bar-label span{font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:1px;font-family:'Orbitron',monospace}
+.hp-bar-label .hp-num{color:#22c55e;font-weight:700}
+.hp-bar{height:6px;border-radius:3px;background:rgba(255,255,255,0.06);overflow:hidden}
+.hp-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width 0.5s ease;position:relative}
+.hp-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);animation:shimmer 2s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.hp-bar-fill.low{background:linear-gradient(90deg,#ef4444,#f97316)}
+.hp-bar-fill.mid{background:linear-gradient(90deg,#eab308,#f97316)}
+
+/* Commands section */
+.commands-section{padding:16px 24px;border-bottom:1px solid rgba(139,92,246,0.06)}
+.section-title{
+  font-family:'Orbitron',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(139,92,246,0.5);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:rgba(139,92,246,0.1)}
+
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmd-btn{
+  padding:10px 12px;border-radius:10px;
+  background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);
+  cursor:pointer;transition:all 0.25s;
+  display:flex;align-items:center;gap:10px;
+  color:rgba(255,255,255,0.6);
+}
+.cmd-btn:hover{
+  background:rgba(139,92,246,0.08);border-color:rgba(139,92,246,0.25);
+  color:#fff;transform:translateY(-1px);
+  box-shadow:0 4px 15px rgba(139,92,246,0.08);
+}
+.cmd-btn:active{transform:translateY(0);box-shadow:none}
+.cmd-btn .cmd-icon{
+  width:30px;height:30px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;
+}
+.cmd-btn .cmd-text{flex:1}
+.cmd-btn .cmd-text .cmd-name{font-size:12px;font-weight:600;letter-spacing:0.5px}
+.cmd-btn .cmd-text .cmd-desc{font-size:9px;color:rgba(255,255,255,0.25);margin-top:1px}
+
+.cmd-icon.follow{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.15);color:#22c55e}
+.cmd-icon.sit{background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.15);color:#eab308}
+.cmd-icon.stay{background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.15);color:#06b6d4}
+.cmd-icon.run{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.15);color:#ef4444}
+.cmd-icon.rename{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.15);color:#a855f7}
+.cmd-icon.release{background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.15);color:#ffaa00}
+
+/* Rename section */
+.rename-section{
+  padding:16px 24px;
+  display:none;
+  border-bottom:1px solid rgba(139,92,246,0.06);
+  animation:slideDown 0.3s ease;
+}
+.rename-section.active{display:block}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+
+.rename-input-row{display:flex;gap:8px}
+.rename-input{
+  flex:1;padding:10px 14px;border-radius:10px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(139,92,246,0.15);
+  color:#fff;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;
+  outline:none;transition:all 0.2s;
+}
+.rename-input:focus{border-color:rgba(139,92,246,0.4);background:rgba(139,92,246,0.06);box-shadow:0 0 15px rgba(139,92,246,0.08)}
+.rename-input::placeholder{color:rgba(255,255,255,0.2)}
+.rename-confirm{
+  padding:10px 18px;border-radius:10px;
+  background:linear-gradient(135deg,rgba(139,92,246,0.2),rgba(6,182,212,0.1));
+  border:1px solid rgba(139,92,246,0.3);
+  color:#c4b5fd;font-family:'Orbitron',monospace;font-size:10px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;cursor:pointer;
+  transition:all 0.2s;
+}
+.rename-confirm:hover{background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(6,182,212,0.15));color:#fff}
+
+/* Help section */
+.help-section{padding:14px 24px 18px}
+.help-row{
+  display:flex;align-items:center;gap:8px;
+  padding:4px 0;
+}
+.help-key{
+  padding:2px 8px;border-radius:4px;
+  background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.12);
+  font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;color:#8b5cf6;
+  white-space:nowrap;
+}
+.help-desc{font-size:11px;color:rgba(255,255,255,0.25)}
+
+/* ESC hint */
+.esc-hint{
+  padding:8px;text-align:center;
+  font-size:9px;color:rgba(255,255,255,0.1);letter-spacing:1px;
+  border-top:1px solid rgba(255,255,255,0.03);
+}
+
+/* Animations */
+.panel{animation:panelIn 0.4s cubic-bezier(0.16,1,0.3,1)}
+@keyframes panelIn{from{opacity:0;transform:scale(0.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* State active indicator */
+.cmd-btn.active{
+  background:rgba(139,92,246,0.12);border-color:rgba(139,92,246,0.3);color:#fff;
+}
+.cmd-btn.active .cmd-icon{
+  box-shadow:0 0 10px rgba(139,92,246,0.2);
+}
+
+/* No dog state */
+.no-dog{
+  padding:60px 24px;text-align:center;
+}
+.no-dog svg{width:80px;height:80px;opacity:0.15;margin-bottom:16px;filter:drop-shadow(0 0 20px rgba(139,92,246,0.1))}
+.no-dog h2{font-family:'Orbitron',monospace;font-size:18px;letter-spacing:2px;color:rgba(255,255,255,0.6);margin-bottom:8px}
+.no-dog p{font-size:14px;color:rgba(255,255,255,0.35);line-height:1.5}
+.spawn-btn{
+  margin-top:24px;padding:14px 44px;border-radius:14px;
+  background:linear-gradient(135deg,rgba(139,92,246,0.25),rgba(6,182,212,0.15));
+  border:2px solid rgba(139,92,246,0.5);
+  color:#e0d4ff;font-family:'Orbitron',monospace;font-size:14px;font-weight:700;
+  letter-spacing:3px;text-transform:uppercase;cursor:pointer;
+  transition:all 0.3s;
+  box-shadow:0 0 20px rgba(139,92,246,0.15);
+}
+.spawn-btn:hover{
+  background:linear-gradient(135deg,rgba(139,92,246,0.4),rgba(6,182,212,0.2));
+  border-color:rgba(139,92,246,0.7);color:#fff;
+  box-shadow:0 0 40px rgba(139,92,246,0.25),0 0 80px rgba(139,92,246,0.1);transform:scale(1.05);
+}
+.spawn-btn:active{transform:scale(0.97);box-shadow:0 0 15px rgba(139,92,246,0.1)}
+
+/* Notification toast */
+.toast{
+  position:fixed;top:30px;left:50%;transform:translateX(-50%) translateY(-20px);
+  z-index:100;padding:10px 24px;border-radius:10px;
+  background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);
+  color:#4ade80;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;
+  opacity:0;transition:all 0.3s;pointer-events:none;
+  backdrop-filter:blur(10px);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.error{background:rgba(239,68,68,0.15);border-color:rgba(239,68,68,0.3);color:#f87171}
+</style>
+</head>
+<body>
+
+<div class="bg-overlay" id="bgOverlay"></div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+<!-- Main Panel -->
+<div class="panel" id="mainPanel">
+  <!-- Header -->
+  <div class="panel-header">
+    <div class="title-group">
+      <div class="dog-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5M8 14v.5M16 14v.5M11.25 16.25h1.5L12 17l-.75-.75z"/>
+          <path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0112 5c.78 0 1.5.108 2.161.306"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Pas Panel</h1>
+        <div class="subtitle">Upravljanje ljubimcem</div>
+      </div>
+    </div>
+    <button class="close-btn" id="closeBtn" title="Zatvori">✕</button>
+  </div>
+
+  <!-- Dog active content (shown when dog is spawned) -->
+  <div id="dogActive" style="display:none">
+    <!-- Profile -->
+    <div class="dog-profile">
+      <div class="dog-avatar">
+        <svg viewBox="0 0 100 100" fill="none">
+          <!-- Husky dog SVG -->
+          <ellipse cx="50" cy="62" rx="28" ry="22" fill="#C8BDB0"/>
+          <ellipse cx="50" cy="55" rx="24" ry="18" fill="#D4CCC0"/>
+          <!-- Ears -->
+          <path d="M28 45 L22 18 L38 38 Z" fill="#8B7D6B"/>
+          <path d="M72 45 L78 18 L62 38 Z" fill="#8B7D6B"/>
+          <path d="M30 42 L25 22 L37 38 Z" fill="#C8BDB0"/>
+          <path d="M70 42 L75 22 L63 38 Z" fill="#C8BDB0"/>
+          <!-- Face markings -->
+          <path d="M40 48 L50 38 L60 48 L55 55 L45 55 Z" fill="#F0EBE3"/>
+          <!-- Eyes -->
+          <ellipse cx="40" cy="50" rx="4" ry="4.5" fill="#1a1a2e"/>
+          <ellipse cx="60" cy="50" rx="4" ry="4.5" fill="#1a1a2e"/>
+          <ellipse cx="41" cy="49" rx="1.5" ry="2" fill="#06b6d4" opacity="0.8"/>
+          <ellipse cx="61" cy="49" rx="1.5" ry="2" fill="#06b6d4" opacity="0.8"/>
+          <circle cx="42" cy="48" r="0.8" fill="#fff" opacity="0.9"/>
+          <circle cx="62" cy="48" r="0.8" fill="#fff" opacity="0.9"/>
+          <!-- Nose -->
+          <ellipse cx="50" cy="57" rx="4" ry="3" fill="#1a1a2e"/>
+          <ellipse cx="50" cy="56.5" rx="2.5" ry="1.5" fill="#2d2d44"/>
+          <!-- Mouth -->
+          <path d="M46 60 Q50 64 54 60" stroke="#8B7D6B" stroke-width="1" fill="none"/>
+          <!-- Tongue -->
+          <ellipse cx="50" cy="64" rx="3" ry="4" fill="#e87474"/>
+          <!-- Legs -->
+          <rect x="34" y="78" width="6" height="14" rx="3" fill="#C8BDB0"/>
+          <rect x="60" y="78" width="6" height="14" rx="3" fill="#C8BDB0"/>
+          <rect x="40" y="80" width="5" height="12" rx="2.5" fill="#B8ACA0"/>
+          <rect x="55" y="80" width="5" height="12" rx="2.5" fill="#B8ACA0"/>
+          <!-- Tail -->
+          <path d="M78 58 Q88 42 82 35" stroke="#C8BDB0" stroke-width="5" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="breed-tag" id="breedTag">HUSKY</div>
+      </div>
+      <div class="dog-info">
+        <div class="dog-name-row">
+          <span class="dog-name" id="dogName">Buddy</span>
+          <button class="rename-btn" id="renameToggle" title="Preimenuj">✎</button>
+        </div>
+        <div class="dog-breed" id="dogBreed">Siberian Husky</div>
+        <div class="stats-row">
+          <div class="stat-box stat-hp">
+            <div class="stat-label">HP</div>
+            <div class="stat-value" id="hpValue">100</div>
+          </div>
+          <div class="stat-box stat-state">
+            <div class="stat-label">Stanje</div>
+            <div class="stat-value" id="stateValue">Slijedi</div>
+          </div>
+        </div>
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-label">
+            <span>ZDRAVLJE</span>
+            <span class="hp-num" id="hpNum">100/100</span>
+          </div>
+          <div class="hp-bar">
+            <div class="hp-bar-fill" id="hpBar" style="width:100%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rename section (hidden by default) -->
+    <div class="rename-section" id="renameSection">
+      <div class="rename-input-row">
+        <input type="text" class="rename-input" id="renameInput" placeholder="Unesi novo ime psa..." maxlength="20" autocomplete="off">
+        <button class="rename-confirm" id="renameConfirm">Potvrdi</button>
+      </div>
+    </div>
+
+    <!-- Commands -->
+    <div class="commands-section">
+      <div class="section-title">Komande</div>
+      <div class="cmd-grid">
+        <div class="cmd-btn" id="cmdFollow" data-cmd="follow">
+          <div class="cmd-icon follow">🐾</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Slijedi me</div>
+            <div class="cmd-desc">/pasfollow</div>
+          </div>
+        </div>
+        <div class="cmd-btn" id="cmdSit" data-cmd="sit">
+          <div class="cmd-icon sit">🦮</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Sjedi</div>
+            <div class="cmd-desc">/passjedi</div>
+          </div>
+        </div>
+        <div class="cmd-btn" id="cmdStay" data-cmd="stay">
+          <div class="cmd-icon stay">📍</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Cekaj ovdje</div>
+            <div class="cmd-desc">/pascekaj</div>
+          </div>
+        </div>
+        <div class="cmd-btn" id="cmdRun" data-cmd="run">
+          <div class="cmd-icon run">🐕‍🦺</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Trci za mnom</div>
+            <div class="cmd-desc">/pastrci</div>
+          </div>
+        </div>
+        <div class="cmd-btn" id="cmdRename" data-cmd="rename">
+          <div class="cmd-icon rename">✎</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Preimenuj psa</div>
+            <div class="cmd-desc">Promijeni ime</div>
+          </div>
+        </div>
+        <div class="cmd-btn" id="cmdRelease" data-cmd="release">
+          <div class="cmd-icon release">🔓</div>
+          <div class="cmd-text">
+            <div class="cmd-name">Otpusti psa</div>
+            <div class="cmd-desc">/pasotpusti</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div class="help-section">
+      <div class="help-row"><span class="help-key">ESC</span><span class="help-desc">Zatvori panel</span></div>
+      <div class="help-row"><span class="help-key">/pas</span><span class="help-desc">Otvori panel</span></div>
+      <div class="help-row"><span class="help-key">/pasinfo</span><span class="help-desc">Informacije o psu</span></div>
+    </div>
+  </div>
+
+  <!-- No dog content (shown when no dog) -->
+  <div id="dogInactive" style="display:none">
+    <div class="no-dog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="rgba(139,92,246,0.3)" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5M14.267 5.172c0-1.39 1.577-2.493 3.5-2.172 2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.855-1.45-2.239-2.5M8 14v.5M16 14v.5M11.25 16.25h1.5L12 17l-.75-.75z"/>
+        <path d="M4.42 11.247A13.152 13.152 0 004 14.556C4 18.728 7.582 21 12 21s8-2.272 8-6.444c0-1.061-.162-2.2-.493-3.309m-9.243-6.082A8.801 8.801 0 0112 5c.78 0 1.5.108 2.161.306"/>
+      </svg>
+      <h2>Nemas psa</h2>
+      <p>Dohvati psa da bi upravljao njime</p>
+      <button class="spawn-btn" id="spawnBtn">DOHVATI PSA</button>
+    </div>
+  </div>
+
+  <div class="esc-hint">Pritisni ESC za zatvaranje</div>
+</div>
+
+<script>
+// ===== CEF Event Listeners =====
+// IMPORTANT: CEF passes arguments as INDIVIDUAL function parameters, NOT as a single object.
+// Example: CEF_EmitEvent(playerid, browserid, "dog:init", CEF_STR(name), CEF_STR(breed), hp, CEF_STR(state), active)
+// arrives as: function(name, breed, hp, state, active)
+let dogData = { name: '', breed: '', hp: 0, state: '', active: false };
+
+// Listen for data from Pawn
+if(typeof cef !== 'undefined') {
+  cef.addEventListener('dog:init', function(name, breed, hp, state, active) {
+    dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: active ? true : false };
+    updateUI();
+  });
+
+  cef.addEventListener('dog:update', function(name, breed, hp, state, active) {
+    dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: active ? true : false };
+    updateUI();
+  });
+
+  cef.addEventListener('dog:renameResult', function(success, message) {
+    if(success) {
+      dogData.name = message || '';
+      updateUI();
+      showToast('Pas se zove: ' + dogData.name);
+    } else {
+      showToast(message || 'Greska pri preimenovanju', true);
+    }
+  });
+
+  cef.addEventListener('dog:spawnResult', function(success, name, breed, hp, state) {
+    if(success) {
+      dogData = { name: name || '', breed: breed || '', hp: hp || 0, state: state || '', active: true };
+      updateUI();
+      showToast('Doveo si psa: ' + dogData.name);
+    } else {
+      showToast(state || 'Greska: Pas se nije stvorio!', true);
+    }
+  });
+}
+
+// ===== UI Update =====
+function updateUI() {
+  const activeEl = document.getElementById('dogActive');
+  const inactiveEl = document.getElementById('dogInactive');
+
+  if(dogData.active) {
+    activeEl.style.display = 'block';
+    inactiveEl.style.display = 'none';
+
+    document.getElementById('dogName').textContent = dogData.name;
+    document.getElementById('dogBreed').textContent = dogData.breed;
+    document.getElementById('breedTag').textContent = dogData.breed.toUpperCase().replace('SIBERIAN ','').replace(' RETRIEVER','');
+    document.getElementById('hpValue').textContent = dogData.hp;
+    document.getElementById('hpNum').textContent = dogData.hp + '/100';
+    document.getElementById('stateValue').textContent = dogData.state;
+
+    // HP bar
+    const hpBar = document.getElementById('hpBar');
+    hpBar.style.width = dogData.hp + '%';
+    hpBar.className = 'hp-bar-fill';
+    if(dogData.hp <= 25) hpBar.classList.add('low');
+    else if(dogData.hp <= 50) hpBar.classList.add('mid');
+
+    // Highlight active command
+    document.querySelectorAll('.cmd-btn').forEach(btn => btn.classList.remove('active'));
+    if(dogData.state === 'Slijedi') document.getElementById('cmdFollow').classList.add('active');
+    else if(dogData.state === 'Sjedi') document.getElementById('cmdSit').classList.add('active');
+    else if(dogData.state === 'Ceka') document.getElementById('cmdStay').classList.add('active');
+    else if(dogData.state === 'Trci') document.getElementById('cmdRun').classList.add('active');
+
+  } else {
+    activeEl.style.display = 'none';
+    inactiveEl.style.display = 'block';
+  }
+}
+
+// ===== Emit to Pawn =====
+function emitToPawn(event, ...args) {
+  if(typeof cef !== 'undefined') {
+    cef.emit(event, ...args);
+  }
+}
+
+// ===== Command buttons =====
+document.querySelectorAll('.cmd-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const cmd = this.dataset.cmd;
+    if(cmd === 'rename') {
+      // Toggle rename section
+      const section = document.getElementById('renameSection');
+      section.classList.toggle('active');
+      if(section.classList.contains('active')) {
+        document.getElementById('renameInput').value = '';
+        document.getElementById('renameInput').focus();
+      }
+      return;
+    }
+    if(cmd === 'release') {
+      emitToPawn('dog:release');
+      return;
+    }
+    emitToPawn('dog:command', cmd);
+  });
+});
+
+// Rename confirm
+document.getElementById('renameConfirm').addEventListener('click', doRename);
+document.getElementById('renameInput').addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') doRename();
+});
+
+function doRename() {
+  const name = document.getElementById('renameInput').value.trim();
+  if(name.length < 2 || name.length > 20) {
+    showToast('Ime mora biti 2-20 karaktera!', true);
+    return;
+  }
+  emitToPawn('dog:rename', name);
+  document.getElementById('renameSection').classList.remove('active');
+}
+
+// Close button
+document.getElementById('closeBtn').addEventListener('click', function() {
+  emitToPawn('dog:close');
+});
+
+// Spawn button
+document.getElementById('spawnBtn').addEventListener('click', function() {
+  emitToPawn('dog:spawn');
+});
+
+// Background overlay click to close
+document.getElementById('bgOverlay').addEventListener('click', function() {
+  emitToPawn('dog:close');
+});
+
+// ESC key
+document.addEventListener('keydown', function(e) {
+  if(e.key === 'Escape') {
+    emitToPawn('dog:close');
+  }
+});
+
+// Toast notification
+function showToast(msg, isError) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ===== Initialize with test data (for development) =====
+// In production, data comes from Pawn via cef.addEventListener
+if(typeof cef === 'undefined') {
+  // Dev mode - show test data
+  dogData = { name: 'Buddy', breed: 'Siberian Husky', hp: 85, state: 'Slijedi', active: true };
+  updateUI();
+}
+</script>
+</body>
+</html>

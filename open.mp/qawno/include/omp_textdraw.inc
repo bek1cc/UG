@@ -1070,7 +1070,7 @@ native bool:PlayerTextDrawSetShadow(playerid, PlayerText:textid, shadowSize);
 /**
  * <library>omp_textdraw</library>
  * <summary>Set the outline of a player-textdraw.  The outline colour cannot be changed unless
- * <a href="#PlayerTextDrawBackgroundColor">PlayerTextDrawBackgroundColor</a>
+ * <a href="#PlayerTextDrawBackgroundColour">PlayerTextDrawBackgroundColour</a>
  * is used.</summary>
  * <param name="playerid">The ID of the player whose player-textdraw to set the outline of</param>
  * <param name="textid">The ID of the player-textdraw to set the outline of</param>
@@ -1115,8 +1115,8 @@ native bool:PlayerTextDrawSetOutline(playerid, PlayerText:textid, outlineSize);
  * <seealso name="PlayerTextDrawShow" />
  * <seealso name="PlayerTextDrawHide" />
  * <remarks>If <a href="#PlayerTextDrawSetOutline">PlayerTextDrawSetOutline</a> is used with size &gt;
- * 0, the outline colour will match the colour used in <a href="#PlayerTextDrawBackgroundColor">PlayerTextDrawBackgroundColor</a>.
- *  Changing the value of colour seems to alter the colour used in <a href="#PlayerTextDrawColor">PlayerTextDrawColor</a></remarks>
+ * 0, the outline colour will match the colour used in <a href="#PlayerTextDrawBackgroundColour">PlayerTextDrawBackgroundColour</a>.
+ *  Changing the value of colour seems to alter the colour used in <a href="#PlayerTextDrawColour">PlayerTextDrawColour</a></remarks>
  */
 #if !defined MIXED_SPELLINGS
 	#pragma deprecated Use `PlayerTextDrawBackgroundColour`. To silence this warning and use different spellings define `MIXED_SPELLINGS` or define `SAMP_COMPAT` for general SA-MP API compatibility.
