@@ -1,6 +1,6 @@
-// SA-MP 0.3.DL Compatible a_samp.inc
-// When SAMP_03DL is defined, includes standard SA-MP natives via _open_mp
-// which will redirect to samp_03dl_compat.inc
+// a_samp.inc - Open.mp / SA-MP Compatible
+// Without SAMP_03DL defined, uses open.mp includes (which have all SA-MP natives + extras)
+// With SAMP_03DL defined, uses SA-MP 0.3.DL compatibility layer
 
 #if defined _INC_a_samp
         #endinput

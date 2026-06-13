@@ -268,6 +268,9 @@ native
  * <param name="string">The string to print</param>
  * <seealso name="printf" />
  */
+#if !defined __print
+	#define __print
+#endif
 #if defined __print
 	// Fixes a pawndoc bug - comments on `#ifdef`ed out functions are still put
 	// in the output, unattached to any function.  So make a function.
@@ -275,8 +278,6 @@ native
 	#define __open_mp_unused_print
 	#define print( __print(
 	#define _ALS_print
-#else
-	native print(const string[]);
 #endif
 
 /**
@@ -697,7 +698,7 @@ native bool:SendDeathMessage(killer, killee, weapon);
  *   <b><c>0</c></b>: The function failed to execute.  The weapon specified does not exist.
  * </returns>
  */
-native bool:GetWeaponName(WEAPON:weaponid, weapon[], len = sizeof (weapon));
+native GetWeaponName(WEAPON:weaponid, weapon[], len = sizeof (weapon));
 
 /**
  * <library>omp_core</library>
