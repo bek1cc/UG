@@ -1,5 +1,5 @@
 #if defined _INC_cef
-        #endinput
+	#endinput
 #endif
 #define _INC_cef
 
@@ -113,9 +113,7 @@ native bool:CEF_PlayerHasPlugin(playerid);
  * Adds a resource (UI) to be downloaded by clients.
  * This must be called from OnGameModeInit or a similar early-stage callback.
  *
- * @param resourceName      The folder name relative to scriptfiles/cef/
- *                          e.g. "loading" maps to scriptfiles/cef/loading/
- *                          The URL http://cef/loading/index.html serves files from this directory
+ * @param resourceName      The path to the directory (scriptfiles/cef/my_ui)
  */
 native CEF_AddResource(const resourceName[]);
 
@@ -304,7 +302,7 @@ native CEF_SetBrowserAudioMode(playerid, browserid, E_CEF_AUDIO_MODE:mode);
  * This function allows to define how a sound's volume attenuates over distance,
  * giving precise control over the audio experience for each world browser.
  *
- * @param playerid                      The ID of the player for whom the audio settings will be changed.
+ * @param playerid     			The ID of the player for whom the audio settings will be changed.
  * @param browserid             The ID of the browser to affect.
  * @param max_distance          The maximum distance (in meters) at which the sound can be heard.
  *                              Beyond this distance, the sound will be completely silent.
@@ -360,7 +358,7 @@ native CEF_ClearChat(playerid);
  * When disabled, the player will not be able to open the chat input
  * (e.g. with the "T" or "F6" key).
  *
- * This function only affects the chat input box ? it does not hide
+ * This function only affects the chat input box — it does not hide
  * the chat messages already displayed on screen.
  *
  * @param playerid      The ID of the player whose chat input state will be changed.
@@ -457,11 +455,16 @@ forward OnCefReady(playerid);
 /**
  * Called when a browser creation request is processed by the client.
  *
+ * This callback is the unified response for any browser creation attempt.
+ * It informs the scripter about the success or failure of the operation.
+ *
  * @param playerid      The ID of the player for whom the browser was created.
  * @param browserid     The ID of the browser that was requested.
- * @param status_code   0 if creation failed, HTTP-like code otherwise (e.g. 200 for success).
+ * @param success       'true' if the browser was created successfully, 'false' otherwise.
+ * @param code          A status code from the E_CEF_CREATE_STATUS enum.
+ * @param reason        A string explaining the result (e.g., "Successfully created" or "ID already in use").
 */
-forward OnCefBrowserCreated(playerid, browserid, status_code);
+forward OnCefBrowserCreated(playerid, browserid, bool:success, E_CEF_CREATE_STATUS:code, const reason[]);
 
 /**
  * Called when the CEF input layer detects a keyboard event for a player.
@@ -494,32 +497,3 @@ forward OnCefChatInputState(playerid, bool:open);
  * @param network_id    The network ID of the entity.
  */
 // TODO: forward OnCefEntityClicked(playerid, entity_type, network_id);
-
-// UG Compatibility wrappers - NOTE: These cannot correctly forward variadic arguments in Pawn.
-// Use CEF_EmitEvent() and CEF_RegisterEvent() directly instead.
-// These are kept only for backward compatibility with code that calls them with 0 extra args.
-stock cef_emit_event(playerid, browserid, const eventName[])
-{
-        #pragma unused playerid, browserid, eventName
-        // This wrapper cannot forward variadic args. Use CEF_EmitEvent() directly.
-}
-
-stock cef_subscribe(const eventName[], const callback[])
-{
-        CEF_RegisterEvent(eventName, callback);
-}
-
-stock CEF_InitSubscriptions()
-{
-        // Called from OnGameModeInit - register all main CEF events
-}
-
-stock CEF_OnGameModeInit()
-{
-        CEF_InitSubscriptions();
-}
-
-stock CefBrowserCreated(playerid, browserid, status_code)
-{
-        #pragma unused playerid, browserid, status_code
-}
