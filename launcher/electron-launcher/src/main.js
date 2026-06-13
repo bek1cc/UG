@@ -71,9 +71,15 @@ const DISCORD_URL = 'https://discord.gg/unicategaming';
 const LAUNCHER_VERSION = '6.0.0';
 
 // SA-MP 0.3.DL - Custom modeli se automatski skidaju sa servera prilikom konekcije
-// Server koristi AddSimpleModel() za registraciju modela i salje DFF/TXD klijentu
+// Open.mp server koristi AddSimpleModel() za registraciju modela i salje DFF/TXD klijentu
 // Nije potrebno rucno skidati modele - SA-MP 0.3.DL to radi automatski
 
+// CEF i ASI loader - prvo pokusavamo lokalne fajlove iz client_files foldera, pa onda GitHub
+const CLIENT_FILES_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, 'client_files')
+  : path.join(LAUNCHER_DIR, 'client_files');
+
+const CEF_ASI_LOCAL = path.join(CLIENT_FILES_DIR, 'cef.asi');
 const CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
@@ -392,11 +398,21 @@ async function autoInstall(gtaPath, missing) {
       try { fs.unlinkSync(tmpZip); } catch (e) {}
     }
     else if (comp === 'cef_asi') {
-      await downloadFile(CEF_ASI_URL, path.join(gtaPath, 'cef.asi'), (pct, dl, total, speed) => {
+      // Prvo pokusaj lokalni cef.asi iz client_files foldera
+      if (fs.existsSync(CEF_ASI_LOCAL)) {
+        log('Installing cef.asi from local client_files/');
+        fs.copyFileSync(CEF_ASI_LOCAL, path.join(gtaPath, 'cef.asi'));
         if (mainWindow) mainWindow.webContents.send('install-progress', {
-          component: 'CEF Plugin', pct, downloaded: dl, total, speed
+          component: 'CEF Plugin (local)', pct: 100, downloaded: 94208, total: 94208, speed: 0
         });
-      });
+      } else {
+        log('cef.asi not found locally, downloading from GitHub...');
+        await downloadFile(CEF_ASI_URL, path.join(gtaPath, 'cef.asi'), (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'CEF Plugin', pct, downloaded: dl, total, speed
+          });
+        });
+      }
     }
     else if (comp === 'cef_runtime') {
       const tmpZip = path.join(LAUNCHER_DIR, 'tmp_cef.zip');

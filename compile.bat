@@ -31,23 +31,19 @@ if exist "gamemodes\fg-ogc.amx" (
     exit /b 1
 )
 
-REM === VERIFY libmysql.dll ===
-if not exist "open.mp\libmysql.dll" (
-    echo [WARNING] libmysql.dll not found in open.mp\ folder!
-    echo           MySQL plugin will NOT load without it.
-    echo           Download from: https://github.com/peters1v/SA-MP-mysql-plugin/raw/master/libmysql.dll
-    echo           Place libmysql.dll in the same folder as omp-server.exe
+REM === VERIFY MySQL ===
+if not exist "open.mp\libmariadb.dll" (
+    echo [WARNING] libmariadb.dll not found in open.mp\ folder!
+    echo           MySQL R41 plugin needs libmariadb.dll (not libmysql.dll!)
+    echo           Download from: https://github.com/pBlueG/SA-MP-MySQL/releases/download/R41-4/mysql-R41-4-win32.zip
     echo.
 )
 
 REM === VERIFY CEF PLUGIN ===
-if not exist "plugins\cef.dll" (
-    if not exist "open.mp\plugins\cef.dll" (
-        echo [WARNING] cef.dll not found!
-        echo           CEF plugin will NOT load without it.
-        echo           Place cef.dll in the plugins\ folder
-        echo.
-    )
+if not exist "open.mp\plugins\cef.dll" (
+    echo [WARNING] cef.dll not found in open.mp\plugins\!
+    echo           CEF plugin will NOT load without it.
+    echo.
 )
 
 REM === COPY PLUGINS TO open.mp IF NEEDED ===
@@ -82,6 +78,14 @@ if not exist "open.mp\scriptfiles\SAfull.hmap" (
 )
 echo [OK] Map data check done
 
+REM === COPY ARTWORK MODELS ===
+if not exist "open.mp\artwork" mkdir "open.mp\artwork" 2>nul
+if exist "artwork" (
+    xcopy /Y "artwork\*.dff" "open.mp\artwork\" >nul 2>nul
+    xcopy /Y "artwork\*.txd" "open.mp\artwork\" >nul 2>nul
+    echo [OK] Artwork models synced
+)
+
 REM === VERIFY ===
 echo.
 if not exist "open.mp\gamemodes\fg-ogc.amx" (
@@ -97,11 +101,10 @@ echo.
 echo   Port: 7777
 echo   Plugins: crashdetect, cef, streamer, sscanf, iTD, MapAndreas, mysql
 echo   CEF: ENABLED (phone, tablet, inventory, laptop, portal, amenu, case, cardcase, dog)
+echo   Artwork: ENABLED (custom models via AddSimpleModel - 0.3.DL clients)
 echo.
-echo   IMPORTANT:
-echo   - Make sure libmysql.dll is in open.mp\ folder!
-echo   - Make sure cef.dll is in plugins\ folder!
-echo   - Players need CEF client-side plugin (Cef.asi) to see browsers
+echo   NOTE: Players use SA-MP 0.3.DL client (auto-downloaded by launcher)
+echo   NOTE: libmariadb.dll is needed in open.mp\ for MySQL R41
 echo.
 pause
 cd open.mp

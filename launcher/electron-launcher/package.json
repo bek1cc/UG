@@ -1,6 +1,6 @@
 {
   "name": "unicate-gaming-launcher",
-  "version": "5.0.0",
+  "version": "6.0.0",
   "description": "Unicate Gaming RPG - SAMP Launcher",
   "main": "src/main.js",
   "scripts": {
@@ -18,7 +18,8 @@
       "src/**/*",
       "ug_splash.png",
       "ug_splash.bmp",
-      "cef_content/**/*"
+      "cef_content/**/*",
+      "client_files/**/*"
     ],
     "extraResources": [
       {
@@ -32,6 +33,10 @@
       {
         "from": "cef_content",
         "to": "cef_content"
+      },
+      {
+        "from": "client_files",
+        "to": "client_files"
       }
     ],
     "win": {
