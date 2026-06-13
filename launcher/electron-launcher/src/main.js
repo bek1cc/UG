@@ -73,11 +73,14 @@ const LAUNCHER_VERSION = '5.0.0';
 const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
 const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
-const SAMP_CLIENT_URL = 'https://files.sa-mp.com/sa-mp-0.3.7-R4-install.exe';
+const SAMP_CLIENT_URL = 'https://gta-multiplayer.cz/downloads/sa-mp-0.3.DL-R1-2-MP-install.exe';
+const SAMP_CLIENT_URL_FALLBACK = 'https://archive.d1maz.ru/samp/sa-mp-0.3.DL-R1-install.exe';
 const MODEL_BASE_URL = 'https://raw.githubusercontent.com/bek1cc/UG/main/Models/';
 const ARTWORK_MODELS = [
   { file: 'fireaxe.dff', localPath: 'artwork/fireaxe.dff' },
   { file: 'fireaxe.txd', localPath: 'artwork/fireaxe.txd' },
+  { file: 'katana.dff', localPath: 'artwork/katana.dff' },
+  { file: 'katana.txd', localPath: 'artwork/katana.txd' },
   { file: 'wmyva2.dff', localPath: 'artwork/wmyva2.dff' },
   { file: 'wmyva2.txd', localPath: 'artwork/wmyva2.txd' }
 ];
@@ -162,7 +165,18 @@ function getStatus(gtaPath) {
     server_mode: mode
   };
   if (gtaPath && fs.existsSync(gtaPath)) {
-    s.has_samp = fs.existsSync(path.join(gtaPath, 'samp.exe'));
+    const sampExePath = path.join(gtaPath, 'samp.exe');
+    const sampExists = fs.existsSync(sampExePath);
+    // Detect if samp.exe is 0.3.7 (412KB) instead of 0.3.DL (~413KB+)
+    if (sampExists) {
+      const sampSize = fs.statSync(sampExePath).size;
+      if (sampSize < 413000) {
+        s.has_samp = false;
+        log('samp.exe is 0.3.7 version (' + sampSize + ' bytes) - needs 0.3.DL');
+      } else {
+        s.has_samp = true;
+      }
+    }
     const hasAsi = fs.existsSync(path.join(gtaPath, 'cef.asi'));
     const hasCefFolder = fs.existsSync(path.join(gtaPath, 'cef'));
     // CEF runtime check: libcef.dll and client.dll are the critical CEF engine files
@@ -180,8 +194,7 @@ function getStatus(gtaPath) {
       if (!hasAsi) s.missing.push('cef_asi');
       if (!hasCefRuntime) s.missing.push('cef_runtime');
       if (!s.has_asi) s.missing.push('asi_loader');
-      if (!s.models_ok) s.missing.push('artwork_models');
-      s.ready = s.has_samp && s.cef_ok && s.has_asi && s.models_ok;
+      s.ready = s.has_samp && s.cef_ok && s.has_asi;
     } else {
       s.ready = s.has_samp;
     }
@@ -306,22 +319,65 @@ async function autoInstall(gtaPath, missing) {
       log('Auto-install: Cleaned up old SA-MP files before reinstall');
 
       const tmpExe = path.join(LAUNCHER_DIR, 'tmp_samp_install.exe');
-      log('Downloading SA-MP R4 client...');
-      await downloadFile(SAMP_CLIENT_URL, tmpExe, (pct, dl, total, speed) => {
-        if (mainWindow) mainWindow.webContents.send('install-progress', {
-          component: 'SA-MP R4 Client', pct, downloaded: dl, total, speed
-        });
-      });
+      log('Downloading SA-MP 0.3.DL client...');
       try {
-        execSync('"' + tmpExe + '" /S /D=' + gtaPath, { timeout: 60000, windowsHide: true });
-        log('SA-MP R4 installed silently');
+        await downloadFile(SAMP_CLIENT_URL, tmpExe, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'SA-MP 0.3.DL Client', pct, downloaded: dl, total, speed
+          });
+        });
       } catch (e) {
-        log('Silent install failed, launching installer: ' + e.message);
-        const child = spawn(tmpExe, [], { detached: true, stdio: 'ignore' });
-        child.unref();
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        log('Primary URL failed, trying fallback: ' + e.message);
+        if (mainWindow) mainWindow.webContents.send('install-progress', {
+          component: 'SA-MP 0.3.DL Client (fallback)', pct: 0, downloaded: 'Switching mirror...', total: '', speed: ''
+        });
+        await downloadFile(SAMP_CLIENT_URL_FALLBACK, tmpExe, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'SA-MP 0.3.DL Client', pct, downloaded: dl, total, speed
+          });
+        });
       }
+
+      // Set registry so installer auto-detects the GTA folder
+      try {
+        const exePath = path.join(gtaPath, 'gta_sa.exe');
+        execSync('reg add "HKCU\\Software\\SAMP" /v "gta_sa_exe" /t REG_SZ /d "' + exePath + '" /f', { windowsHide: true });
+        log('Set registry gta_sa_exe = ' + exePath);
+      } catch (e) {
+        log('Registry set failed (non-critical): ' + e.message);
+      }
+
+      // Run installer visible — user clicks through
+      if (mainWindow) mainWindow.webContents.send('install-progress', {
+        component: 'SA-MP 0.3.DL - Instalacija...', pct: 100, downloaded: 'Pokreni installer...', total: '', speed: ''
+      });
+
+      const child = spawn(tmpExe, [], {
+        detached: false,
+        stdio: 'ignore',
+        shell: false
+      });
+
+      await new Promise(resolve => {
+        const timeout = setTimeout(() => {
+          log('Installer timeout — killing');
+          try { child.kill(); } catch(e) {}
+          resolve();
+        }, 120000);
+        child.on('exit', () => { clearTimeout(timeout); resolve(); });
+        child.on('error', () => { clearTimeout(timeout); resolve(); });
+      });
+
       try { fs.unlinkSync(tmpExe); } catch (e) {}
+      log('SA-MP DL install completed');
+
+      // Verify samp.exe exists after install
+      if (!fs.existsSync(path.join(gtaPath, 'samp.exe'))) {
+        log('WARNING: samp.exe not found after DL install — user may need to reinstall');
+      }
+
+      // Clean up old backups again after install (safety net)
+      cleanupBackupFiles(gtaPath);
     }
     else if (comp === 'asi_loader') {
       const tmpZip = path.join(LAUNCHER_DIR, 'tmp_asi.zip');
@@ -364,12 +420,16 @@ async function autoInstall(gtaPath, missing) {
         const dest = path.join(gtaPath, model.localPath);
         const dir = path.dirname(dest);
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        await downloadFile(url, dest, (pct, dl, total, speed) => {
-          if (mainWindow) mainWindow.webContents.send('install-progress', {
-            component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+        try {
+          await downloadFile(url, dest, (pct, dl, total, speed) => {
+            if (mainWindow) mainWindow.webContents.send('install-progress', {
+              component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+            });
           });
-        });
-        log('Downloaded model: ' + model.file);
+          log('Downloaded model: ' + model.file);
+        } catch (e) {
+          log('Model download failed (non-critical): ' + model.file + ' - ' + e.message);
+        }
       }
     }
   }
@@ -645,6 +705,21 @@ function isValidPE(fpath) {
   }
 }
 
+function cleanupBackupFiles(gtaPath) {
+  const filesToCheck = ['samp.exe', 'samp.dll'];
+  for (const fname of filesToCheck) {
+    const backup = path.join(gtaPath, fname + '.ug_backup');
+    try {
+      if (fs.existsSync(backup)) {
+        fs.unlinkSync(backup);
+        log('Cleaned up old backup: ' + fname + '.ug_backup');
+      }
+    } catch (e) {
+      log('Failed to delete backup ' + fname + '.ug_backup: ' + e.message);
+    }
+  }
+}
+
 function restoreFromBackup(gtaPath) {
   const filesToCheck = ['samp.exe', 'samp.dll'];
   let restored = [];
@@ -785,10 +860,8 @@ ipcMain.handle('auto-install', async () => {
   const gtaPath = findGtaPath();
   if (!gtaPath) return { error: 'GTA:SA putanja nije pronadjena!' };
 
-  const restored = restoreFromBackup(gtaPath);
-  if (restored.length > 0) {
-    log('Auto-install: Restored clean files from backup: ' + restored.join(', '));
-  }
+  // Delete old 0.3.7 backups so they don't get restored over DL files
+  cleanupBackupFiles(gtaPath);
 
   const status = getStatus(gtaPath);
   const sampExePath = path.join(gtaPath, 'samp.exe');
@@ -888,6 +961,9 @@ ipcMain.handle('verify-repair', async () => {
 //  APP EVENTS
 // ============================================================
 app.whenReady().then(() => {
+  // Clean up old 0.3.7 backups on startup — they break DL installations
+  const gtaPath = findGtaPath();
+  if (gtaPath) cleanupBackupFiles(gtaPath);
   createWindow();
 }).catch(err => { log('App ready FAILED: ' + err.message); });
 

@@ -61,7 +61,7 @@ echo [OK] fg-ogc.amx deployed
 
 REM === COPY PLUGINS (including mysql and SKY) ===
 if not exist "%OMP%\plugins" mkdir "%OMP%\plugins"
-for %%p in (crashdetect streamer sscanf iTD MapAndreas mysql SKY) do (
+for %%p in (crashdetect streamer sscanf iTD MapAndreas mysql) do (
     if exist "plugins\%%p.dll" copy /Y "plugins\%%p.dll" "%OMP%\plugins\" >nul 2>nul
 )
 echo [OK] Plugins deployed
