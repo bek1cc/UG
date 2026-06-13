@@ -42,8 +42,8 @@ function flushLog() {
   });
 }
 
-try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v6.0 (SA-MP 0.3.DL) ===\n'); } catch(e) {}
-log('Launcher v6.0 starting...');
+try { fs.writeFileSync(LOG_FILE, '=== Unicate Gaming Launcher v5.0 ===\n'); } catch(e) {}
+log('Launcher v5.0 starting...');
 
 // ============================================================
 //  CRASH PROTECTION
@@ -68,23 +68,27 @@ function getActiveServer() {
 const SERVER_NAME = 'Unicate Gaming RPG';
 const WEBSITE_URL = 'https://ug-ogc.com';
 const DISCORD_URL = 'https://discord.gg/unicategaming';
-const LAUNCHER_VERSION = '6.0.0';
+const LAUNCHER_VERSION = '5.0.0';
 
-// SA-MP 0.3.DL - Custom modeli se automatski skidaju sa servera prilikom konekcije
-// Open.mp server koristi AddSimpleModel() za registraciju modela i salje DFF/TXD klijentu
-// Nije potrebno rucno skidati modele - SA-MP 0.3.DL to radi automatski
-
-// CEF i ASI loader - prvo pokusavamo lokalne fajlove iz client_files foldera, pa onda GitHub
-const CLIENT_FILES_DIR = app.isPackaged
-  ? path.join(process.resourcesPath, 'client_files')
-  : path.join(LAUNCHER_DIR, 'client_files');
-
-const CEF_ASI_LOCAL = path.join(CLIENT_FILES_DIR, 'cef.asi');
-const CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
-const CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
+const OMP_CEF_ASI_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/cef.asi';
+const OMP_CEF_CLIENT_URL = 'https://github.com/aurora-mp/omp-cef/releases/download/v1.2.0/client-files-v1.2.0.zip';
 const ASI_LOADER_URL = 'https://github.com/ThirteenAG/Ultimate-ASI-Loader/releases/download/v9.7.2/Ultimate-ASI-Loader.zip';
 const SAMP_CLIENT_URL = 'https://gta-multiplayer.cz/downloads/sa-mp-0.3.DL-R1-2-MP-install.exe';
 const SAMP_CLIENT_URL_FALLBACK = 'https://archive.d1maz.ru/samp/sa-mp-0.3.DL-R1-install.exe';
+const MODEL_BASE_URL = 'https://raw.githubusercontent.com/bek1cc/UG/main/Models/';
+const ARTWORK_MODELS = [
+  { file: 'fireaxe.dff', localPath: 'artwork/fireaxe.dff' },
+  { file: 'fireaxe.txd', localPath: 'artwork/fireaxe.txd' },
+  { file: 'katana.dff', localPath: 'artwork/katana.dff' },
+  { file: 'katana.txd', localPath: 'artwork/katana.txd' },
+  { file: 'wmyva2.dff', localPath: 'artwork/wmyva2.dff' },
+  { file: 'wmyva2.txd', localPath: 'artwork/wmyva2.txd' }
+];
+// Game model overrides placed in GTA SA models/ folder (replaces default game models)
+const MODELS_OVERRIDE = [
+  { file: 'infernus.dff', localPath: 'models/infernus.dff' },
+  { file: 'infernus.txd', localPath: 'models/infernus.txd' }
+];
 
 const LAUNCHER_DIR = app.isPackaged ? path.dirname(app.getPath('exe')) : path.join(__dirname, '..');
 const SETTINGS_FILE = path.join(LAUNCHER_DIR, 'settings.json');
@@ -183,8 +187,8 @@ function getStatus(gtaPath) {
     // CEF runtime check: libcef.dll and client.dll are the critical CEF engine files
     const hasCefRuntime = fs.existsSync(path.join(gtaPath, 'cef', 'libcef.dll')) && fs.existsSync(path.join(gtaPath, 'cef', 'client.dll'));
     s.has_asi = fs.existsSync(path.join(gtaPath, 'dsound.dll')) || fs.existsSync(path.join(gtaPath, 'dinput8.dll'));
-    // Na SA-MP 0.3.DL se modeli automatski skidaju sa servera - ne treba rucna provjera
-    s.models_ok = true;
+    // Check artwork models
+    s.models_ok = ARTWORK_MODELS.every(m => fs.existsSync(path.join(gtaPath, m.localPath)));
     if (hasAsi && hasCefRuntime) { s.cef_ok = true; s.cef_msg = 'CEF OK'; }
     else if (hasAsi && hasCefFolder) { s.cef_msg = 'CEF runtime fali (libcef.dll)'; }
     else if (hasAsi) { s.cef_msg = 'Fali cef/ folder'; }
@@ -398,25 +402,15 @@ async function autoInstall(gtaPath, missing) {
       try { fs.unlinkSync(tmpZip); } catch (e) {}
     }
     else if (comp === 'cef_asi') {
-      // Prvo pokusaj lokalni cef.asi iz client_files foldera
-      if (fs.existsSync(CEF_ASI_LOCAL)) {
-        log('Installing cef.asi from local client_files/');
-        fs.copyFileSync(CEF_ASI_LOCAL, path.join(gtaPath, 'cef.asi'));
+      await downloadFile(OMP_CEF_ASI_URL, path.join(gtaPath, 'cef.asi'), (pct, dl, total, speed) => {
         if (mainWindow) mainWindow.webContents.send('install-progress', {
-          component: 'CEF Plugin (local)', pct: 100, downloaded: 94208, total: 94208, speed: 0
+          component: 'CEF Plugin', pct, downloaded: dl, total, speed
         });
-      } else {
-        log('cef.asi not found locally, downloading from GitHub...');
-        await downloadFile(CEF_ASI_URL, path.join(gtaPath, 'cef.asi'), (pct, dl, total, speed) => {
-          if (mainWindow) mainWindow.webContents.send('install-progress', {
-            component: 'CEF Plugin', pct, downloaded: dl, total, speed
-          });
-        });
-      }
+      });
     }
     else if (comp === 'cef_runtime') {
       const tmpZip = path.join(LAUNCHER_DIR, 'tmp_cef.zip');
-      await downloadFile(CEF_CLIENT_URL, tmpZip, (pct, dl, total, speed) => {
+      await downloadFile(OMP_CEF_CLIENT_URL, tmpZip, (pct, dl, total, speed) => {
         if (mainWindow) mainWindow.webContents.send('install-progress', {
           component: 'CEF Runtime', pct, downloaded: dl, total, speed
         });
@@ -425,10 +419,23 @@ async function autoInstall(gtaPath, missing) {
       zip.extractAllTo(gtaPath, true);
       try { fs.unlinkSync(tmpZip); } catch (e) {}
     }
-    // artwork_models - nije vise potreban na SA-MP 0.3.DL
-    // Server automatski salje custom modele klijentu prilikom konekcije
     else if (comp === 'artwork_models') {
-      log('artwork_models preskacen - SA-MP 0.3.DL automatski skida modele sa servera');
+      for (const model of ARTWORK_MODELS) {
+        const url = MODEL_BASE_URL + model.file;
+        const dest = path.join(gtaPath, model.localPath);
+        const dir = path.dirname(dest);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        try {
+          await downloadFile(url, dest, (pct, dl, total, speed) => {
+            if (mainWindow) mainWindow.webContents.send('install-progress', {
+              component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+            });
+          });
+          log('Downloaded model: ' + model.file);
+        } catch (e) {
+          log('Model download failed (non-critical): ' + model.file + ' - ' + e.message);
+        }
+      }
     }
   }
   if (mainWindow) mainWindow.webContents.send('install-complete', {});
@@ -784,9 +791,52 @@ ipcMain.handle('launch-game', async (event, nickname) => {
     return { error: 'samp.exe nije pronadjen u GTA folderu! Klikni "Auto-Instalacija" da ga skines.' };
   }
 
-  // Na SA-MP 0.3.DL server automatski salje custom modele klijentu
-  // Nema potrebe za rucnim downloadom modela - AddSimpleModel() radi to automatski
-  // Modeli se skinu pri prvoj konekciji i kesiraju u SAMP folderu
+  // Download missing artwork models before launch
+  try {
+    const missingModels = ARTWORK_MODELS.filter(m => !fs.existsSync(path.join(gtaPath, m.localPath)));
+    if (missingModels.length > 0) {
+      log('Downloading ' + missingModels.length + ' missing artwork models...');
+      if (mainWindow) mainWindow.webContents.send('install-progress', {
+        component: 'Skidam modele...', pct: 0, downloaded: 0, total: 0, speed: 0
+      });
+      for (const model of missingModels) {
+        const url = MODEL_BASE_URL + model.file;
+        const dest = path.join(gtaPath, model.localPath);
+        const dir = path.dirname(dest);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        await downloadFile(url, dest, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'Model: ' + model.file, pct, downloaded: dl, total, speed
+          });
+        });
+        log('Downloaded model: ' + model.file);
+      }
+    }
+  } catch (e) {
+    log('Artwork model download failed (non-critical): ' + e.message);
+  }
+
+  // Download missing game model overrides before launch
+  try {
+    const missingOverrides = MODELS_OVERRIDE.filter(m => !fs.existsSync(path.join(gtaPath, m.localPath)));
+    if (missingOverrides.length > 0) {
+      log('Downloading ' + missingOverrides.length + ' missing game model overrides...');
+      for (const model of missingOverrides) {
+        const url = MODEL_BASE_URL + model.file;
+        const dest = path.join(gtaPath, model.localPath);
+        const dir = path.dirname(dest);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        await downloadFile(url, dest, (pct, dl, total, speed) => {
+          if (mainWindow) mainWindow.webContents.send('install-progress', {
+            component: 'Auto Model: ' + model.file, pct, downloaded: dl, total, speed
+          });
+        });
+        log('Downloaded game model override: ' + model.file);
+      }
+    }
+  } catch (e) {
+    log('Game model override download failed (non-critical): ' + e.message);
+  }
 
   // Setup registry and launch
   try {
